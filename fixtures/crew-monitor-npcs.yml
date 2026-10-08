@@ -31,7 +31,7 @@
     prototypes: [CrewMonitorTestGearDoctor]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
 - type: entity
   parent: IDCardStandard
   id: CrewMonitorTestIdEngineer
@@ -58,7 +58,7 @@
     prototypes: [CrewMonitorTestGearEngineer]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
 - type: entity
   parent: IDCardStandard
   id: CrewMonitorTestIdScientist
@@ -85,7 +85,7 @@
     prototypes: [CrewMonitorTestGearScientist]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
 - type: entity
   parent: IDCardStandard
   id: CrewMonitorTestIdSecurity
@@ -112,7 +112,7 @@
     prototypes: [CrewMonitorTestGearSecurity]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
 - type: entity
   parent: IDCardStandard
   id: CrewMonitorTestIdJanitor
@@ -139,7 +139,7 @@
     prototypes: [CrewMonitorTestGearJanitor]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
 - type: entity
   parent: IDCardStandard
   id: CrewMonitorTestIdPassenger
@@ -166,4 +166,4 @@
     prototypes: [CrewMonitorTestGearPassenger]
   - type: HTN
     rootTask:
-      task: MoveToPathfindPointCompound
+      task: IdleCompound
