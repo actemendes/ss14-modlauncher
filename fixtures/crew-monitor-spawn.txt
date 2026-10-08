@@ -1,0 +1,6 @@
+spawn CrewMonitorTestNpcDoctor
+spawn CrewMonitorTestNpcEngineer
+spawn CrewMonitorTestNpcScientist
+spawn CrewMonitorTestNpcSecurity
+spawn CrewMonitorTestNpcJanitor
+spawn CrewMonitorTestNpcPassenger

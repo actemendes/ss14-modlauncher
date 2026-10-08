@@ -1,0 +1,169 @@
+- type: entity
+  parent: ClothingUniformJumpsuitColorGrey
+  id: CrewMonitorTestUniform
+  components:
+  - type: SuitSensor
+    randomMode: false
+    mode: SensorCords
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdDoctor
+  components:
+  - type: PresetIdCard
+    name: Anna Testova
+    job: MedicalDoctor
+
+- type: startingGear
+  id: CrewMonitorTestGearDoctor
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdDoctor
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcDoctor
+  name: Anna Testova
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearDoctor]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdEngineer
+  components:
+  - type: PresetIdCard
+    name: Boris Testov
+    job: StationEngineer
+
+- type: startingGear
+  id: CrewMonitorTestGearEngineer
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdEngineer
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcEngineer
+  name: Boris Testov
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearEngineer]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdScientist
+  components:
+  - type: PresetIdCard
+    name: Clara Testova
+    job: Scientist
+
+- type: startingGear
+  id: CrewMonitorTestGearScientist
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdScientist
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcScientist
+  name: Clara Testova
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearScientist]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdSecurity
+  components:
+  - type: PresetIdCard
+    name: Denis Testov
+    job: SecurityOfficer
+
+- type: startingGear
+  id: CrewMonitorTestGearSecurity
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdSecurity
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcSecurity
+  name: Denis Testov
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearSecurity]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdJanitor
+  components:
+  - type: PresetIdCard
+    name: Elena Testova
+    job: Janitor
+
+- type: startingGear
+  id: CrewMonitorTestGearJanitor
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdJanitor
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcJanitor
+  name: Elena Testova
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearJanitor]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
+- type: entity
+  parent: IDCardStandard
+  id: CrewMonitorTestIdPassenger
+  components:
+  - type: PresetIdCard
+    name: Felix Testov
+    job: Passenger
+
+- type: startingGear
+  id: CrewMonitorTestGearPassenger
+  equipment:
+    jumpsuit: CrewMonitorTestUniform
+    shoes: ClothingShoesColorBlack
+    id: CrewMonitorTestIdPassenger
+
+- type: entity
+  parent: MobCivilian
+  id: CrewMonitorTestNpcPassenger
+  name: Felix Testov
+  components:
+  - type: RandomHumanoidAppearance
+    randomizeName: false
+  - type: Loadout
+    prototypes: [CrewMonitorTestGearPassenger]
+  - type: HTN
+    rootTask:
+      task: MoveToPathfindPointCompound
