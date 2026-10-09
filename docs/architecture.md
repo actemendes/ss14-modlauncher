@@ -71,6 +71,6 @@ Mod update manifests are obtained only from the configured GitHub release source
 
 ## Supported scope
 
-Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.0. Profile changes take effect on a newly launched game client.
+Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.1. Profile changes take effect on a newly launched game client.
 
 The [Crew Console reference](mods/crew-console.md) describes telemetry limits. The older [port research](crew-monitor-port.md) is preserved as historical design context.

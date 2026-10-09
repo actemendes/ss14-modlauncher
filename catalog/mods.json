@@ -1,7 +1,7 @@
 [
   {
     "id": "crew-console",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "file": "CrewConsole.Mod.dll",
     "nameRu": "Crew Console",
     "nameEn": "Crew Console",
@@ -12,7 +12,7 @@
   },
   {
     "id": "hello-world",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "file": "HelloWorld.Mod.dll",
     "nameRu": "Hello World",
     "nameEn": "Hello World",

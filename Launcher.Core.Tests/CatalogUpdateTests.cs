@@ -55,6 +55,7 @@ internal static class CatalogUpdateTests
             await ThrowsAsync(() => updater.DownloadAsync(check), "redirect loop limit");
 
         await ReleaseApiPipeline(repo, page, mod, bytes, Manifest(mod));
+        await RateLimitFallbackTests.RunAsync();
 
         var folder = Path.Combine(Path.GetTempPath(), "SS14ModLauncherSettingsTests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);

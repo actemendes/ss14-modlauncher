@@ -30,6 +30,7 @@ public sealed class UpdateService : IDisposable
     public const int MaximumModBytes = 32 * 1024 * 1024;
     public const int MaximumManifestBytes = 1024 * 1024;
     private readonly HttpClient _http;
+    private sealed class GitHubRateLimitException : Exception { }
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly Regex RepositoryPattern = new(@"\A[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9_.-]{1,100}\z", RegexOptions.CultureInvariant);
     private sealed record Manifest
@@ -58,7 +59,15 @@ public sealed class UpdateService : IDisposable
     public async Task<UpdateCheck> CheckAsync(string repository, IReadOnlyDictionary<string, string>? installedVersions, CancellationToken cancellationToken = default)
     {
         ValidateRepository(repository);
-        var releaseBytes = await GetBytesAsync(new Uri($"https://api.github.com/repos/{repository}/releases/latest"), MaximumManifestBytes, true, cancellationToken);
+        byte[] releaseBytes;
+        try
+        {
+            releaseBytes = await GetBytesAsync(new Uri($"https://api.github.com/repos/{repository}/releases/latest"), MaximumManifestBytes, true, cancellationToken);
+        }
+        catch (GitHubRateLimitException)
+        {
+            return await CheckLatestAssetAsync(repository, installedVersions, cancellationToken);
+        }
         using var release = JsonDocument.Parse(releaseBytes, new JsonDocumentOptions { MaxDepth = 32 });
         var root = release.RootElement;
         if (root.GetProperty("draft").GetBoolean() || root.GetProperty("prerelease").GetBoolean())
@@ -78,6 +87,47 @@ public sealed class UpdateService : IDisposable
         if (!IsReleaseAssetUrl(manifestUrl, repository)) throw new InvalidDataException("Invalid manifest download URL.");
         var manifestBytes = await GetBytesAsync(new Uri(manifestUrl), MaximumManifestBytes, false, cancellationToken);
         return ParseManifest(repository, releaseVersion, releaseUrl, manifestBytes, installedVersions);
+    }
+
+    private async Task<UpdateCheck> CheckLatestAssetAsync(string repository, IReadOnlyDictionary<string, string>? installedVersions,
+        CancellationToken cancellationToken)
+    {
+        // GitHub's documented public latest-asset link does not consume the REST API quota.
+        // Resolve a same-repository, stable release tag before following a CDN or reading bytes.
+        var latest = new Uri($"https://github.com/{repository}/releases/latest/download/mods-manifest.json");
+        Uri? canonical = null;
+        string? version = null;
+        string? releasePage = null;
+        void ValidateRoute(Uri uri)
+        {
+            if (uri == latest && canonical is null) return;
+            if (uri.Host == "github.com")
+            {
+                if (!IsReleaseAssetUrl(uri.AbsoluteUri, repository))
+                    throw new InvalidDataException("Latest manifest redirected outside the selected repository's release assets.");
+                var prefix = $"/{repository}/releases/download/";
+                var parts = uri.AbsolutePath[prefix.Length..].Split('/');
+                if (parts.Length != 2 || parts[1] != "mods-manifest.json")
+                    throw new InvalidDataException("Latest manifest redirected to an unexpected release asset.");
+                var tag = Uri.UnescapeDataString(parts[0]);
+                var candidateVersion = tag.StartsWith('v') ? tag[1..] : tag;
+                if (!SemanticVersion.TryParse(candidateVersion, out var parsed) || parsed!.IsPrerelease)
+                    throw new InvalidDataException("Latest manifest did not resolve to a stable release version.");
+                if (canonical is not null && uri != canonical)
+                    throw new InvalidDataException("Latest manifest changed release identity while redirecting.");
+                canonical = uri;
+                version = candidateVersion;
+                releasePage = $"https://github.com/{repository}/releases/tag/{Uri.EscapeDataString(tag)}";
+                return;
+            }
+            RequireCanonical(); // A direct latest-to-CDN redirect provides no verified release tag.
+        }
+        void RequireCanonical()
+        {
+            if (canonical is null) throw new InvalidDataException("Latest manifest did not resolve to a canonical GitHub release asset.");
+        }
+        var bytes = await GetBytesAsync(latest, MaximumManifestBytes, false, cancellationToken, ValidateRoute, RequireCanonical);
+        return ParseManifest(repository, version!, releasePage!, bytes, installedVersions);
     }
 
     public static UpdateCheck ParseManifest(string repository, string releaseVersion, string releaseUrl, byte[] bytes,
@@ -163,7 +213,8 @@ public sealed class UpdateService : IDisposable
 
     private static bool IsHttps(Uri uri) => uri.Scheme == Uri.UriSchemeHttps && uri.Port == 443 && string.IsNullOrEmpty(uri.UserInfo);
 
-    private async Task<byte[]> GetBytesAsync(Uri uri, int maximumBytes, bool api, CancellationToken cancellationToken)
+    private async Task<byte[]> GetBytesAsync(Uri uri, int maximumBytes, bool api, CancellationToken cancellationToken,
+        Action<Uri>? validateRoute = null, Action? validatePayload = null)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(45));
@@ -171,8 +222,13 @@ public sealed class UpdateService : IDisposable
         {
             if (!IsHttps(uri) || (api ? uri.Host != "api.github.com" : uri.Host is not ("github.com" or "release-assets.githubusercontent.com" or "objects.githubusercontent.com")))
                 throw new InvalidDataException("Download redirected to an untrusted host.");
+            validateRoute?.Invoke(uri);
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
+            if (api && redirect == 0 && (response.StatusCode == HttpStatusCode.TooManyRequests
+                || response.StatusCode == HttpStatusCode.Forbidden && response.Headers.TryGetValues("X-RateLimit-Remaining", out var remaining)
+                    && remaining.Count() == 1 && remaining.Single().Trim() == "0"))
+                throw new GitHubRateLimitException();
             if (response.StatusCode is HttpStatusCode.MovedPermanently or HttpStatusCode.Redirect or HttpStatusCode.SeeOther
                 or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect)
             {
@@ -181,6 +237,7 @@ public sealed class UpdateService : IDisposable
                 continue;
             }
             response.EnsureSuccessStatusCode();
+            validatePayload?.Invoke();
             if (response.Content.Headers.ContentLength > maximumBytes) throw new InvalidDataException("Download exceeds the size limit.");
             await using var input = await response.Content.ReadAsStreamAsync(timeout.Token);
             using var output = new MemoryStream();

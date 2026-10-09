@@ -19,7 +19,7 @@ public sealed record ModDefinition
 
 public static class Catalog
 {
-    public const string LauncherVersion = "0.1.0";
+    public const string LauncherVersion = "0.1.1";
     public static IReadOnlyList<ModDefinition> Bundled { get; } = ReadBundled();
     public static ModDefinition? ById(string id) => Bundled.FirstOrDefault(m => m.Id == id);
 

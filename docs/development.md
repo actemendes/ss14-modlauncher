@@ -13,7 +13,7 @@ cd ss14-modlauncher
 Outputs:
 
 - `dist/SS14ModLauncher/`: self-contained runnable app, documentation and notices.
-- `dist/SS14ModLauncher-0.1.0-win-x64.zip`: portable release package.
+- `dist/SS14ModLauncher-0.1.1-win-x64.zip`: portable release package.
 - `dist/mod-assets/`: individual mod DLLs and a manifest.
 - `dist/SHA256SUMS.txt`: SHA-256 checksums of release assets.
 - `dist/build-info.json`: SDK, source revision and build metadata.
@@ -21,7 +21,7 @@ Outputs:
 Default builds generate manifest URLs for `actemendes/ss14-modlauncher` without publishing. The explicit release command is:
 
 ```powershell
-./build.ps1 -Version 0.1.0 -Repository actemendes/ss14-modlauncher
+./build.ps1 -Version 0.1.1 -Repository actemendes/ss14-modlauncher
 ```
 
 Use `-Repository ''` for a local manifest template with empty download URLs, or specify your own repository when building a fork.
@@ -66,7 +66,7 @@ The bundled mods use Harmony. Core libraries are stored beside the bootstrap and
 4. Include both RU and EN launcher text; separately test the mod's own localization.
 5. Add targeted tests and user documentation.
 
-Version 0.1.0 deliberately uses a known catalog. Dropping an unknown DLL into `Mods/` is not a supported installation mechanism.
+Version 0.1.1 deliberately uses a known catalog. Dropping an unknown DLL into `Mods/` is not a supported installation mechanism.
 
 ## Future Git submodules
 

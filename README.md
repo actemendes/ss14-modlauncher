@@ -10,7 +10,7 @@
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.0** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.1** targets **Windows x64**.
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -34,7 +34,7 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.0-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+1. Extract the complete `SS14ModLauncher-0.1.1-win-x64.zip` package to a writable folder. No separate .NET installation is required.
 2. Close the SS14 client and its original launcher, then run **SS14ModLauncher.exe**.
 3. Select the folder containing `SS14.Launcher.exe` and `loader/SS14.Loader.dll`. A Steam installation usually uses `Space Station 14 Playtest/bin_x64`.
 4. Choose a profile and mods, then install/apply the selection.
@@ -58,7 +58,7 @@ A small example mod with a movable, resizable window. Press **F1**, **0**, or **
 
 ## Compatibility and trust
 
-Version **0.1.0** was exercised in a local game with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. See the [verification record](docs/verification.md). Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
+The bundled mods were exercised in a local game with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. See the [verification record](docs/verification.md). Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
 
 Mods run as local DLLs with the game's process permissions. Use trusted code and follow the rules of the server you join. SHA-256 checks detect download corruption or a mismatch with the selected manifest; they do not establish that a publisher is trustworthy. Engine signature checks and normal SS14 authentication are not disabled.
 

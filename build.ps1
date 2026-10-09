@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^\d+\.\d+\.\d+$')]
-    [string]$Version = '0.1.0',
+    [string]$Version = '0.1.1',
     [ValidatePattern('^$|^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+$')]
     [string]$Repository = 'actemendes/ss14-modlauncher',
     [switch]$SkipTests

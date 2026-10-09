@@ -6,26 +6,28 @@ The default source is `actemendes/ss14-modlauncher`; the user can change it to a
 
 The repository and its release authors are trusted code publishers. A SHA-256 value protects against a mismatched download, not a malicious publisher controlling both the DLL and manifest. Do not enter an untrusted repository.
 
+If GitHub rejects the anonymous API request with a primary quota limit (HTTP 403 and `X-RateLimit-Remaining: 0`) or HTTP 429, the launcher tries GitHub's [documented latest-release asset link](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases). It must first resolve to `github.com/<owner>/<repository>/releases/download/<stable-tag>/mods-manifest.json`; an unrelated repository, direct CDN target without that release identity, prerelease tag or manifest-version mismatch is rejected. Normal authorization failures and invalid API metadata do not trigger this fallback. No GitHub token is required or stored.
+
 ## Manifest v0.1
 
 ```json
 {
-  "version": "0.1.0",
-  "minLauncherVersion": "0.1.0",
+  "version": "0.1.1",
+  "minLauncherVersion": "0.1.1",
   "mods": [
     {
       "id": "crew-console",
       "file": "CrewConsole.Mod.dll",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "sha256": "<64 hexadecimal SHA-256 characters>",
-      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.0/CrewConsole.Mod.dll"
+      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.1/CrewConsole.Mod.dll"
     },
     {
       "id": "hello-world",
       "file": "HelloWorld.Mod.dll",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "sha256": "<64 hexadecimal SHA-256 characters>",
-      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.0/HelloWorld.Mod.dll"
+      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.1/HelloWorld.Mod.dll"
     }
   ]
 }

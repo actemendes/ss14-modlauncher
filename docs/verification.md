@@ -1,6 +1,8 @@
-# Verification record — 0.1.0
+# Verification record — 0.1.x
 
 Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**. Live game: **SS14 Launcher 0.40.2**, **Robust 275.0.0**, local Dev/Sandbox server bound to loopback with hub advertising disabled.
+
+Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged.
 
 ## Completed checks
 
@@ -9,7 +11,7 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 | Crew history, timeline, layout and map projection | 26 regression checks passed |
 | Installer and restore core | 24/24 cases passed: 21 core scenarios plus real-loader, published Steam handoff and self-contained executable tests |
 | Bootstrap selection | Selection validation, path confinement, SHA-256 validation and clean-session bypass passed |
-| Catalog, profiles and updates | Settings/profile persistence, semantic versions, HTTP pipeline, manifest/source/download bounds and invalid update rejection passed |
+| Catalog, profiles and updates | Settings/profile persistence, semantic versions, HTTP pipeline, manifest/source/download bounds, rate-limit fallback and invalid update rejection passed |
 | Self-contained package | Extracted EXE installed, inspected and restored a disposable installation with isolated runtime variables; host trace confirmed use of bundled runtime |
 | Original loader compatibility | Install/restore on a copied real SS14 loader restored exact original bytes |
 | Live Crew Console, English | Only Crew Console loaded; native console, portrait layout, crew row, map and health card displayed; loss of server telemetry preserved history and showed no telemetry |
@@ -28,7 +30,11 @@ The live sessions used the game's own sensor network and locally spawned test NP
 
 ## Publication verification
 
-The release package is built from a clean Git revision recorded in `build-info.json`. Public GitHub API, release download and update checks are performed after publication; their outcome is recorded in the current [online verification record](https://github.com/actemendes/ss14-modlauncher/blob/main/docs/verification.md) and release notes.
+Release packages are built from the clean Git revision recorded in `build-info.json`. All six public **0.1.0** assets were downloaded anonymously and matched the original build and `SHA256SUMS.txt`. The downloaded ZIP was inspected and its self-contained EXE completed install/restore on an isolated copy with exact original hashes.
+
+The initial anonymous API update check encountered GitHub's shared-IP quota limit (HTTP 403, remaining quota 0). Version **0.1.1** adds a public latest-release asset fallback. Its regression tests cover successful discovery/download, ordinary errors that must not fall back, canonical tag identity, foreign repositories, prereleases, invalid manifests, direct CDN routes, size limits and redirect loops. An independent code review found no blocking issues. Before packaging 0.1.1, the updated production UpdateService was exercised against the public 0.1.0 release: actual API 403 led to the canonical public manifest, both DLLs downloaded and matched the release bytes and SHA-256 values, and a repeated check returned zero updates.
+
+Post-publication results for the current package are recorded in this [online verification record](https://github.com/actemendes/ss14-modlauncher/blob/main/docs/verification.md) and its release notes.
 
 ## Scope and remaining compatibility limits
 

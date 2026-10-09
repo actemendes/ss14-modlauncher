@@ -1,6 +1,6 @@
 # Preparing a release
 
-The public repository is [actemendes/ss14-modlauncher](https://github.com/actemendes/ss14-modlauncher). No release is published automatically; the repository owner controls publication. The project uses the MIT license. See the [verification record](verification.md) for the evidence associated with **0.1.0**.
+The public repository is [actemendes/ss14-modlauncher](https://github.com/actemendes/ss14-modlauncher). No release is published automatically; the repository owner controls publication. The project uses the MIT license. See the [verification record](verification.md) for the evidence associated with **0.1.1**.
 
 ## Before the first public release
 
@@ -14,16 +14,16 @@ The public repository is [actemendes/ss14-modlauncher](https://github.com/acteme
 From a clean reviewed checkout:
 
 ```powershell
-./build.ps1 -Version 0.1.0 -Repository actemendes/ss14-modlauncher
+./build.ps1 -Version 0.1.1 -Repository actemendes/ss14-modlauncher
 ```
 
 The script builds and tests locally. It does not tag, push, create a release, or upload assets.
 
-Inspect `dist/build-info.json` for source revision and SDK version. A dirty checkout is recorded; publish from a clean reviewed commit. Inspect the generated manifest and ensure all download URLs match the intended repository and `v0.1.0` tag.
+Inspect `dist/build-info.json` for source revision and SDK version. A dirty checkout is recorded; publish from a clean reviewed commit. Inspect the generated manifest and ensure all download URLs match the intended repository and `v0.1.1` tag.
 
 Upload these files manually to the same release:
 
-- `dist/SS14ModLauncher-0.1.0-win-x64.zip`
+- `dist/SS14ModLauncher-0.1.1-win-x64.zip`
 - `dist/mod-assets/mods-manifest.json`
 - `dist/mod-assets/CrewConsole.Mod.dll`
 - `dist/mod-assets/HelloWorld.Mod.dll`
@@ -57,9 +57,9 @@ foreach ($line in Get-Content -LiteralPath ./SHA256SUMS.txt) {
 
 ## Versioning and updates
 
-Use stable three-part versions such as `0.1.0`. Before changing the build version, update `Program.Version` in `Installer/Program.cs`, `Catalog.LauncherVersion` in `Launcher.Core/Catalog.cs`, the bundled versions in `catalog/mods.json`, project metadata and release documentation. The build rejects a mismatch. The first packaging script versions the app and bundled mods together; coordinate separate mod versions before they become independent repositories.
+Use stable three-part versions such as `0.1.1`. Before changing the build version, update `Program.Version` in `Installer/Program.cs`, `Catalog.LauncherVersion` in `Launcher.Core/Catalog.cs`, the bundled versions in `catalog/mods.json`, project metadata and release documentation. The build rejects a mismatch. The first packaging script versions the app and bundled mods together; coordinate separate mod versions before they become independent repositories.
 
-Replacing the launcher is a manual package upgrade in 0.1.0. Mod update checks distribute DLLs only. If a future change requires a newer bootstrap/Harmony/launcher contract, publish a new launcher package and increase the manifest's minimum launcher version.
+Replacing the launcher is a manual package upgrade in 0.1.1. Mod update checks distribute DLLs only. If a future change requires a newer bootstrap/Harmony/launcher contract, publish a new launcher package and increase the manifest's minimum launcher version.
 
 ## Rollback
 

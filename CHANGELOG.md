@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-10-09
+
+- Mod update checks can retrieve the latest public release manifest when the anonymous GitHub API quota is exhausted.
+- The fallback requires a canonical release asset redirect in the configured repository, validates the stable release tag, and retains bounded downloads and SHA-256 verification.
+- Added regression checks for rate limits, unsafe redirects and mismatched release metadata.
+- The original 0.1.0 release assets are preserved. Upgrade the launcher using the 0.1.1 ZIP to receive this fix.
+
 ## 0.1.0 — 2026-10-09
 
 First public release of **SS14 ModLauncher by actemendes**, evolving the local-mod installer into a Windows x64 launcher.
