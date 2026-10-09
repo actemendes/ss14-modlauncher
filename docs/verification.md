@@ -4,6 +4,15 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.6 — published and verified / 2026-10-10
+
+- Stable release: [v0.1.6](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.6). The tag resolves to clean implementation commit `8bccb851f81e6c4fd14ba5a66b96908f337bed38`; public `build-info.json` records this revision, `sourceDirty: false` and completed tests. Launcher **0.1.6**, ChemMaster **0.1.3**, Death Rattle **0.1.2**, Conversations **0.1.1**, Crew Console/Hello World/bootstrap **0.1.2**.
+- Full clean-checkout build and regression suites passed. The actual packaged EXE passed **33/33 installation checks**. SS220 checks passed: **114 chemistry assertions**, **111 ChemMaster API contracts**, all seven ChemMaster Harmony hooks and Death Rattle native API contracts.
+- GitHub Actions succeeded for [main](https://github.com/actemendes/ss14-modlauncher/actions/runs/38006071735) and [v0.1.6](https://github.com/actemendes/ss14-modlauncher/actions/runs/38006074556).
+- All **nine public assets** downloaded anonymously and matched local sizes, SHA-256 hashes and the flat checksum manifest. The ZIP, provenance, licenses and portable CLI install/restore on an isolated real-loader fixture were verified. Production `UpdateService` discovered v0.1.6, downloaded all five mod DLLs with matching hashes and suppressed updates for current versions.
+- Verified immutable artifact entries were added for ChemMaster **0.1.3** (`A86A92814B0F07B7EC020A934763209672D34CA26235207A99FF631CB1641FF9`) and Death Rattle **0.1.2** (`3C389101AB2DF80ACD49F48230B0C909CB2405DB4146C9B7131251DEB2FA27D6`); the three existing mod DLLs retain their previous published bytes. These are canonical release artifacts; the earlier local ChemMaster package below used a different build path and has its own recorded hash.
+- No running game client or server was restarted during publication. Existing live ChemMaster evidence and remaining compatibility limits are recorded below; publication does not claim full live Aglomorphine completion or radio distress delivery.
+
 ## ChemMaster 0.1.3 — beaker selection recovery / 2026-10-10
 
 - Read-only process snapshots independently confirmed the same **58,706.812 K** solution temperature in the client and existing SS220 server. The user's stopped Aglomorphine plan had **29 actions** left, beginning with a cold-beaker barrier. The old cold checkbox called the recipe-edit handler and cleared active execution.

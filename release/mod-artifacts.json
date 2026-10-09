@@ -24,6 +24,22 @@
       "repository": "actemendes/ss14-modlauncher",
       "sourceRelease": "0.1.5",
       "sha256": "7A0107C3A3C4519A081B7BB64EB1F5E7154108C481049D70DB78AA8ECA742ED4"
+    },
+    {
+      "id": "death-rattle",
+      "version": "0.1.2",
+      "file": "DeathRattle.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.6",
+      "sha256": "3C389101AB2DF80ACD49F48230B0C909CB2405DB4146C9B7131251DEB2FA27D6"
+    },
+    {
+      "id": "chem-master",
+      "version": "0.1.3",
+      "file": "ChemMaster.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.6",
+      "sha256": "A86A92814B0F07B7EC020A934763209672D34CA26235207A99FF631CB1641FF9"
     }
   ]
 }
