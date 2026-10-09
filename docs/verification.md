@@ -4,7 +4,7 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
-## 0.1.5 — local build, not published
+## 0.1.5 — implementation and publication
 
 - Conversations 0.1.1 adds native chat timestamps, separate name and message-text searches, selected voices and department/radio-channel filtering. Existing mod DLLs and bootstrap remain 0.1.2.
 - **56 Conversations checks passed**, including native OOC/LOOC/dead-chat markup, real Harmony hooks on a test game API fixture, UI events, history repopulation, channel filtering, exception cleanup, case-insensitive word/phrase search, combined filters and newly received messages.
@@ -20,6 +20,14 @@ Conversations was installed and enabled alongside the existing Crew Console in t
 The local Dev/Sandbox server runs on loopback port 1212. The original launcher connected its client successfully; server logs confirm the session and character transfer. Runtime logs confirm both selected plugins loaded into Content.Client without Conversations errors. The live game screenshot shows the native Conversations panel and message timestamps. Multi-speaker/radio scenarios, scaling and audio behaviour remain pending beyond this startup smoke test.
 
 The installed mod was subsequently updated to Conversations 0.1.1 and the client reconnected to the same local server. Its DLL matches the package SHA-256 `3766F7301D640A17262752A77BC0A9131655321A527C7BD59F2486F03058110C`; the existing Crew Console DLL was preserved. Live UI verification confirmed the separate message-search field: entering `welcome` retained the welcome message with its timestamp and hid unrelated admin messages; Reset cleared the field and restored the history. Russian `зомби`/`ЗОМБИ` punctuation and speaker-preservation cases passed in the automated fixture suite.
+
+### Published 0.1.5 — passed
+
+- Release: [v0.1.5](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.5), built from clean source commit `94a1dbca2f2aeb6ff421d1941dadf1209715f181`; `sourceDirty: false`. [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37950961455) passed for that exact source.
+- The complete self-contained launcher passed **33/33 installation/executable checks**, including real-loader roundtrip, Steam handoff and isolated-runtime CLI installation. Package verification caught and fixed a hardcoded two-mod payload list; runtime/mod payload discovery now follows the catalog.
+- All seven public assets downloaded anonymously and matched the clean build, GitHub digests and flat checksums. Manifest URLs, three embedded mods, archive contents, notices and source provenance passed. The downloaded EXE installed and restored a disposable legacy installation with exact original bytes.
+- ZIP SHA-256: `A85A310F669ED545623F6CA53B3B80367233A47DB7934A67F708186E56A21C16`. Published Conversations 0.1.1 SHA-256: `7A0107C3A3C4519A081B7BB64EB1F5E7154108C481049D70DB78AA8ECA742ED4`.
+- The verified Conversations artifact was added to the immutable ledger. Crew Console and Hello World published bytes and prior releases remain unchanged. Live game smoke checks above refer to the earlier local build of the same mod source; no additional radio/scaling/audio pass is claimed.
 
 ## 0.1.4 — local checks completed and release published
 
