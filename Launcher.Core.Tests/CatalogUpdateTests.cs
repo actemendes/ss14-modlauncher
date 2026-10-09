@@ -6,6 +6,12 @@ using SS14ModLauncher.Core;
 
 internal static class CatalogUpdateTests
 {
+    // Fake release fixtures must not depend on the versions currently bundled by the product.
+    private static readonly IReadOnlyDictionary<string, string> BaselineVersions = new Dictionary<string, string>
+    {
+        ["crew-console"] = "0.0.0"
+    };
+
     public static async Task RunAsync()
     {
         BootstrapSelectionTests.Run();
@@ -28,15 +34,15 @@ internal static class CatalogUpdateTests
         var bytes = Encoding.UTF8.GetBytes("verified mod bytes");
         var mod = new ModUpdate { Id = "crew-console", File = "CrewConsole.Mod.dll", Version = "0.2.0", Sha256 = Convert.ToHexString(SHA256.HashData(bytes)), DownloadUrl = download };
         byte[] Manifest(ModUpdate value, string minimum = "0.1.0") => JsonSerializer.SerializeToUtf8Bytes(new { version = "0.2.0", minLauncherVersion = minimum, mods = new[] { value } });
-        var check = UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod));
+        var check = UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod), BaselineVersions);
         Assert(check.Mods.Count == 1 && check.HasLauncherUpdate && !check.RequiresLauncherUpdate, "new release");
         Assert(UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod), new Dictionary<string, string> { [mod.Id] = "0.2.0" }).Mods.Count == 0, "installed version suppresses repeat");
         Assert(UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod), new Dictionary<string, string> { [mod.Id] = "0.3.0" }).Mods.Count == 0, "no downgrade");
-        Assert(UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod, "0.2.0")).RequiresLauncherUpdate, "minimum launcher");
-        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { Id = "unknown" })), "unknown mod");
-        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { File = "../Evil.Mod.dll" })), "manifest filename");
-        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { Sha256 = "00" })), "hash syntax");
-        Throws(() => UpdateService.ParseManifest(repo, "0.3.0", page, Manifest(mod)), "release version mismatch");
+        Assert(UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod, "0.2.0"), BaselineVersions).RequiresLauncherUpdate, "minimum launcher");
+        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { Id = "unknown" }), BaselineVersions), "unknown mod");
+        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { File = "../Evil.Mod.dll" }), BaselineVersions), "manifest filename");
+        Throws(() => UpdateService.ParseManifest(repo, "0.2.0", page, Manifest(mod with { Sha256 = "00" }), BaselineVersions), "hash syntax");
+        Throws(() => UpdateService.ParseManifest(repo, "0.3.0", page, Manifest(mod), BaselineVersions), "release version mismatch");
 
         using (var updater = new UpdateService(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) })))
         {
@@ -109,7 +115,7 @@ internal static class CatalogUpdateTests
             };
         })))
         {
-            var check = await updater.CheckAsync(repository);
+            var check = await updater.CheckAsync(repository, BaselineVersions);
             Assert(check.Mods.Count == 1 && check.Version == "0.2.0", "release API parses stable public manifest");
             var downloaded = await updater.DownloadAsync(check);
             Assert(downloaded[mod.File].AsSpan().SequenceEqual(modBytes), "release API through trusted CDN to verified DLL");
@@ -129,7 +135,7 @@ internal static class CatalogUpdateTests
         {
             var count = 0;
             using var updater = new UpdateService(new StubHandler(_ => { count++; return Content(JsonSerializer.SerializeToUtf8Bytes(invalid)); }));
-            await ThrowsAsync(() => updater.CheckAsync(repository), "invalid release API metadata");
+            await ThrowsAsync(() => updater.CheckAsync(repository, BaselineVersions), "invalid release API metadata");
             Assert(count == 1, "invalid release rejected before manifest request");
         }
         Console.WriteLine("Public release API pipeline, trusted redirects and invalid metadata rejection passed offline.");

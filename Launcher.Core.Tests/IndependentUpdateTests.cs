@@ -10,6 +10,10 @@ internal static class IndependentUpdateTests
     private const string Feed = "2.0.0";
     private const string Page = "https://github.com/owner/project/releases/tag/v2.0.0";
     private static readonly byte[] ModBytes = Encoding.UTF8.GetBytes("independently versioned compatible mod");
+    private static readonly IReadOnlyDictionary<string, string> BaselineVersions = new Dictionary<string, string>
+    {
+        ["crew-console"] = "0.0.0", ["hello-world"] = "0.0.0"
+    };
 
     public static async Task RunAsync()
     {
@@ -25,17 +29,17 @@ internal static class IndependentUpdateTests
         Assert(modOnly.LauncherReleaseVersion == current, "omitted launcher release tag inherits its version");
 
         var separateRelease = UpdateService.ParseManifest(Repository, "1.5.0", ReleasePage("1.5.0"),
-            Manifest("0.1.0", "0.2.0", [], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.0"));
+            Manifest("0.1.0", "0.2.0", [], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.0"), BaselineVersions);
         Assert(separateRelease.LauncherVersion == "0.2.0" && separateRelease.LauncherReleaseVersion == "1.5.0"
             && separateRelease.LauncherDownloadUrl == LauncherUrl("0.2.0", "1.5.0") && separateRelease.HasLauncherUpdate,
             "full feed tag is independent of the launcher package version");
         var nextFeed = UpdateService.ParseManifest(Repository, "1.5.1", ReleasePage("1.5.1"),
-            Manifest(current, current, [crew], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.1"));
+            Manifest(current, current, [crew], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.1"), BaselineVersions);
         Assert(nextFeed.Version == "1.5.1" && nextFeed.LauncherReleaseVersion == "1.5.0"
             && nextFeed.LauncherDownloadUrl == LauncherUrl(current, "1.5.0") && !nextFeed.HasLauncherUpdate && nextFeed.Mods.Count == 1,
             "subsequent mod-only feed retains the actual prior launcher release without a false launcher update");
         var independentOrder = UpdateService.ParseManifest(Repository, "1.5.0", ReleasePage("1.5.0"),
-            Manifest("0.1.0", "3.0.0", [], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.0"));
+            Manifest("0.1.0", "3.0.0", [], launcherReleaseVersion: "1.5.0", feedVersion: "1.5.0"), BaselineVersions);
         Assert(independentOrder.LauncherVersion == "3.0.0", "feed and launcher versions need no semantic ordering relationship");
 
         var launcherOnly = Parse(Manifest("0.1.0", "2.0.0", []));
@@ -147,7 +151,7 @@ internal static class IndependentUpdateTests
             Content = new ByteArrayContent(request.RequestUri!.Host == "api.github.com" ? metadata : manifest)
         });
         using var updater = new UpdateService(handler);
-        var actual = await updater.CheckAsync(Repository);
+        var actual = await updater.CheckAsync(Repository, BaselineVersions);
         Assert(actual.LauncherVersion == expected.LauncherVersion && actual.LauncherReleaseVersion == expected.LauncherReleaseVersion
             && actual.LauncherDownloadUrl == expected.LauncherDownloadUrl && !actual.HasLauncherUpdate && actual.Mods.Count == 1 && handler.Requests == 2,
             "public API pipeline retains independent metadata");
@@ -166,7 +170,7 @@ internal static class IndependentUpdateTests
             throw new Exception("Unexpected fallback request.");
         });
         using var updater = new UpdateService(handler);
-        var actual = await updater.CheckAsync(Repository);
+        var actual = await updater.CheckAsync(Repository, BaselineVersions);
         Assert(actual.LauncherVersion == expected.LauncherVersion && actual.LauncherReleaseVersion == expected.LauncherReleaseVersion
             && actual.LauncherDownloadUrl == expected.LauncherDownloadUrl && !actual.HasLauncherUpdate && actual.Mods.Count == 1 && handler.Requests == 3,
             "rate-limit fallback retains independent metadata and feed tag identity");
@@ -186,7 +190,8 @@ internal static class IndependentUpdateTests
         version = feedVersion, minLauncherVersion = minimum, launcher = new { version = launcherVersion, releaseVersion = launcherReleaseVersion,
             downloadUrl = launcherUrl ?? LauncherUrl(launcherVersion, launcherReleaseVersion) }, mods
     });
-    private static UpdateCheck Parse(byte[] bytes, IReadOnlyDictionary<string, string>? installed = null) => UpdateService.ParseManifest(Repository, Feed, Page, bytes, installed);
+    private static UpdateCheck Parse(byte[] bytes, IReadOnlyDictionary<string, string>? installed = null) =>
+        UpdateService.ParseManifest(Repository, Feed, Page, bytes, installed ?? BaselineVersions);
     private static void Assert(bool value, string name) { if (!value) throw new Exception("FAILED: " + name); }
     private static void Reject(Action action, string name)
     {

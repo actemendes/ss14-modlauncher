@@ -16,6 +16,7 @@ This change adds startup notifications and independently versioned releases. Lau
 - Documentation links and whitespace checks passed.
 
 - An actual isolated mod-only build used feed **1.5.1**, launcher **0.2.0** hosted under **v1.5.0**, and mod **2.4.0** with Bootstrap **0.1.2**. It emitted no launcher ZIP and left existing payload files untouched. A separate build reused the real published 0.1.2 mod DLLs byte-for-byte.
+- Update test fixtures use explicit installed-version baselines. The entire core suite also passed in an isolated copy with both catalog mod versions set to **2.4.0**, confirming that future mod versions do not invalidate the fake older release fixtures. This test-only follow-up does not change published binaries.
 - Release: [v0.1.3](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.3), source commit `6d2b231e15d65408813fc68fabc52bd06b857e8c`; `sourceDirty: false`. The public tag matches this commit and [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37934149654) passed.
 - All six public assets downloaded anonymously and matched the local bytes, sizes and checksums. The manifest correctly separates launcher **0.1.3**, mod versions **0.1.2**, and minimum launcher **0.1.2**; both mod hashes match the existing published artifact ledger.
 - The downloaded ZIP passed archive/license/provenance inspection. Its self-contained EXE installed mods on a disposable legacy copy, then restored exact original loader and launcher bytes with shared runtime discovery disabled.

@@ -14,6 +14,10 @@ internal static class RateLimitFallbackTests
     private const string ModUrl = "https://github.com/owner/project/releases/download/v0.2.0/CrewConsole.Mod.dll";
     private const string ModCdn = "https://objects.githubusercontent.com/fixture/mod?signature=test";
     private static readonly byte[] ModBytes = Encoding.UTF8.GetBytes("verified rate-limit fallback mod");
+    private static readonly IReadOnlyDictionary<string, string> BaselineVersions = new Dictionary<string, string>
+    {
+        ["crew-console"] = "0.0.0"
+    };
 
     public static async Task RunAsync()
     {
@@ -21,7 +25,7 @@ internal static class RateLimitFallbackTests
         {
             using var handler = new Handler((url, _) => url == Api ? Limited(status) : StandardResponse(url));
             using var updater = new UpdateService(handler);
-            var check = await updater.CheckAsync(Repository);
+            var check = await updater.CheckAsync(Repository, BaselineVersions);
             Assert(check.Version == "0.2.0" && check.ReleaseUrl == "https://github.com/owner/project/releases/tag/v0.2.0", "fallback release identity");
             Assert(check.Mods.Count == 1, "fallback selects newer mod");
             var downloaded = await updater.DownloadAsync(check);
@@ -114,7 +118,7 @@ internal static class RateLimitFallbackTests
         using var handler = new Handler(response);
         using var updater = new UpdateService(handler);
         Exception? caught = null;
-        try { await updater.CheckAsync(Repository); }
+        try { await updater.CheckAsync(Repository, BaselineVersions); }
         catch (Exception ex) { caught = ex; }
         Assert(caught != null && errorType.IsInstanceOfType(caught), name + ": expected " + errorType.Name + ", got " + caught?.GetType().Name);
         Assert(handler.Requests.Count == expectedRequests, name + ": unexpected request count " + handler.Requests.Count);
