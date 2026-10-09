@@ -2,9 +2,9 @@
 
 Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**. Live game: **SS14 Launcher 0.40.2**, **Robust 275.0.0**, local Dev/Sandbox server bound to loopback with hub advertising disabled.
 
-Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy; its separate checks are recorded below.
+Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
-## 0.1.4 — core and UI checks completed; package checks pending
+## 0.1.4 — local checks completed and release published
 
 This change adds first-run setup to launcher 0.1.4. The bundled mod DLLs and bootstrap remain 0.1.2.
 
@@ -13,12 +13,21 @@ This change adds first-run setup to launcher 0.1.4. The bundled mod DLLs and boo
 - Running/uninspectable-process readiness and retry checks passed using the existing injected exception contract. These tests do not start or kill game processes.
 - **20 actual WinForms setup scenarios passed:** fresh RU/EN setup, missing-folder and retry flows, Later/window-close dismissal, language switching, read-only settings, recovery, native 96 DPI with simulated 125%/150% scaling, minimum width, existing-installation suppression, disabled onboarding and update coexistence.
 - The UI harness exercised the production install, settings save and `StartGame` path against a disposable fixture with a benign launcher stub. Failed-launch retry passed. This confirms the launch handoff, not live gameplay.
-- The existing **eight update-notification UI scenarios passed**. The setup suite also passed after final focus/colour polish; package/publication checks remain separate.
+- The existing **eight update-notification UI scenarios passed**. The setup suite also passed after final focus/colour polish.
+- **33/33 installer and packaged-executable checks passed**, including a copied real loader roundtrip, Steam bridge handoff, restoration while the stable UI remained open, self-contained standalone/Steam CLI installation and restoration, and a durable integration opt-out.
+- The actual release EXE's `--capture` mode with fresh isolated settings exited successfully without opening onboarding or writing settings; its PNG was inspected.
 - Documentation relative links and whitespace checks passed. Bootstrap project, mod catalog versions and published artifact ledger remain unchanged.
+- Release: [v0.1.4](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.4), built from clean source commit `6e86be8afc759bd68d9f0a0b9b716e986a0e9544`; `sourceDirty: false`. [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37938819604) passed for that exact source.
+- All six public assets downloaded anonymously and matched the local bytes and SHA-256 checksums. The public tag resolves to the clean build source above. Manifest metadata preserves the independent 0.1.2 mod versions and their locked DLL hashes.
+- The anonymously downloaded ZIP passed inspection; its self-contained EXE installed and restored a disposable installation with exact original-file hashes.
+- Release ZIP SHA-256: `A0B9B8228C73B1306E7B1710392DE74D96C9403F9D0ACF6F2A7DA8F6038D1E10`. EXE SHA-256: `F998BA18E1F555DC0F6A964BD765C05BE806B0D73E5FAA634DA72118D2587756`.
+- The local Steam bridge was upgraded to 0.1.4 with integration retained as enabled. Comparing all 99 installation files showed only the two bridge EXEs and two ownership JSON files changed; mod DLLs, settings, selection, original files and backups were preserved. No app processes were killed.
+- After GitHub's public cache refreshed, production UpdateService discovered the actual latest 0.1.4 release. An anonymous API quota failure (HTTP 403) used the canonical public manifest fallback; both mod downloads matched the release bytes and SHA-256, and a repeated check reported no mod or launcher updates for current versions.
+- The release-tag [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37939074715) also passed.
 
-Still pending: packaged executable installation/restoration, final artifact hashes, source provenance and public download verification.
+At the time of this verification, **0.1.4** is the latest stable release. Previous release assets are preserved.
 
-No new live gameplay or publication check is claimed for 0.1.4. Historical results below remain associated with their recorded versions.
+No new live gameplay pass is claimed for 0.1.4. Historical results below remain associated with their recorded versions.
 
 ## 0.1.3 — completed checks and publication
 
@@ -40,7 +49,7 @@ This change adds startup notifications and independently versioned releases. Lau
 - Production UpdateService read the actual latest 0.1.3 manifest, verified both mod downloads against the release bytes and SHA-256, then reported no repeated mod or launcher updates for current versions.
 - The local Steam bridge was upgraded to 0.1.3 while its processes were stopped. Before/after hashes of all 99 files showed only the two bridge EXEs and two ownership JSON files changed; original launcher, loader, mods, selection, preferences and backups remained unchanged. Steam integration stayed enabled.
 
-This release is the latest stable version at verification. Previous release assets are preserved.
+At the time of this verification, 0.1.3 was the latest stable version. Previous release assets were preserved.
 
 ## 0.1.2 — completed installation and package checks
 
