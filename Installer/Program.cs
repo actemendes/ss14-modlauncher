@@ -73,7 +73,7 @@ internal static class Payload
     {
         var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
         var assembly = Assembly.GetExecutingAssembly();
-        foreach (var filename in new[] { "SS14LocalMods.Bootstrap.dll", "0Harmony.dll", "HelloWorld.Mod.dll", "CrewConsole.Mod.dll" })
+        foreach (var filename in new[] { "SS14LocalMods.Bootstrap.dll", "0Harmony.dll" }.Concat(Catalog.Bundled.Select(mod => mod.File)))
         {
             var resource = assembly.GetManifestResourceNames().Single(n => n.EndsWith("." + filename, StringComparison.Ordinal));
             using var input = assembly.GetManifestResourceStream(resource)!;
