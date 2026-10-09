@@ -10,15 +10,15 @@ Repository: [actemendes/ss14-modlauncher](https://github.com/actemendes/ss14-mod
 {
   "schemaVersion": 1,
   "mode": "Full",
-  "releaseVersion": "0.1.4",
-  "launcherVersion": "0.1.4",
-  "launcherReleaseVersion": "0.1.4",
+  "releaseVersion": "0.1.5",
+  "launcherVersion": "0.1.5",
+  "launcherReleaseVersion": "0.1.5",
   "bootstrapVersion": "0.1.2",
   "repository": "actemendes/ss14-modlauncher"
 }
 ```
 
-`catalog/mods.json` owns each mod's version and minimum launcher requirement. Crew Console and Hello World remain **0.1.2** in launcher **0.1.4**. `release/mod-artifacts.json` pins their published source release, assembly version and SHA-256. Do not change that version's bytes or remove its lock entry just to force a rebuild.
+`catalog/mods.json` owns each mod's version and minimum launcher requirement. Crew Console and Hello World remain **0.1.2** in launcher **0.1.5**. Conversations **0.1.1** adds a new mod ID and requires **0.1.5**. `release/mod-artifacts.json` pins the previously published mods' source release, assembly version and SHA-256. Do not change that version's bytes or remove its lock entry just to force a rebuild.
 
 For a launcher change, update `launcherVersion` and matching `Program.Version`, `Catalog.LauncherVersion`, installer and core project metadata. Set `mode: Full` and point `launcherReleaseVersion` to the new feed tag that will contain the ZIP. Keep unchanged mod and bootstrap versions intact. For a mod change, increase only its catalog version and adjust its minimum launcher if the contract requires it. A bootstrap change needs its own version and compatibility review.
 
@@ -27,21 +27,21 @@ For a launcher change, update `launcherVersion` and matching `Program.Version`, 
 From a clean reviewed checkout:
 
 ```powershell
-./build.ps1 -Mode Full -ReleaseVersion 0.1.4
+./build.ps1 -Mode Full -ReleaseVersion 0.1.5
 ```
 
 Full mode requires `releaseVersion == launcherReleaseVersion`: this feed is the host of the new ZIP. The application `launcherVersion` is independent and determines the ZIP filename. For example, feed/tag **1.5.0** can host app **0.2.0** as `releases/download/v1.5.0/SS14ModLauncher-0.2.0-win-x64.zip`.
 
 The old `-Version` spelling is only an alias for `-ReleaseVersion`; it overrides the feed tag only. The default `Auto` mode uses the explicit configuration `mode`, not version equality.
 
-Review and publish these assets under `v0.1.4`:
+Review and publish these assets under `v0.1.5`:
 
-- `dist/SS14ModLauncher-0.1.4-win-x64.zip`
+- `dist/SS14ModLauncher-0.1.5-win-x64.zip`
 - `dist/mod-assets/mods-manifest.json`
 - The mod DLLs under `dist/mod-assets/`
 - `dist/SHA256SUMS.txt` and `dist/build-info.json`
 
-For the current two-mod catalog, this is six public assets. `mod-artifacts.next.json` is a local maintainer receipt and is excluded from public checksums; do not upload it as a release asset.
+For the current three-mod catalog, this is seven public assets. `mod-artifacts.next.json` is a local maintainer receipt and is excluded from public checksums; do not upload it as a release asset.
 
 The ZIP contains a self-contained launcher, current documentation, MIT and dependency/runtime notices. Inspect the actual archive and source provenance before uploading.
 
@@ -50,14 +50,14 @@ The ZIP contains a self-contained launcher, current documentation, MIT and depen
 After changing a mod, incrementing its catalog version and verifying its minimum launcher requirement, prepare a new feed while retaining the already published launcher version:
 
 ```powershell
-./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.5 -OutputRoot dist/mods-0.1.5
+./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.6 -OutputRoot dist/mods-0.1.6
 ```
 
-This is a future-release example. Persist it with `mode: ModsOnly` and `releaseVersion: 0.1.5`, leaving `launcherVersion` and `launcherReleaseVersion` at 0.1.4. The default `-Mode Auto` follows that configuration. `-ModsOnly` is a shorthand for explicit `-Mode ModsOnly`.
+This is a future-release example. Persist it with `mode: ModsOnly` and `releaseVersion: 0.1.6`, leaving `launcherVersion` and `launcherReleaseVersion` at 0.1.5. The default `-Mode Auto` follows that configuration. `-ModsOnly` is a shorthand for explicit `-Mode ModsOnly`.
 
-ModsOnly defaults to `dist/mod-release` unless `-OutputRoot` is specified. It emits the manifest, mod DLLs, build metadata and checksums, with **no rebuilt launcher or new launcher ZIP**. For the current catalog those are five public assets. The proposed ledger receipt is local-only and excluded from public checksums. A separate output folder avoids confusing these assets with an earlier full package.
+ModsOnly defaults to `dist/mod-release` unless `-OutputRoot` is specified. It emits the manifest, mod DLLs, build metadata and checksums, with **no rebuilt launcher or new launcher ZIP**. For the current three-mod catalog those are six public assets. The proposed ledger receipt is local-only and excluded from public checksums. A separate output folder avoids confusing these assets with an earlier full package.
 
-The feed's explicit `launcher` entry uses `version` for the app, `releaseVersion` for its hosting tag and `downloadUrl` for the ZIP. In this example it still points to app 0.1.4 hosted under `v0.1.4`. The global minimum is the maximum mod requirement so older clients remain safe. A mod requiring a launcher newer than the configured published one needs a compatible launcher release first.
+The feed's explicit `launcher` entry uses `version` for the app, `releaseVersion` for its hosting tag and `downloadUrl` for the ZIP. In this example it still points to app 0.1.5 hosted under `v0.1.5`. The global minimum is the maximum mod requirement so older clients remain safe. A mod requiring a launcher newer than the configured published one needs a compatible launcher release first.
 
 Upload only the newly generated public feed assets; keep `mod-artifacts.next.json` local and do not relabel an old launcher ZIP as the feed version. New clients use the explicit launcher version for notifications, so a mod-only feed does not announce a nonexistent launcher.
 
@@ -65,11 +65,11 @@ Upload only the newly generated public feed assets; keep `mod-artifacts.next.jso
 
 | Feed/tag | Mode | App version | Launcher hosting tag | Result |
 | --- | --- | --- | --- | --- |
-| 0.1.4 | Full | 0.1.4 | 0.1.4 | New launcher ZIP |
-| 0.1.5 | ModsOnly | 0.1.4 | 0.1.4 | Mod updates, existing ZIP |
-| 0.1.6 | Full | 0.1.5 | 0.1.6 | Next app version under the next unused feed tag |
+| 0.1.5 | Full | 0.1.5 | 0.1.5 | New launcher ZIP |
+| 0.1.6 | ModsOnly | 0.1.5 | 0.1.5 | Mod updates, existing ZIP |
+| 0.1.7 | Full | 0.1.6 | 0.1.7 | Next app version under the next unused feed tag |
 
-For the final row, use `mode: Full`, `releaseVersion: 0.1.6`, `launcherVersion: 0.1.5` and `launcherReleaseVersion: 0.1.6`. Subsequent mod-only feeds retain the last two launcher fields until a new app is published. The feed version orders publication; it does not reserve or increment the application version.
+For the final row, use `mode: Full`, `releaseVersion: 0.1.7`, `launcherVersion: 0.1.6` and `launcherReleaseVersion: 0.1.7`. Subsequent mod-only feeds retain the last two launcher fields until a new app is published. The feed version orders publication; it does not reserve or increment the application version.
 
 ## Artifact ledger
 

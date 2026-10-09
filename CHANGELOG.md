@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5 — 2026-10-09
+
+- New Conversations 0.1.1 mod: stable game-clock receive timestamps, name and message-text search, multiple selected voices and department filtering by received radio channel in the native chat.
+- Collapsible RU/EN panel with native controls and chat button styles; existing channel filters, markup and chat input remain active.
+- Launcher 0.1.5 registers the new mod ID. Crew Console, Hello World and bootstrap remain 0.1.2; published mod bytes are reused.
+- 56 metadata, filter, clock and Harmony integration checks pass during packaging. Local gameplay smoke checks confirm the native panel, timestamps, message search and reset; broader radio/scaling/audio checks remain pending. See [mod documentation](docs/mods/conversations.md).
+
 ## 0.1.4 — 2026-10-09
 
 - A localized first-run setup window discovers SS14 and offers the recommended default Crew Console selection.

@@ -12,21 +12,22 @@ cd ss14-modlauncher
 
 The default `Auto` mode reads the explicit `mode` (`Full` or `ModsOnly`) from `release/release.json`; it does not infer the mode from version equality. Full mode builds the launcher from source. Already released mod versions are reused byte-for-byte from the artifact ledger; newly versioned mods are built from source.
 
-Current versions:
+Current source versions (0.1.5 is an unpublished local build):
 
 | Component | Version | Source of truth |
 | --- | --- | --- |
-| Release/feed | 0.1.4 | `release/release.json`: `releaseVersion` |
-| ModLauncher | 0.1.4 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
-| Launcher hosting release | 0.1.4 | `release/release.json`: `launcherReleaseVersion`, the tag containing that ZIP |
+| Release/feed | 0.1.5 | `release/release.json`: `releaseVersion` |
+| ModLauncher | 0.1.5 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
+| Launcher hosting release | 0.1.5 | `release/release.json`: `launcherReleaseVersion`, the tag containing that ZIP |
 | Bootstrap | 0.1.2 | `release/release.json`: `bootstrapVersion`, checked against its project |
 | Crew Console | 0.1.2 | `catalog/mods.json` |
 | Hello World | 0.1.2 | `catalog/mods.json` |
+| Conversations | 0.1.1 | `catalog/mods.json`; new ID requires launcher 0.1.5 |
 
 Full-build output under `dist/`:
 
 - `SS14ModLauncher/`: self-contained app, documentation and notices.
-- `SS14ModLauncher-0.1.4-win-x64.zip`: portable launcher package.
+- `SS14ModLauncher-0.1.5-win-x64.zip`: portable launcher package.
 - `mod-assets/`: individual DLLs and `mods-manifest.json`.
 - `SHA256SUMS.txt` and `build-info.json`: checksums and source/component provenance.
 - `mod-artifacts.next.json`: local maintainer receipt for ledger review after publication; not a public release asset.
@@ -37,15 +38,15 @@ Nothing is tagged, pushed or published by the script.
 
 ```powershell
 # Full release: feed version must match launcherReleaseVersion, not the app version.
-./build.ps1 -Mode Full -ReleaseVersion 0.1.4
+./build.ps1 -Mode Full -ReleaseVersion 0.1.5
 
 # After updating a mod's source and catalog version, reuse the existing launcher ZIP.
-./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.5 -OutputRoot dist/mods-0.1.5
+./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.6 -OutputRoot dist/mods-0.1.6
 ```
 
-The second command is an example for a future feed. It does not create or rebuild a 0.1.5 launcher. Keep `launcherVersion: 0.1.4` and `launcherReleaseVersion: 0.1.4`; its manifest points to that existing ZIP. Set configuration `mode: ModsOnly` and `releaseVersion: 0.1.5` when making this the persisted release plan.
+The second command is an example for a future feed. It does not create or rebuild a 0.1.6 launcher. Keep `launcherVersion: 0.1.5` and `launcherReleaseVersion: 0.1.5`; its manifest points to that existing ZIP. Set configuration `mode: ModsOnly` and `releaseVersion: 0.1.6` when making this the persisted release plan.
 
-A later launcher **0.1.5** can ship in feed/tag **0.1.6**: set `mode: Full`, `releaseVersion: 0.1.6`, `launcherVersion: 0.1.5`, and `launcherReleaseVersion: 0.1.6`. Its filename is `SS14ModLauncher-0.1.5-win-x64.zip` under tag `v0.1.6`. Mod-only releases therefore do not consume application version numbers.
+A later launcher **0.1.6** can ship in feed/tag **0.1.7**: set `mode: Full`, `releaseVersion: 0.1.7`, `launcherVersion: 0.1.6`, and `launcherReleaseVersion: 0.1.7`. Its filename is `SS14ModLauncher-0.1.6-win-x64.zip` under tag `v0.1.7`. Mod-only releases therefore do not consume application version numbers.
 
 | Option | Meaning |
 | --- | --- |
@@ -71,10 +72,12 @@ The tests are console harnesses; failed assertions exit nonzero:
 
 ```powershell
 dotnet run --project tests/CrewConsole.Tests.csproj -c Release
+
+dotnet run --project Conversations.Tests/Conversations.Tests.csproj -c Release
 dotnet run --project Launcher.Core.Tests/Launcher.Core.Tests.csproj -c Release
 ```
 
-The normal build runs both. Coverage includes installation/recovery, bootstrap selection, profiles, update parsing/downloading and startup-notification coordination. Live compatibility and actual Steam behaviour still require a smoke test; consult the versioned [verification record](verification.md).
+The normal build runs all three. Coverage includes installation/recovery, bootstrap selection, profiles, update parsing/downloading, startup notifications and native-chat hooks. To verify Conversations against a local game build, run `./scripts/Test-ConversationsApi.ps1 -GameDirectory <game-assemblies-directory>` (requires its Mono.Cecil.dll). Live compatibility still requires a smoke test; consult the [verification record](verification.md) and [Conversations notes](mods/conversations.md).
 
 ## Mod contract
 

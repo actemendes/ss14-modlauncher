@@ -12,6 +12,18 @@
     "source": "CrewConsole"
   },
   {
+    "id": "conversations",
+    "version": "0.1.1",
+    "minLauncherVersion": "0.1.5",
+    "file": "Conversations.Mod.dll",
+    "nameRu": "Переговоры",
+    "nameEn": "Conversations",
+    "descriptionRu": "Штатный чат: время сообщений, поиск по имени и словам в тексте, выбор собеседников и фильтр отдела по каналу рации.",
+    "descriptionEn": "Native chat: timestamps, name and message text search, selected speakers and department filtering by radio channel.",
+    "category": "interface",
+    "source": "Conversations"
+  },
+  {
     "id": "hello-world",
     "version": "0.1.2",
     "minLauncherVersion": "0.1.2",

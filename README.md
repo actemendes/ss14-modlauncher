@@ -48,6 +48,12 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
+Source and local builds for **0.1.5** add **Conversations 0.1.1**: native chat receive
+timestamps, speaker name search, multiple selected voices and department filtering by
+radio channel. Open the panel with the Conversations button above chat history.
+0.1.5 is not published yet; the download above remains the released 0.1.4.
+[Usage and limitations](docs/mods/conversations.md).
+
 Launcher **0.1.4** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
 
 ### Crew Console

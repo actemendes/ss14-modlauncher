@@ -4,6 +4,23 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.5 — local build, not published
+
+- Conversations 0.1.1 adds native chat timestamps, separate name and message-text searches, selected voices and department/radio-channel filtering. Existing mod DLLs and bootstrap remain 0.1.2.
+- **56 Conversations checks passed**, including native OOC/LOOC/dead-chat markup, real Harmony hooks on a test game API fixture, UI events, history repopulation, channel filtering, exception cleanup, case-insensitive word/phrase search, combined filters and newly received messages.
+- `Test-ConversationsApi.ps1` passed against local Content.Client and Robust.Client **275.0.0.0** DLLs, checking the actual reflected members used by the adapter.
+- **26 Crew Console checks and 30/30 installation cases passed**, along with catalog/update/setup and release-build checks.
+- A self-contained local Windows x64 package was built under `dist/conversations-0.1.5`; nothing was published. Local installation and startup checks are recorded below.
+- Multi-speaker/radio, scaling and scroll/audio verification remain **pending** beyond the live smoke checks below. The API fixture and DLL contract checks do not establish compatibility with every server fork. See [Conversations](mods/conversations.md).
+
+### Local installation and connection — 2026-10-09
+
+Conversations was installed and enabled alongside the existing Crew Console in the user's Steam installation using the transactional installer API. Installed Conversations SHA-256 matches the built DLL; existing Crew Console bytes were preserved. The active launcher profile includes the new mod and the Steam launcher bridge was updated to 0.1.5.
+
+The local Dev/Sandbox server runs on loopback port 1212. The original launcher connected its client successfully; server logs confirm the session and character transfer. Runtime logs confirm both selected plugins loaded into Content.Client without Conversations errors. The live game screenshot shows the native Conversations panel and message timestamps. Multi-speaker/radio scenarios, scaling and audio behaviour remain pending beyond this startup smoke test.
+
+The installed mod was subsequently updated to Conversations 0.1.1 and the client reconnected to the same local server. Its DLL matches the package SHA-256 `3766F7301D640A17262752A77BC0A9131655321A527C7BD59F2486F03058110C`; the existing Crew Console DLL was preserved. Live UI verification confirmed the separate message-search field: entering `welcome` retained the welcome message with its timestamp and hid unrelated admin messages; Reset cleared the field and restored the history. Russian `зомби`/`ЗОМБИ` punctuation and speaker-preservation cases passed in the automated fixture suite.
+
 ## 0.1.4 — local checks completed and release published
 
 This change adds first-run setup to launcher 0.1.4. The bundled mod DLLs and bootstrap remain 0.1.2.

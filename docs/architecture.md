@@ -96,4 +96,4 @@ The manifest's explicit `launcher.version` determines whether a launcher update 
 
 Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.4. Profile changes take effect on a newly launched game client.
 
-The [Crew Console reference](mods/crew-console.md) describes telemetry limits. The older [port research](crew-monitor-port.md) is preserved as historical design context.
+The [Crew Console reference](mods/crew-console.md) describes telemetry limits. [Conversations](mods/conversations.md) extends native chat independently using receive timestamps, voice names and radio channels. Its new catalog ID requires launcher 0.1.5. The older [port research](crew-monitor-port.md) is preserved as historical design context.
