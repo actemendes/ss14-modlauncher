@@ -1,0 +1,29 @@
+name: Bug report / Ошибка
+description: Report a reproducible launcher or bundled-mod problem.
+title: "[Bug] "
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Versions / Версии
+      description: ModLauncher, Windows, original SS14 launcher, server/client version if known.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps / Шаги
+      description: Include the installation state and active profile/mods. Do not include secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour / Ожидание и результат
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted logs or screenshots / Логи или снимки без личных данных
+      description: Export a report from Diagnostics or inspect %LOCALAPPDATA%/SS14LocalMods/mods.log. Remove account identifiers and personal paths before attaching it. Never attach authentication files, tokens, or settings.json.

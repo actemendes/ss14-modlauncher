@@ -1,0 +1,36 @@
+name: Windows build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test and package
+        shell: pwsh
+        run: ./build.ps1
+      - name: Upload local build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: SS14ModLauncher-win-x64
+          path: |
+            dist/SS14ModLauncher-*-win-x64.zip
+            dist/SHA256SUMS.txt
+            dist/build-info.json
+            dist/mod-assets/*
+          if-no-files-found: error
+          retention-days: 14

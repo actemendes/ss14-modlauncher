@@ -1,4 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><OutputType>WinExe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>SS14ModInstaller</AssemblyName></PropertyGroup>
-  <ItemGroup><PackageReference Include="Mono.Cecil" Version="0.11.6"/><EmbeddedResource Include="../payload/*" Link="Payload/%(Filename)%(Extension)"/></ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms>
+    <OutputType>WinExe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>SS14ModLauncher</AssemblyName><Version>0.1.0</Version>
+    <Product>SS14 ModLauncher by actemendes</Product><Company>actemendes</Company>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Launcher.Core/Launcher.Core.csproj"/>
+    <EmbeddedResource Include="../payload/*.dll" Link="Payload/%(Filename)%(Extension)"/>
+    <EmbeddedResource Include="../docs/assets/readme-banner.png" Link="Assets/readme-banner.png" Condition="Exists('../docs/assets/readme-banner.png')"/>
+  </ItemGroup>
 </Project>

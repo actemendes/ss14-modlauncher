@@ -1,0 +1,24 @@
+[
+  {
+    "id": "crew-console",
+    "version": "0.1.0",
+    "file": "CrewConsole.Mod.dll",
+    "nameRu": "Crew Console",
+    "nameEn": "Crew Console",
+    "descriptionRu": "Мониторинг экипажа: поиск, здоровье, история показателей и маршрут на карте. Использует доступные штатной консоли данные.",
+    "descriptionEn": "Crew monitoring with search, health, telemetry history and map trails. Uses data available to the standard console.",
+    "category": "interface",
+    "source": "CrewConsole"
+  },
+  {
+    "id": "hello-world",
+    "version": "0.1.0",
+    "file": "HelloWorld.Mod.dll",
+    "nameRu": "Hello World",
+    "nameEn": "Hello World",
+    "descriptionRu": "Тест загрузки модов: отдельное окно по F1 или 0. Пока мод включён, заменяет обычное действие этих клавиш.",
+    "descriptionEn": "A mod loading test: open a window with F1 or 0. Replaces the standard action of these keys while enabled.",
+    "category": "demo",
+    "source": "HelloWorld"
+  }
+]

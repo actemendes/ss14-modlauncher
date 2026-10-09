@@ -1,0 +1,15 @@
+name: Feature request / Предложение
+description: Suggest a player-facing improvement.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What should become possible? / Какой результат нужен?
+      description: Give a concrete example and explain the current limitation.
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested behaviour / Предлагаемое поведение

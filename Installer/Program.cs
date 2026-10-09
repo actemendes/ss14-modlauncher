@@ -1,165 +1,83 @@
+using System.Diagnostics;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text.Json;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using SS14ModLauncher.Core;
 
-namespace SS14LocalMods.Installer;
+namespace SS14ModLauncher;
 
 internal static class Program
 {
+    internal const string Version = "0.1.0";
+    internal static string[] ForwardedArguments = [];
     [STAThread]
     private static int Main(string[] args)
     {
-        if (args.Length == 2 && args[0] is "--install" or "--uninstall")
-        {
-            try { if (args[0] == "--install") Installation.Install(args[1]); else Installation.Uninstall(args[1]); return 0; }
-            catch (Exception e) { File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "installer-error.txt"), e.ToString()); return 1; }
-        }
         ApplicationConfiguration.Initialize();
-        Application.Run(new InstallerWindow());
-        return 0;
-    }
-}
-
-internal sealed class InstallerWindow : Form
-{
-    private readonly TextBox _path = new() { Dock = DockStyle.Fill };
-    private readonly Label _status = new() { Dock = DockStyle.Fill, AutoSize = false, Text = "Hello World: отдельное окно по F1/0. Crew Console: адаптивный прототип.\nПеред установкой закройте игру. Launcher можно оставить открытым." };
-    public InstallerWindow()
-    {
-        Text = "SS14 — локальные моды";
-        ClientSize = new Size(620, 260);
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        var table = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(16), ColumnCount = 2, RowCount = 4 };
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
-        table.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        table.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
-        table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        table.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
-        var label = new Label { Text = "Папка с SS14.Launcher.exe (обычно bin_x64):", Dock = DockStyle.Fill };
-        table.Controls.Add(label, 0, 0); table.SetColumnSpan(label, 2);
-        var defaults = new[] { @"E:\SteamLibrary\steamapps\common\Space Station 14 Playtest\bin_x64", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Steam\steamapps\common\Space Station 14 Playtest\bin_x64") };
-        _path.Text = defaults.FirstOrDefault(p => File.Exists(Path.Combine(p, "SS14.Launcher.exe"))) ?? "";
-        table.Controls.Add(_path, 0, 1);
-        var browse = new Button { Text = "Выбрать…", Dock = DockStyle.Fill };
-        browse.Click += (_, _) => { using var dialog = new FolderBrowserDialog(); if (dialog.ShowDialog() == DialogResult.OK) _path.Text = dialog.SelectedPath; };
-        table.Controls.Add(browse, 1, 1);
-        table.Controls.Add(_status, 0, 2); table.SetColumnSpan(_status, 2);
-        var install = new Button { Text = "Установить / обновить моды", Dock = DockStyle.Fill };
-        install.Click += (_, _) => Run(() => Installation.Install(_path.Text), "Установлено. Hello World: F1/0. Crew Console: откройте игровую консоль мониторинга экипажа.");
-        var remove = new Button { Text = "Удалить моды", Dock = DockStyle.Fill };
-        remove.Click += (_, _) => Run(() => Installation.Uninstall(_path.Text), "Исходный загрузчик восстановлен. Моды отключены.");
-        table.Controls.Add(install, 0, 3); table.Controls.Add(remove, 1, 3);
-        Controls.Add(table);
-    }
-    private void Run(Action action, string success)
-    {
-        try { action(); _status.Text = success; }
-        catch (Exception e) { _status.Text = e.Message; }
-    }
-}
-
-internal static class Installation
-{
-    private sealed record State(string OriginalHash, string PatchedHash);
-    private static string Hash(string file) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file)));
-    private static string LoaderPath(string root)
-    {
-        root = Path.GetFullPath(root);
-        var path = Path.Combine(root, "loader", "SS14.Loader.dll");
-        if (!File.Exists(Path.Combine(root, "SS14.Launcher.exe")) || !File.Exists(path)) throw new InvalidOperationException("Выберите папку с SS14.Launcher.exe и loader/SS14.Loader.dll.");
-        var game = System.Diagnostics.Process.GetProcessesByName("SS14.Loader");
         try
         {
-            var executable = Path.Combine(root, "loader", "SS14.Loader.exe");
-            foreach (var process in game)
+            var executable = Environment.ProcessPath!;
+            // A Steam entry point only hands off: the running UI must not lock the file Restore replaces.
+            if (Path.GetFileName(executable).Equals("SS14.Launcher.exe", StringComparison.OrdinalIgnoreCase))
             {
-                string? runningPath;
-                try { runningPath = process.MainModule?.FileName; }
-                catch { throw new InvalidOperationException("Не удалось проверить работающий клиент. Закройте SS14 и повторите."); }
-                if (string.Equals(runningPath, executable, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException("Закройте SS14 перед установкой или удалением мода.");
+                var root = Path.GetDirectoryName(executable)!;
+                var stable = Path.Combine(root, "SS14ModLauncher", "SS14ModLauncher.exe");
+                if (!File.Exists(stable)) throw new IOException("ModLauncher installation is incomplete. Restore Steam files or run the portable ModLauncher.");
+                var start = new ProcessStartInfo(stable) { UseShellExecute = false, WorkingDirectory = root };
+                start.ArgumentList.Add("--launcher-root"); start.ArgumentList.Add(root); start.ArgumentList.Add("--steam");
+                foreach (var arg in args) start.ArgumentList.Add(arg);
+                Process.Start(start);
+                return 0;
             }
+            if (args.Length == 2 && args[0] is "--install" or "--uninstall" or "--restore" or "--status")
+            {
+                if (args[0] == "--install") Installation.Install(args[1], Payload.ForInstallation(args[1]), ["CrewConsole.Mod.dll"], "en");
+                else if (args[0] == "--status") Console.WriteLine(JsonSerializer.Serialize(Installation.Inspect(args[1])));
+                else Installation.Restore(args[1]);
+                return 0;
+            }
+            var steam = Array.IndexOf(args, "--steam");
+            if (steam >= 0) ForwardedArguments = args[(steam + 1)..];
+            var ownArguments = steam >= 0 ? args[..steam] : args;
+            string? Option(string name) { var i = Array.IndexOf(ownArguments, name); return i >= 0 && i + 1 < ownArguments.Length ? ownArguments[i + 1] : null; }
+            var settingsPath = Option("--settings");
+            var settings = AppSettings.Load(settingsPath);
+            if (Option("--launcher-root") is { } launcherRoot) settings.LauncherPath = launcherRoot;
+            if (Option("--lang") is "en" or "ru") settings.Language = Option("--lang")!;
+            using var form = new LauncherWindow(settings, settingsPath, Option("--view"));
+            if (Option("--capture") is { } capture)
+                form.Shown += async (_, _) => { await Task.Delay(650); using var bitmap = new Bitmap(form.Width, form.Height); form.DrawToBitmap(bitmap, form.ClientRectangle with { Width = form.Width, Height = form.Height }); bitmap.Save(Path.GetFullPath(capture)); form.Close(); };
+            Application.Run(form);
+            return 0;
         }
-        finally { foreach (var process in game) process.Dispose(); }
-        return path;
-    }
-
-    public static void Install(string root)
-    {
-        var loader = LoaderPath(root);
-        var directory = Path.Combine(Path.GetDirectoryName(loader)!, "SS14LocalMods");
-        var statePath = Path.Combine(directory, "installation.json");
-        if (File.Exists(statePath))
+        catch (Exception e)
         {
-            var state = JsonSerializer.Deserialize<State>(File.ReadAllText(statePath))!;
-            if (Hash(loader) == state.PatchedHash) { ExtractPayload(directory); return; }
-            throw new InvalidOperationException("Загрузчик изменён после установки (возможно, обновление Steam). Нужна повторная проверка совместимости.");
+            if (args.Length > 0 && args[0] is "--install" or "--uninstall" or "--restore" or "--status")
+                Console.Error.WriteLine(e.Message);
+            else MessageBox.Show(e.Message, "SS14 ModLauncher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return 1;
         }
-        Directory.CreateDirectory(directory);
-        Directory.CreateDirectory(Path.Combine(directory, "Mods"));
-        var backup = Path.Combine(directory, "SS14.Loader.original.dll");
-        if (File.Exists(backup)) throw new InvalidOperationException("Найдена резервная копия незавершённой установки. Не перезаписываю её.");
-        var originalHash = Hash(loader);
-        var temporary = loader + ".localmods.tmp";
-        using (var assembly = AssemblyDefinition.ReadAssembly(loader, new ReaderParameters { InMemory = true }))
-        {
-            var run = assembly.MainModule.GetType("SS14.Loader.Program")?.Methods.SingleOrDefault(m => m.Name == "Run" && m.Parameters.Count == 0);
-            if (run?.HasBody != true) throw new InvalidOperationException("Эта версия SS14.Loader не поддерживается.");
-            var module = assembly.MainModule;
-            var il = run.Body.GetILProcessor();
-            var first = run.Body.Instructions[0];
-            // Resolve bootstrap relative to the loader; keep normal signature verification and authentication intact.
-            var instructions = new[] {
-                il.Create(OpCodes.Call, module.ImportReference(typeof(AppContext).GetProperty(nameof(AppContext.BaseDirectory))!.GetMethod!)),
-                il.Create(OpCodes.Ldstr, "SS14LocalMods/SS14LocalMods.Bootstrap.dll"),
-                il.Create(OpCodes.Call, module.ImportReference(typeof(Path).GetMethod(nameof(Path.Combine), [typeof(string), typeof(string)])!)),
-                il.Create(OpCodes.Call, module.ImportReference(typeof(Assembly).GetMethod(nameof(Assembly.LoadFrom), [typeof(string)])!)),
-                il.Create(OpCodes.Ldstr, "SS14LocalMods.Bootstrap"),
-                il.Create(OpCodes.Callvirt, module.ImportReference(typeof(Assembly).GetMethod(nameof(Assembly.GetType), [typeof(string)])!)),
-                il.Create(OpCodes.Ldstr, "Initialize"),
-                il.Create(OpCodes.Callvirt, module.ImportReference(typeof(Type).GetMethod(nameof(Type.GetMethod), [typeof(string)])!)),
-                il.Create(OpCodes.Ldnull), il.Create(OpCodes.Ldnull),
-                il.Create(OpCodes.Callvirt, module.ImportReference(typeof(MethodBase).GetMethod(nameof(MethodBase.Invoke), [typeof(object), typeof(object[])])!)),
-                il.Create(OpCodes.Pop)
-            };
-            foreach (var instruction in instructions) il.InsertBefore(first, instruction);
-            assembly.Write(temporary);
-        }
-        ExtractPayload(directory);
-        File.Copy(loader, backup);
-        var newState = new State(originalHash, Hash(temporary));
-        File.WriteAllText(statePath, JsonSerializer.Serialize(newState));
-        try { File.Move(temporary, loader, overwrite: true); }
-        catch { File.Delete(statePath); throw; }
     }
+}
 
-    private static void ExtractPayload(string directory)
+internal static class Payload
+{
+    public static Dictionary<string, byte[]> ForInstallation(string root)
     {
+        var payload = Read();
+        foreach (var (filename, bytes) in Installation.ReadVerifiedInstalledMods(root))
+            if (Catalog.Bundled.Any(mod => mod.File == filename)) payload[filename] = bytes;
+        return payload;
+    }
+    public static Dictionary<string, byte[]> Read()
+    {
+        var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        var assembly = Assembly.GetExecutingAssembly();
         foreach (var filename in new[] { "SS14LocalMods.Bootstrap.dll", "0Harmony.dll", "HelloWorld.Mod.dll", "CrewConsole.Mod.dll" })
         {
-            var resource = typeof(Installation).Assembly.GetManifestResourceNames().Single(n => n.EndsWith("." + filename, StringComparison.Ordinal));
-            using var input = typeof(Installation).Assembly.GetManifestResourceStream(resource)!;
-            var target = Path.Combine(directory, filename.EndsWith(".Mod.dll", StringComparison.Ordinal) ? "Mods/" + filename : filename);
-            using var output = File.Create(target); input.CopyTo(output);
+            var resource = assembly.GetManifestResourceNames().Single(n => n.EndsWith("." + filename, StringComparison.Ordinal));
+            using var input = assembly.GetManifestResourceStream(resource)!;
+            using var bytes = new MemoryStream(); input.CopyTo(bytes); result.Add(filename, bytes.ToArray());
         }
-    }
-
-    public static void Uninstall(string root)
-    {
-        var loader = LoaderPath(root);
-        var directory = Path.Combine(Path.GetDirectoryName(loader)!, "SS14LocalMods");
-        var statePath = Path.Combine(directory, "installation.json");
-        if (!File.Exists(statePath)) throw new InvalidOperationException("Установленные локальные моды не найдены.");
-        var state = JsonSerializer.Deserialize<State>(File.ReadAllText(statePath))!;
-        var backup = Path.Combine(directory, "SS14.Loader.original.dll");
-        if (Hash(backup) != state.OriginalHash) throw new InvalidOperationException("Резервная копия повреждена. Восстановление остановлено.");
-        if (Hash(loader) != state.PatchedHash) throw new InvalidOperationException("Загрузчик изменён. Автоматически перезаписывать его небезопасно.");
-        File.Copy(backup, loader, overwrite: true);
-        // Preserve other plugins. Remove only the installation record and verified backup.
-        File.Delete(statePath); File.Delete(backup);
+        return result;
     }
 }

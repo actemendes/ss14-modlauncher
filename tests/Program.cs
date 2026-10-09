@@ -1,0 +1,48 @@
+using System.Numerics;
+using SS14LocalMods.CrewConsole;
+
+var count = 0;
+void Check(bool condition, string name) { if (!condition) throw new Exception(name); Console.WriteLine("PASS " + name); count++; }
+Observation Sample(int time, int? damage = 10, int? threshold = 100) => new("owner", "sensor", "Anna", "Doctor", TimeSpan.FromSeconds(time), true, damage, threshold, "grid", new Vector2(time, 2));
+var h = new CrewHistory();
+h.Accept([Sample(1)]); h.Accept([Sample(1)]);
+Check(h.People["owner"].Count == 1, "Duplicate snapshots do not grow history");
+h.Accept([Sample(0)]);
+Check(h.People["owner"].Count == 1, "Out of order snapshot ignored");
+h.Accept([Sample(2, null, null) with { Position = null }]);
+Check(h.People["owner"][^1].Ratio == null && h.People["owner"][^1].Position == null, "Unknown data stays unknown");
+h.Accept([Sample(3)]);
+Check(!CrewHistory.Connect(h.People["owner"][0], h.People["owner"][^1]), "No line across missing coordinates");
+h.Accept([]); h.Accept([Sample(4)]);
+Check(!CrewHistory.Connect(h.People["owner"][^2], h.People["owner"][^1]), "No line across missing telemetry");
+h.Accept([Sample(5) with { Sensor = "replacement" }]);
+Check(!CrewHistory.Connect(h.People["owner"][^2], h.People["owner"][^1]), "Suit changes split the path");
+h.Accept([Sample(60) with { Sensor = "replacement" }]);
+Check(!CrewHistory.Connect(h.People["owner"][^2], h.People["owner"][^1]), "Long gaps split the path");
+var best = new CrewHistory(); best.Accept([Sample(1), Sample(2, null, null) with { Position = null }]);
+Check(best.People["owner"].Single().Position != null, "Most complete sensor wins");
+Check(Sample(1, 120).Severity == 5 && Sample(1, 100).Severity == 4, "Critical classification matches web/native rounding");
+Check((Sample(1, null, null) with { Alive = false }).Severity == 6, "Death precedes absent vitals");
+Check(Sample(1, 12, 0).Severity == -1, "Zero threshold is unknown");
+Check(Sample(1, -1).Severity == -1, "Invalid negative damage is unknown");
+for (var i = 61; i < 3800; i++) h.Accept([Sample(i)]);
+Check(h.People["owner"].Count == CrewHistory.MaxSamples, "History is bounded");
+Check(CrewHistory.At([Sample(1, 10), Sample(5, 120)], TimeSpan.FromSeconds(3))!.Damage == 10, "Past health never reads a future sample");
+Check(CrewHistory.At([Sample(5)], TimeSpan.FromSeconds(1)) == null, "No invented observation before first sample");
+var capacity = new CrewHistory();
+for (var i = 0; i < 600; i++) capacity.Accept([Sample(i) with { Owner = i.ToString() }]);
+Check(capacity.People.Count == CrewHistory.MaxPeople, "Crew capacity is bounded");
+Check(LayoutPolicy.Calculate(1180, 980).Portrait == false, "Wide layout places crew beside map");
+Check(LayoutPolicy.Calculate(600, 1080).Portrait, "Narrow layout stacks map and crew");
+var pixels = new Vector2(600, 200);
+Check(LayoutPolicy.Project(new Vector2(20, 40), new Vector2(20, 40), pixels / 2, LayoutPolicy.MapScale(pixels, 100)) == pixels / 2,
+    "Selected coordinates center inside a non-square viewport");
+Check(LayoutPolicy.Project(new Vector2(0, 10), Vector2.Zero, pixels / 2, 1).Y == 90, "Map Y points up");
+var irregular = new[] { Sample(10), Sample(12, 40), Sample(110, 200) };
+Check(TimelineScale.Pick(irregular, .5)!.Time.TotalSeconds == 12, "Timeline uses elapsed time, not sample index");
+Check(TimelineScale.Pick(irregular, 0) == irregular[0] && TimelineScale.Pick(irregular, 1) == irregular[^1], "Timeline endpoints reachable");
+Check(TimelineScale.Pick([], .5) == null && TimelineScale.Pick([Sample(5)], .8)!.Time.TotalSeconds == 5, "Empty and single sample timelines");
+Check(TimelineScale.Fraction(TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(110)) == .5, "Evenly spaced time labels");
+Check(TimelineScale.Ceiling([Sample(1, 283)]) == 300, "Graph includes damage above death threshold");
+Check(TimelineScale.Ceiling([Sample(1, null, null)]) == 100, "Unknown health has a stable graph scale");
+Console.WriteLine($"{count} checks passed");

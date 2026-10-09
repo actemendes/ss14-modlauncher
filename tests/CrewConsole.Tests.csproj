@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup><Compile Include="../CrewConsole/CrewHistory.cs" Link="CrewHistory.cs" /><Compile Include="../CrewConsole/ModText.cs" Link="ModText.cs" /><Compile Include="../CrewConsole/LayoutPolicy.cs" Link="LayoutPolicy.cs" /><Compile Include="../CrewConsole/TimelineScale.cs" Link="TimelineScale.cs" /></ItemGroup>
+</Project>

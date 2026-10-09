@@ -52,7 +52,7 @@ public static class Mod
         if (_window == null)
         {
             _window = Activator.CreateInstance(_engine.GetType("Robust.Client.UserInterface.CustomControls.DefaultWindow", true)!)!;
-            Set(_window, "Title", "Hello World — Local mod");
+            Set(_window, "Title", Environment.GetEnvironmentVariable("SS14_MOD_LANGUAGE") == "ru" ? "Hello World — локальный мод" : "Hello World — Local mod");
             Set(_window, "SetSize", new Vector2(360, 180));
             var label = Activator.CreateInstance(_engine.GetType("Robust.Client.UserInterface.Controls.Label", true)!)!;
             Set(label, "Text", "Hello World?");

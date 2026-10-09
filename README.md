@@ -1,70 +1,89 @@
-# SS14 Client Mods
+![SS14 ModLauncher — by actemendes](docs/assets/readme-banner.png)
 
-Самостоятельный репозиторий экспериментов с локальным интерфейсом SS14.
-Windows-установщик, загрузчик DLL-модов, Hello World и адаптивный прототип Crew Console.
-Образец будущего интерфейса — текущая веб-панель Crew Monitor.
-Исследование функций и этапы переноса: [docs/crew-monitor-port.md](docs/crew-monitor-port.md).
+# SS14 ModLauncher
 
-Crew Console пока сохраняет штатную карту, список и поиск, меняя компоновку окна.
-В широком окне карта и список рядом; в узком/портретном — друг под другом.
-Добавлена сводка датчиков/раненых/погибших. Полный дизайн веб-панели, зоны, история,
-сообщения и replay ещё не перенесены.
-Кнопки «Альбом»/«Портрет» задают удобные размеры; компоновка автоматически следует размеру окна.
+**Your client. Your mod loadout.** By **actemendes**.
 
-## Установка
+[Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-1. Закройте игровой клиент SS14. Launcher можно оставить открытым.
-2. Запустите `SS14ModInstaller.exe`.
-3. Выберите папку с `SS14.Launcher.exe` (для Steam обычно `Space Station 14 Playtest/bin_x64`).
-4. Нажмите **Установить / обновить моды**.
-5. Подключитесь через обычный Launcher. Для Crew Console откройте игровую консоль
-   мониторинга экипажа; для Hello World нажмите **F1** или **0** (также NumPad 0).
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/latest) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
-Откроется отдельное игровое окно с текстом `Hello World?`; его можно перемещать и менять размер.
-Повторное нажатие закрывает окно; крестик также работает.
-Мод не добавляет кнопки в КПК и не привязан к предметам.
-F1/0 заменяют стандартные действия этих клавиш, пока мод включён.
-При фокусе в чат/текстовом поле клавиши работают как обычно; комбинации с Ctrl/Alt/Shift не перехватываются.
-Для обновления установленного мода закройте игру и снова нажмите **Установить / обновить моды**.
-Удаление: закройте игру и нажмите **Удалить моды** в установщике.
-Удаление восстанавливает оригинальную DLL загрузчика по резервной копии с проверкой SHA-256.
-Файлы модов сохраняются в папке, но исходный загрузчик их больше не загружает.
+A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-## Что устанавливается
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.0** targets **Windows x64**.
 
-- `loader/SS14.Loader.dll`: добавляется вызов локального bootstrap перед запуском движка.
-- `loader/SS14LocalMods/SS14.Loader.original.dll`: точная резервная копия исходной DLL.
-- `loader/SS14LocalMods/installation.json`: SHA-256 оригинального и изменённого загрузчика.
-- `loader/SS14LocalMods/SS14LocalMods.Bootstrap.dll`: загрузка DLL из подпапки `Mods`.
-- `loader/SS14LocalMods/0Harmony.dll`: Harmony 2.4.2 (MIT).
-- `loader/SS14LocalMods/Mods/HelloWorld.Mod.dll`: локальное окно и клавиши F1/0.
-- `loader/SS14LocalMods/Mods/CrewConsole.Mod.dll`: адаптивная оболочка игровой консоли.
+![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
-Проверка подписи движка и обычная авторизация не отключаются.
-Bootstrap использует код загрузчика вне sandbox серверного контента.
-DLL модов выполняются с правами игрового процесса: устанавливайте только доверенные моды.
-Кэш серверного контента не переписывается. Мод не вызывает сетевые API и не создаёт картридж на сервере.
-Обычная игра и открытие/закрытие консоли продолжают штатное сетевое взаимодействие.
-Crew Console использует данные штатной подписки; собственных сетевых сообщений не добавляет.
+[View the Russian interface](docs/assets/launcher-ru.png)
 
-## Ограничения
+## What you can do
 
-Прототип проверен на Windows x64, SS14 Launcher 0.40.2 и локальном клиенте Robust 275.0.0.
-Совместимость с другими сборками не подтверждена. Hello World использует `Robust.Client.Input.InputManager`.
-Обновление/проверка файлов Steam может восстановить загрузчик и отключить моды.
-При несовпадении сохранённого SHA установщик останавливается, не перезаписывая изменённые файлы.
-Функции автоматического обновления, ZIP-пакеты модов и управление зависимостями пока не реализованы.
+| Feature | In this release |
+| --- | --- |
+| Mod library | Choose the bundled Crew Console and Hello World mods |
+| Profiles | Save different selections and switch before starting the client |
+| RU / EN | Localized launcher and bundled mod labels |
+| Installer and patcher | Back up the original loader and verify file hashes before changing it |
+| Steam integration | Optionally open ModLauncher from the normal Steam Play action |
+| Restore clean SS14 | Restore the loader and optional Steam entry point using verified backups |
+| Mod updates | Manually check a configured GitHub repository; verify downloaded DLLs against its manifest |
+| Diagnostics | Inspect installation state, save a local report, or launch once without mods |
+| Local operation | Use bundled mods without an account or an update service |
 
-## Разработка
+The default update source is [`actemendes/ss14-modlauncher`](https://github.com/actemendes/ss14-modlauncher). Checks run only when requested. ModLauncher does not silently update itself or install arbitrary ZIP packages.
 
-Нужен .NET SDK 10. Запустите `./build.ps1` из PowerShell.
-Результат: `dist/SS14LocalMods/SS14ModInstaller.exe`, отдельная установка .NET пользователю не нужна.
+## Get started
 
-Контракт DLL мода: публичный статический метод `SS14LocalMods.Mod.Install(System.Reflection.Assembly content)`.
-Bootstrap вызывает его после загрузки `Content.Client`; Hello World использует Harmony prefix
-на `InputManager.KeyDown/KeyUp` и создаёт независимый `DefaultWindow` по нажатию клавиши.
-Ввод и окно обрабатываются локально; штатная активация серверного картриджа не вызывается.
-Логи: `%LOCALAPPDATA%/SS14LocalMods/mods.log` (без токенов и игровых сообщений).
+1. Extract the complete `SS14ModLauncher-0.1.0-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+2. Close the SS14 client and its original launcher, then run **SS14ModLauncher.exe**.
+3. Select the folder containing `SS14.Launcher.exe` and `loader/SS14.Loader.dll`. A Steam installation usually uses `Space Station 14 Playtest/bin_x64`.
+4. Choose a profile and mods, then install/apply the selection.
+5. Launch SS14 from ModLauncher. Connect to your server using the original SS14 launcher.
 
-Исходники: `Bootstrap/`, `HelloWorld/`, `CrewConsole/`, `Installer/`.
-Установщик также поддерживает `--install <launcher-directory>` и `--uninstall <launcher-directory>`.
+Optional Steam integration replaces the launcher entry point with a reversible bridge. Steam Play then opens ModLauncher, which starts the original launcher when you are ready. See the [user guide](docs/user-guide.md) before enabling it.
+
+To remove the integration, close the client and original launcher and use **Restore originals**. Do not delete the backups manually. A Steam update or file verification can overwrite patched files; the app checks the installation instead of blindly overwriting unexpected changes.
+
+## Included mods
+
+### Crew Console
+
+An enhanced native crew monitoring console: searchable crew list, health states, damage history, a draggable timeline, and the selected crewmember's route on the station map. Open an ordinary in-game crew monitoring console to use it.
+
+History exists only while that console window is open. The mod uses telemetry already provided to the normal console and does not invent missing positions or health. Rooms, zones, message history, recording files, and full replay from the web Crew Monitor are not included. See [features and limits](docs/mods/crew-console.md).
+
+### Hello World
+
+A small example mod with a movable, resizable window. Press **F1**, **0**, or **NumPad 0** to toggle it. These keys replace their normal actions while the mod is enabled; text-field focus and Ctrl/Alt/Shift combinations are left alone.
+
+## Compatibility and trust
+
+The original prototype was exercised with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
+
+Mods run as local DLLs with the game's process permissions. Use trusted code and follow the rules of the server you join. SHA-256 checks detect download corruption or a mismatch with the selected manifest; they do not establish that a publisher is trustworthy. Engine signature checks and normal SS14 authentication are not disabled.
+
+## Build from source
+
+Install **.NET SDK 10** and **PowerShell 7** on Windows, then run:
+
+```powershell
+git clone https://github.com/actemendes/ss14-modlauncher.git
+cd ss14-modlauncher
+./build.ps1
+```
+
+The script runs the test harnesses, builds the bundled mods, and creates the self-contained app, release ZIP, and checksums in `dist/`. This only builds local artifacts; it does not create a GitHub release or publish anything.
+
+Read [development](docs/development.md), [architecture](docs/architecture.md), and [mod update format](docs/updates.md) for details. Future independent mod repositories can be pinned as Git submodules; no placeholder submodule URLs are configured.
+
+## Project documentation
+
+- [User guide and recovery](docs/user-guide.md)
+- [Architecture and file layout](docs/architecture.md)
+- [Development and mod contract](docs/development.md)
+- [Update manifests](docs/updates.md)
+- [Preparing a release](docs/releasing.md)
+- [Changelog](CHANGELOG.md), [contributing](CONTRIBUTING.md), [security](SECURITY.md)
+- [Third-party notices](THIRD-PARTY-NOTICES.md) and [MIT license](LICENSE)
+
+Licensed under **MIT**. Third-party components retain their own licenses. See the [verification record](docs/verification.md) for completed checks and remaining live compatibility checks.
