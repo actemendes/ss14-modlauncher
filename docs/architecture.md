@@ -9,6 +9,10 @@
 | `Bootstrap/` | Runtime entry point, selection/hash checks, isolated per-mod failure logging |
 | `CrewConsole/` | Native monitoring UI, sensor history and routes |
 | `HelloWorld/` | Small Harmony-based example mod |
+| `DeathRattle/` | Native awful-health radio distress calls, optional confirmed damage origins |
+| `DeathRattle.Tests/` | Distress policy and Harmony/game-contract regression harness |
+| `ChemMaster/` | Native recipes tab, connection-scoped chemistry catalog, planner and confirmed BUI execution |
+| `ChemMaster.Tests/` | Planner, execution lifecycle and saved target regression harness |
 | `tests/` | Crew history, map/layout, and timeline regression harness |
 | `Launcher.Core.Tests/` | Core regression harness with temporary fixtures |
 | `docs/` | User guide, contracts, recovery and release information |
@@ -60,6 +64,8 @@ loader/
     Mods/
       CrewConsole.Mod.dll
       HelloWorld.Mod.dll
+      DeathRattle.Mod.dll
+      ChemMaster.Mod.dll
 ```
 
 The original launcher apphost is kept in its original directory so it can resolve its existing launcher DLL/runtime files. No Steam library configuration is rewritten.

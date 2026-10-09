@@ -7,7 +7,7 @@ namespace SS14ModLauncher;
 
 internal static class Program
 {
-    internal const string Version = "0.1.5";
+    internal const string Version = "0.1.6";
     internal static string[] ForwardedArguments = [];
     [STAThread]
     private static int Main(string[] args)

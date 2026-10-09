@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>Content.Shared</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Robust/Robust.csproj"/></ItemGroup>
+</Project>

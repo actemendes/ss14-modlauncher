@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.6 — 2026-10-10
+
+- New ChemMaster 0.1.3: RU/EN AUTO tab inside the native ChemMaster, reagent search, saved production targets, Make/Ensure modes and ingredient-order preview. Chemistry comes from the current connection's prototypes.
+- Cold/hot toggle preserves active recipes, reports measured and required temperatures and offers native empty-beaker eject/insert from AUTO. Phase metadata avoids treating slightly warmed cold beakers as hot; finite superheated temperatures remain supported.
+- Prepared cold/hot beaker phases with explicit replacement barriers and remaining-goal replanning from measured temperatures; hot temperature persists locally. Missing ingredient errors no longer get overwritten by unsuitable source reactions such as FiberBreakdown. Gas and popup effects that preserve solution chemistry are supported.
+- Separate AUTO settings tab with persistent speed, reagent-switch pauses and random interval probability sliders. Settings apply during execution; statuses and chemistry errors use the selected RU/EN language.
+- Execution uses ordinary BUI transfer messages, waits for each resulting composition, supports pause/resume/stop and stops on stale state, closure or timeout. First version mixes in an empty beaker and returns products to the buffer; heating, external mixers, reagent data and pill/bottle packaging are outside its scope. See [ChemMaster](docs/mods/chemmaster.md).
+- New Death Rattle 0.1.2 mod: RU/EN radio distress call following the launcher's interface language at native awful health (`HumanHealth` severity 4), once per episode with a 30-second cooldown.
+- Optional recent, explicit damage Origin attribution names the attacker in one in-game sentence without a colon or an entity label. Standard replicated damage lacks Origin and falls back to the basic call.
+- Launcher 0.1.6 registers the new ID; existing mod and bootstrap versions/locked artifacts remain unchanged. Added policy, Harmony integration and local game API checks; live radio delivery remains pending.
+
 ## 0.1.5 — 2026-10-09
 
 - New Conversations 0.1.1 mod: stable game-clock receive timestamps, name and message-text search, multiple selected voices and department filtering by received radio channel in the native chat.

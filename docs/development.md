@@ -12,22 +12,24 @@ cd ss14-modlauncher
 
 The default `Auto` mode reads the explicit `mode` (`Full` or `ModsOnly`) from `release/release.json`; it does not infer the mode from version equality. Full mode builds the launcher from source. Already released mod versions are reused byte-for-byte from the artifact ledger; newly versioned mods are built from source.
 
-Current source versions (0.1.5 is an unpublished local build):
+Current source versions (release 0.1.6):
 
 | Component | Version | Source of truth |
 | --- | --- | --- |
-| Release/feed | 0.1.5 | `release/release.json`: `releaseVersion` |
-| ModLauncher | 0.1.5 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
-| Launcher hosting release | 0.1.5 | `release/release.json`: `launcherReleaseVersion`, the tag containing that ZIP |
+| Release/feed | 0.1.6 | `release/release.json`: `releaseVersion` |
+| ModLauncher | 0.1.6 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
+| Launcher hosting release | 0.1.6 | `release/release.json`: `launcherReleaseVersion`, the tag containing that ZIP |
 | Bootstrap | 0.1.2 | `release/release.json`: `bootstrapVersion`, checked against its project |
 | Crew Console | 0.1.2 | `catalog/mods.json` |
 | Hello World | 0.1.2 | `catalog/mods.json` |
 | Conversations | 0.1.1 | `catalog/mods.json`; new ID requires launcher 0.1.5 |
+| Death Rattle | 0.1.2 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
+| ChemMaster | 0.1.3 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
 
 Full-build output under `dist/`:
 
 - `SS14ModLauncher/`: self-contained app, documentation and notices.
-- `SS14ModLauncher-0.1.5-win-x64.zip`: portable launcher package.
+- `SS14ModLauncher-0.1.6-win-x64.zip`: portable launcher package.
 - `mod-assets/`: individual DLLs and `mods-manifest.json`.
 - `SHA256SUMS.txt` and `build-info.json`: checksums and source/component provenance.
 - `mod-artifacts.next.json`: local maintainer receipt for ledger review after publication; not a public release asset.
@@ -38,15 +40,15 @@ Nothing is tagged, pushed or published by the script.
 
 ```powershell
 # Full release: feed version must match launcherReleaseVersion, not the app version.
-./build.ps1 -Mode Full -ReleaseVersion 0.1.5
+./build.ps1 -Mode Full -ReleaseVersion 0.1.6
 
 # After updating a mod's source and catalog version, reuse the existing launcher ZIP.
-./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.6 -OutputRoot dist/mods-0.1.6
+./build.ps1 -Mode ModsOnly -ReleaseVersion 0.1.7 -OutputRoot dist/mods-0.1.7
 ```
 
-The second command is an example for a future feed. It does not create or rebuild a 0.1.6 launcher. Keep `launcherVersion: 0.1.5` and `launcherReleaseVersion: 0.1.5`; its manifest points to that existing ZIP. Set configuration `mode: ModsOnly` and `releaseVersion: 0.1.6` when making this the persisted release plan.
+The second command is an example for a future feed after publishing 0.1.6. It does not create or rebuild a 0.1.7 launcher. Keep `launcherVersion: 0.1.6` and `launcherReleaseVersion: 0.1.6`; its manifest points to that existing ZIP. Set configuration `mode: ModsOnly` and `releaseVersion: 0.1.7` when making this the persisted release plan.
 
-A later launcher **0.1.6** can ship in feed/tag **0.1.7**: set `mode: Full`, `releaseVersion: 0.1.7`, `launcherVersion: 0.1.6`, and `launcherReleaseVersion: 0.1.7`. Its filename is `SS14ModLauncher-0.1.6-win-x64.zip` under tag `v0.1.7`. Mod-only releases therefore do not consume application version numbers.
+A later launcher **0.1.7** can ship in feed/tag **0.1.8**: set `mode: Full`, `releaseVersion: 0.1.8`, `launcherVersion: 0.1.7`, and `launcherReleaseVersion: 0.1.8`. Its filename is `SS14ModLauncher-0.1.7-win-x64.zip` under tag `v0.1.8`. Mod-only releases therefore do not consume application version numbers.
 
 | Option | Meaning |
 | --- | --- |
@@ -74,10 +76,11 @@ The tests are console harnesses; failed assertions exit nonzero:
 dotnet run --project tests/CrewConsole.Tests.csproj -c Release
 
 dotnet run --project Conversations.Tests/Conversations.Tests.csproj -c Release
+dotnet run --project DeathRattle.Tests/DeathRattle.Tests.csproj -c Release
 dotnet run --project Launcher.Core.Tests/Launcher.Core.Tests.csproj -c Release
 ```
 
-The normal build runs all three. Coverage includes installation/recovery, bootstrap selection, profiles, update parsing/downloading, startup notifications and native-chat hooks. To verify Conversations against a local game build, run `./scripts/Test-ConversationsApi.ps1 -GameDirectory <game-assemblies-directory>` (requires its Mono.Cecil.dll). Live compatibility still requires a smoke test; consult the [verification record](verification.md) and [Conversations notes](mods/conversations.md).
+The normal build also runs ChemMaster's core harness and release-build checks. Coverage includes installation/recovery, bootstrap selection, profiles, update parsing/downloading, startup notifications, native-chat hooks, distress calls and chemistry planning/execution. To verify mods against a local game build, run the corresponding API scripts with `-GameDirectory <game-assemblies-directory>` (requires its Mono.Cecil.dll). Live compatibility still requires a smoke test; consult the [verification record](verification.md) and each mod's notes.
 
 ## Mod contract
 
@@ -148,3 +151,18 @@ For an isolated UI session or screenshot:
 ```
 
 `--settings` selects a separate settings file. `--capture` renders the native form and exits, with automatic startup checking disabled for the capture. The internal Steam bridge switch is not a public installation command.
+
+## ChemMaster
+
+ChemMaster is connection-scoped: the native adapter copies the runtime chemistry prototypes and available dose enum into an immutable catalog. Core planning uses fixed-point hundredths; execution runs on the game thread and waits for each expected composition before scheduling the next transfer. Timing settings never reorder or repeat commands. Reagent changes add an independent pause; randomness is sampled once per scheduled action, with an injectable source for deterministic tests.
+
+`build.ps1` runs the core regression harness. Additional checks using an existing local game build:
+
+```powershell
+dotnet run --project ChemMaster.Tests/ChemMaster.Tests.csproj -c Release
+# Optional external rules fixture: append -- <path-to-chemistry-game-rules.json>.
+./scripts/Test-ChemMasterApi.ps1 -GameDirectory <Content.Client-output-directory>
+dotnet run --project ChemMaster.Smoke/ChemMaster.Smoke.csproj -c Release -- <game-directory> <ChemMaster.Mod.dll>
+```
+
+The smoke harness installs all seven Harmony hooks against actual game assemblies. Its optional `--client` mode launches a separate developer client with isolated userdata against loopback port 1212. Native dependencies must be available beside the harness. This is a QA tool, outside the shipping payload; normal users launch through ModLauncher. See [usage and timing settings](mods/chemmaster.md).

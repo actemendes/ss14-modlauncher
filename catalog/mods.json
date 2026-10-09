@@ -24,6 +24,30 @@
     "source": "Conversations"
   },
   {
+    "id": "death-rattle",
+    "version": "0.1.2",
+    "minLauncherVersion": "0.1.6",
+    "file": "DeathRattle.Mod.dll",
+    "nameRu": "Предсмертный хрип",
+    "nameEn": "Death Rattle",
+    "descriptionRu": "При ужасном здоровье автоматически зовёт на помощь по рации. Называет нападающего, если клиент получил подтверждённый источник урона. Без спама.",
+    "descriptionEn": "Automatically calls for help over radio at awful health. Names the attacker when a confirmed damage source is available to the client. Prevents repeated spam.",
+    "category": "communication",
+    "source": "DeathRattle"
+  },
+  {
+    "id": "chem-master",
+    "version": "0.1.3",
+    "minLauncherVersion": "0.1.6",
+    "file": "ChemMaster.Mod.dll",
+    "nameRu": "Химмастер",
+    "nameEn": "ChemMaster",
+    "descriptionRu": "АВТО в химмастере: рецепты текущего сервера, сохранённые наборы, настройка скорости, пауз и хаотичности переносов.",
+    "descriptionEn": "AUTO in ChemMaster: current server recipes, saved targets and adjustable transfer speed, pauses and random delays.",
+    "category": "automation",
+    "source": "ChemMaster"
+  },
+  {
     "id": "hello-world",
     "version": "0.1.2",
     "minLauncherVersion": "0.1.2",

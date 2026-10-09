@@ -6,11 +6,11 @@
 
 [Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.5/SS14ModLauncher-0.1.5-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.6/SS14ModLauncher-0.1.6-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.5** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.6** targets **Windows x64**.
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -21,7 +21,7 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 | Feature | In this release |
 | --- | --- |
 | First-run setup | Find SS14 automatically and set up the recommended Crew Console profile with one action |
-| Mod library | Choose Crew Console, Conversations and Hello World |
+| Mod library | Choose Crew Console, Conversations, Death Rattle, ChemMaster and Hello World |
 | Profiles | Save different selections and switch before starting the client |
 | RU / EN | Localized launcher and bundled mod labels |
 | Installer and patcher | Back up the original loader and verify file hashes before changing it |
@@ -36,7 +36,7 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.5-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+1. Extract the complete `SS14ModLauncher-0.1.6-win-x64.zip` package to a writable folder. No separate .NET installation is required.
 2. Run **SS14ModLauncher.exe**. The first-run window looks for SS14 and offers the recommended default profile with **Crew Console** enabled.
 3. Press **Set up & play**. ModLauncher installs the selected mods, adds Steam integration for a recognized Steam installation, and opens the original SS14 launcher for your normal server connection.
 
@@ -48,12 +48,23 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
-**0.1.5** includes **Conversations 0.1.1**: native chat receive
+**0.1.6** includes **ChemMaster 0.1.3**: native AUTO and AUTO settings tabs
+with server-specific reaction rules, saved production targets, preview and automated
+mixing with confirmed transfers, adjustable speed, reagent-switch pauses and random intervals. Open a ChemMaster with an empty input beaker and
+base reagents in its buffer. [Usage and limitations](docs/mods/chemmaster.md).
+
+**0.1.6** includes **Death Rattle 0.1.2**: a localized
+radio distress call at awful health, once per episode with a 30-second cooldown.
+Recent explicit damage origins can name the attacker in a single in-game sentence.
+English launcher UI selects English replies: "Help, I'm dying!" and "Help, … is killing me!".
+[Setup and attribution limits](docs/mods/death-rattle.md).
+
+**0.1.6** includes **Conversations 0.1.1**: native chat receive
 timestamps, speaker name and message-text search, multiple selected voices and department filtering by
 radio channel. Open the panel with the Conversations button above chat history.
 [Usage and limitations](docs/mods/conversations.md).
 
-Launcher **0.1.5** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
+Launcher **0.1.6** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
 
 ### Crew Console
 
