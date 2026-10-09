@@ -4,6 +4,9 @@ internal static class ErrorText
 {
     public static string Message(Exception exception, string language)
     {
+        if (exception is IOException && (exception.HResult & 0xffff) is 32 or 33)
+            return language == "ru" ? "Файл занят другим приложением. Закройте игру и обычный SS14 Launcher, затем повторите действие."
+                : "A file is in use. Close the game and the original SS14 Launcher, then try again.";
         if (language != "ru") return exception.Message;
         if (exception is InstallationException e) return e.Code switch
         {

@@ -32,7 +32,8 @@ internal sealed class LauncherWindow : Form
     private readonly Panel _navigation = new() { Dock = DockStyle.Fill, BackColor = Theme.Surface, Padding = new Padding(16, 22, 16, 10) };
     private readonly Label _status = Theme.Label("", 9, Theme.Muted);
     private readonly Dictionary<string, CheckBox> _toggles = [];
-    private readonly ToolTip _tips = new();
+    private readonly ToolTip _tips = new() { IsBalloon = true, InitialDelay = 400, AutoPopDelay = 15000 };
+    private readonly string[] _discoveredRoots;
     private readonly UpdateService _updates;
     private readonly AutomaticUpdateChecker _automaticUpdates;
     private readonly CancellationTokenSource _lifetime = new();
@@ -49,7 +50,7 @@ internal sealed class LauncherWindow : Form
     private string T(string ru, string en) => _settings.Language == "ru" ? ru : en;
     private string[] SelectedFiles => Catalog.Bundled.Where(m => _settings.SelectedModIds.Contains(m.Id)).Select(m => m.File).ToArray();
 
-    public LauncherWindow(AppSettings settings, string? settingsPath, string? initialView = null, bool enableAutomaticCheck = true, UpdateService? updateService = null)
+    public LauncherWindow(AppSettings settings, string? settingsPath, string? initialView = null, bool enableAutomaticCheck = true, UpdateService? updateService = null, bool enableOnboarding = true)
     {
         _settings = settings; _settingsPath = settingsPath;
         _updates = updateService ?? new UpdateService();
@@ -65,13 +66,63 @@ internal sealed class LauncherWindow : Form
         root.Controls.Add(_navigation, 0, 0); root.SetRowSpan(_navigation, 2); root.Controls.Add(_page, 1, 0);
         var footer = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Surface, Padding = new Padding(28, 12, 12, 8) };
         _status.Dock = DockStyle.Fill; _status.AutoSize = false; footer.Controls.Add(_status); root.Controls.Add(footer, 1, 1); Controls.Add(root);
-        if (string.IsNullOrWhiteSpace(_settings.LauncherPath)) _settings.LauncherPath = Installation.Discover().FirstOrDefault() ?? "";
+        _discoveredRoots = Setup.DiscoverRoots();
+        if (string.IsNullOrWhiteSpace(_settings.LauncherPath) && _discoveredRoots.Length == 1) _settings.LauncherPath = _discoveredRoots[0];
         RefreshState(); Render();
         SetStatus(_settings.LoadError is { Length: > 0 } ? T("Настройки повреждены. Исходный файл сохранён; откройте диагностику.", "Settings are damaged. Original file preserved; open Diagnostics.") : T("Готов к запуску. Выбор модов применяется кнопкой запуска.", "Ready. Your mod selection is applied when you launch."));
         FormClosing += (_, e) => { if (_busy) { e.Cancel = true; SetStatus(T("Дождитесь завершения операции.", "Wait for the current operation to finish.")); } };
-        if (enableAutomaticCheck) Shown += async (_, _) => await CheckAtStartupAsync();
+        Shown += async (_, _) =>
+        {
+            if (enableOnboarding && Setup.ShouldPrompt(_settings)) ShowSetup();
+            if (enableAutomaticCheck && !IsDisposed) await CheckAtStartupAsync();
+        };
         FormClosed += (_, _) => { _automaticUpdates.Dispose(); _lifetime.Cancel(); _lifetime.Dispose(); _tips.Dispose(); _updates.Dispose(); };
     }
+    private void ShowSetup()
+    {
+        using var setup = new SetupWindow(_settings, _discoveredRoots, async (root, language) =>
+        {
+            _settings.LauncherPath = root; _settings.Language = language;
+            NeedRoot();
+            // Check that preferences can be saved before modifying the game installation.
+            Save(); _busy = true;
+            try
+            {
+                var payload = await Task.Run(() =>
+                {
+                    var files = Payload.ForInstallation(root);
+                    AppRuntime.Install(root, files, SelectedFiles, language);
+                    return files;
+                });
+                RecordBundledVersions(payload); _settings.CompleteSetupFor(root); Save();
+                try { StartGame(false); }
+                catch (Exception error) { throw new InvalidOperationException(T("Моды установлены, но SS14 не открылся. Повторите запуск. ", "Mods are installed, but SS14 could not open. Try launching again. ") + ErrorText.Message(error, language), error); }
+                RefreshState(); Render(); SetStatus(T("Настройка завершена. SS14 Launcher открыт.", "Setup complete. SS14 Launcher is open."));
+            }
+            finally { _busy = false; }
+        }, (root, language) =>
+        {
+            if (_settings.IsReadOnly) return;
+            _settings.Language = language;
+            var ready = Setup.Prepare(root);
+            if (ready.Root.Length > 0) _settings.LauncherPath = ready.Root;
+            _settings.SuppressSetupFor(ready.Root); Save();
+        });
+        setup.Icon = Icon;
+        setup.ShowDialog(this);
+        if (setup.OpenDiagnostics)
+        {
+            var ready = Setup.Prepare(setup.SelectedRoot);
+            if (ready.Root.Length > 0) _settings.LauncherPath = ready.Root;
+            _settings.Language = setup.SelectedLanguage;
+            _view = "diagnostics";
+        }
+        RefreshState(); Render();
+    }
+    private void ShowHelp() => MessageBox.Show(this,
+        T("Первый запуск: откройте «Установка» → «Быстрая настройка» и нажмите «Настроить и играть».\n\nМои моды: переключатели задают набор для следующего запуска. Нажмите «Запустить SS14», затем подключитесь к серверу в обычном лаунчере.\n\nОбновления: при старте проверяем новые версии. Если обновления есть, появится уведомление.\n\nВернуть чистую игру: «Установка» → «Восстановить оригинал». Для одного запуска без модов есть отдельная кнопка.",
+          "First launch: open Installation → Quick setup and click Set up & play.\n\nMy mods: toggles choose mods for your next launch. Click Launch SS14, then connect to a server in the original launcher.\n\nUpdates: new versions are checked at startup. A notice appears when updates are available.\n\nRestore the original game: Installation → Restore originals. A separate button lets you play once without mods."),
+        T("Как начать играть", "Getting started"), MessageBoxButtons.OK, MessageBoxIcon.Information);
     private void RefreshState()
     {
         if (string.IsNullOrWhiteSpace(_settings.LauncherPath)) { _installationState = "missing"; _installationDetail = ""; return; }
@@ -165,7 +216,8 @@ internal sealed class LauncherWindow : Form
             else { button.BackColor = Theme.Surface; button.FlatAppearance.BorderSize = 0; }
             nav.Controls.Add(button);
         }
-        nav.Controls.Add(new Panel { Height = 30, Width = 10 }); nav.Controls.Add(Theme.Label(T("ЯЗЫК / LANGUAGE", "LANGUAGE / ЯЗЫК"), 8, Theme.Muted, true));
+        var help = Theme.Button(T("Как начать?", "Getting started"), (_, _) => ShowHelp()); help.Name = "getting-started"; help.Width = 155; help.AutoSize = false; nav.Controls.Add(help);
+        nav.Controls.Add(new Panel { Height = 15, Width = 10 }); nav.Controls.Add(Theme.Label(T("ЯЗЫК / LANGUAGE", "LANGUAGE / ЯЗЫК"), 8, Theme.Muted, true));
         var language = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 155, BackColor = Theme.Raised, ForeColor = Theme.Text, FlatStyle = FlatStyle.Flat };
         language.Items.AddRange(["Русский", "English"]); language.SelectedIndex = _settings.Language == "ru" ? 0 : 1;
         language.SelectedIndexChanged += (_, _) => Run(() => { _settings.Language = language.SelectedIndex == 0 ? "ru" : "en"; Save(); Render(); }, T("Язык изменён.", "Language changed.")); nav.Controls.Add(language);
@@ -235,12 +287,15 @@ internal sealed class LauncherWindow : Form
             toggle.FlatAppearance.BorderColor = Theme.Border; toggle.FlatAppearance.CheckedBackColor = Color.FromArgb(26, 62, 52);
             toggle.Text = toggle.Checked ? T("Включён", "Enabled") : T("Выключен", "Disabled");
             toggle.CheckedChanged += (_, _) => Run(() => { var selected = _settings.SelectedModIds.ToList(); selected.Remove(mod.Id); if (toggle.Checked) selected.Add(mod.Id); _settings.Profiles[_settings.ActiveProfile] = selected; Save(); if (_selectionCount != null) _selectionCount.Text = $"{_settings.SelectedModIds.Count:00} / {Catalog.Bundled.Count:00}"; toggle.Text = toggle.Checked ? T("Включён", "Enabled") : T("Выключен", "Disabled"); }, T("Выбор сохранён. Применится при следующем запуске.", "Selection saved. Applies on next launch."));
+            _tips.SetToolTip(toggle, T("Включите нужные моды, затем нажмите «Запустить SS14». Изменения применятся к следующему запуску клиента.", "Enable the mods you want, then click Launch SS14. Changes apply to the next client launch."));
             layout.Controls.Add(toggle, 1, 0); layout.SetRowSpan(toggle, 2); _toggles[mod.Id] = toggle; card.Controls.Add(layout);
         }
         var actions = Section(page, 108); actions.Padding = new Padding(22, 14, 22, 10); var stack = Stack(actions);
         var buttons = new FlowLayoutPanel { Width = 860, Height = 48, WrapContents = false };
-        buttons.Controls.Add(Theme.Button(_installationState == "clean" ? T("Установить и запустить  →", "Install & launch  →") : T("Запустить SS14  →", "Launch SS14  →"), (_, _) => Launch(false), true));
-        buttons.Controls.Add(Theme.Button(T("Без модов на один запуск", "Launch once without mods"), (_, _) => Launch(true)));
+        var launch = Theme.Button(_installationState == "clean" ? T("Установить и запустить  →", "Install & launch  →") : T("Запустить SS14  →", "Launch SS14  →"), (_, _) => { if (_installationState != "installed") ShowSetup(); else Launch(false); }, true);
+        _tips.SetToolTip(launch, T("Настроит выбранные моды и откроет обычный SS14 Launcher. Дальше выберите сервер, как обычно.", "Applies your selected mods and opens the original SS14 Launcher. Then choose a server as usual.")); buttons.Controls.Add(launch);
+        var cleanLaunch = Theme.Button(T("Без модов на один запуск", "Launch once without mods"), (_, _) => Launch(true));
+        _tips.SetToolTip(cleanLaunch, T("Только следующий запуск будет без модов. Ваш профиль сохранится.", "Only this launch runs without mods. Your saved profile is kept.")); buttons.Controls.Add(cleanLaunch);
         stack.Controls.Add(buttons); stack.Controls.Add(Theme.Label(T("Откроется обычный SS14 Launcher с вашей авторизацией и серверами.", "Opens the original SS14 Launcher with your account and servers."), 9, Theme.Muted));
     }
     private void NewProfile()
@@ -253,6 +308,8 @@ internal sealed class LauncherWindow : Form
     private void InstallationPage()
     {
         var page = Page(T("Установка и восстановление", "Install & restore"), T("Один лаунчер. Обратимые изменения. Оригинальные файлы под защитой.", "One launcher. Reversible changes. Original files preserved."));
+        var quickSetup = Theme.Button(T("Быстрая настройка", "Quick setup"), (_, _) => ShowSetup(), true); quickSetup.Name = "quick-setup";
+        _tips.SetToolTip(quickSetup, T("Найдём игру, установим выбранные моды и настроим запуск из Steam одной кнопкой.", "Find the game, install your selected mods and set up Steam launch in one click.")); page.Controls.Add(quickSetup);
         var target = Section(page, 235); var stack = Stack(target);
         stack.Controls.Add(Theme.Label(T("Папка SS14 Launcher", "SS14 Launcher folder"), 15, bold: true));
         stack.Controls.Add(Theme.Label(T("Укажите bin_x64 с SS14.Launcher.exe и папкой loader.", "Select bin_x64 containing SS14.Launcher.exe and the loader folder."), 10, Theme.Muted));
@@ -384,27 +441,36 @@ internal sealed class LauncherWindow : Form
             if (_installationState == "installed") Installation.SetSelection(_settings.LauncherPath, clean ? [] : SelectedFiles, _settings.Language);
             else if (!clean) { var payload = CurrentPayload(); AppRuntime.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); }
             else if (_installationState != "clean") throw new InvalidOperationException(T("Сначала восстановите чистую установку на вкладке «Установка».", "Restore a clean installation in the Installation tab first."));
-            var executable = Installation.GetLaunchExecutable(_settings.LauncherPath);
-            var start = new ProcessStartInfo(executable) { UseShellExecute = false, WorkingDirectory = _settings.LauncherPath };
-            foreach (var arg in Program.ForwardedArguments) start.ArgumentList.Add(arg);
-            if (clean) start.Environment["SS14_MODS_DISABLED"] = "1";
-            else start.Environment.Remove("SS14_MODS_DISABLED");
-            Save(); Process.Start(start); RefreshState(); Render();
+            Save(); StartGame(clean); RefreshState(); Render();
         }, clean ? T("SS14 запущен без модов. Следующий запуск снова применит профиль.", "SS14 launched without mods. Next launch restores your profile.") : T("SS14 Launcher открыт. Подключитесь к серверу как обычно.", "SS14 Launcher opened. Connect to a server as usual."));
+    }
+    private void StartGame(bool clean)
+    {
+        var start = new ProcessStartInfo(Installation.GetLaunchExecutable(_settings.LauncherPath)) { UseShellExecute = false, WorkingDirectory = _settings.LauncherPath };
+        foreach (var arg in Program.ForwardedArguments) start.ArgumentList.Add(arg);
+        if (clean) start.Environment["SS14_MODS_DISABLED"] = "1";
+        else start.Environment.Remove("SS14_MODS_DISABLED");
+        using var process = Process.Start(start) ?? throw new IOException(T("Не удалось открыть SS14 Launcher.", "SS14 Launcher could not be started."));
     }
     private void Open(string location) => Process.Start(new ProcessStartInfo(location) { UseShellExecute = true });
     private void Run(Action action, string success)
     {
         if (_busy) return;
         try { action(); SetStatus(success); }
-        catch (Exception e) { SetStatus(T("Ошибка: ", "Error: ") + ErrorText.Message(e, _settings.Language), true); }
+        catch (Exception e) { ShowOperationError(e); }
     }
     private async Task RunAsync(Func<Task> action, string success)
     {
         if (_busy) return;
         _busy = true; _page.Enabled = false; _navigation.Enabled = false; UseWaitCursor = true; SetStatus(T("Выполняется…", "Working…"));
         try { await action(); SetStatus(success); }
-        catch (Exception e) { SetStatus(T("Ошибка: ", "Error: ") + ErrorText.Message(e, _settings.Language), true); }
+        catch (Exception e) { ShowOperationError(e); }
         finally { _busy = false; _page.Enabled = true; _navigation.Enabled = true; UseWaitCursor = false; }
+    }
+    private void ShowOperationError(Exception error)
+    {
+        var text = ErrorText.Message(error, _settings.Language);
+        SetStatus(T("Ошибка: ", "Error: ") + text, true);
+        MessageBox.Show(this, text, T("Не удалось выполнить действие", "Action could not be completed"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 }

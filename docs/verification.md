@@ -4,6 +4,22 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy; its separate checks are recorded below.
 
+## 0.1.4 — core and UI checks completed; package checks pending
+
+This change adds first-run setup to launcher 0.1.4. The bundled mod DLLs and bootstrap remain 0.1.2.
+
+- **30/30 installer core cases passed** with the catalog, bootstrap, update and startup-notification regression suites.
+- New setup checks passed for discovery/root normalization, persisted per-root completion/dismissal, missing-folder context, installed/restored suppression, changed-loader handling and corrupt settings.
+- Running/uninspectable-process readiness and retry checks passed using the existing injected exception contract. These tests do not start or kill game processes.
+- **20 actual WinForms setup scenarios passed:** fresh RU/EN setup, missing-folder and retry flows, Later/window-close dismissal, language switching, read-only settings, recovery, native 96 DPI with simulated 125%/150% scaling, minimum width, existing-installation suppression, disabled onboarding and update coexistence.
+- The UI harness exercised the production install, settings save and `StartGame` path against a disposable fixture with a benign launcher stub. Failed-launch retry passed. This confirms the launch handoff, not live gameplay.
+- The existing **eight update-notification UI scenarios passed**. The setup suite also passed after final focus/colour polish; package/publication checks remain separate.
+- Documentation relative links and whitespace checks passed. Bootstrap project, mod catalog versions and published artifact ledger remain unchanged.
+
+Still pending: packaged executable installation/restoration, final artifact hashes, source provenance and public download verification.
+
+No new live gameplay or publication check is claimed for 0.1.4. Historical results below remain associated with their recorded versions.
+
 ## 0.1.3 — completed checks and publication
 
 This change adds startup notifications and independently versioned releases. Launcher 0.1.3 targets the unchanged published 0.1.2 mod DLLs; prior live-game evidence remains associated with 0.1.0. No new live gameplay pass is claimed.

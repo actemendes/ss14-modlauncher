@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4 — 2026-10-09
+
+- A localized first-run setup window discovers SS14 and offers the recommended default Crew Console selection.
+- **Set up & play** installs the selected mods, applies the existing default Steam integration policy and opens the original launcher in one action.
+- Missing installations can be selected manually, including the game folder above `bin_x64`; a running client or original launcher prompts the user to close it and retry.
+- Cancelling before setup installs nothing and dismisses the prompt for that installation. Existing installations skip the automatic popup; **Installation → Quick setup** opens it manually.
+- A **Getting started** entry, hover hints and visible action error messages explain common steps; background update errors remain nonmodal.
+- Existing profiles and explicit Steam integration opt-outs are retained. Launcher 0.1.4 keeps the published mod DLLs and bootstrap at 0.1.2.
+
 ## 0.1.3 — 2026-10-09
 
 - One background update check when ModLauncher opens, enabled by default with a saved opt-out in Updates. Offline failures stay nonmodal; there is no timer or closed-app/tray updater.

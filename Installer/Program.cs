@@ -7,7 +7,7 @@ namespace SS14ModLauncher;
 
 internal static class Program
 {
-    internal const string Version = "0.1.3";
+    internal const string Version = "0.1.4";
     internal static string[] ForwardedArguments = [];
     [STAThread]
     private static int Main(string[] args)
@@ -43,7 +43,8 @@ internal static class Program
             var settings = AppSettings.Load(settingsPath);
             if (Option("--launcher-root") is { } launcherRoot) settings.LauncherPath = launcherRoot;
             if (Option("--lang") is "en" or "ru") settings.Language = Option("--lang")!;
-            using var form = new LauncherWindow(settings, settingsPath, Option("--view"), enableAutomaticCheck: Option("--capture") == null);
+            using var form = new LauncherWindow(settings, settingsPath, Option("--view"), enableAutomaticCheck: Option("--capture") == null,
+                enableOnboarding: Option("--capture") == null);
             if (Option("--capture") is { } capture)
                 form.Shown += async (_, _) => { await Task.Delay(650); using var bitmap = new Bitmap(form.Width, form.Height); form.DrawToBitmap(bitmap, form.ClientRectangle with { Width = form.Width, Height = form.Height }); bitmap.Save(Path.GetFullPath(capture)); form.Close(); };
             Application.Run(form);

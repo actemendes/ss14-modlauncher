@@ -16,6 +16,8 @@ public sealed class AppSettings
     public string ActiveProfile { get; set; } = "Default";
     public Dictionary<string, List<string>> Profiles { get; set; } = new() { ["Default"] = ["crew-console"] };
     public Dictionary<string, Dictionary<string, string>> InstalledVersions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public bool SetupDismissedWithoutRoot { get; set; }
+    public Dictionary<string, string> SetupByRoot { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     [JsonIgnore] public string? LoadError { get; private set; }
     [JsonIgnore] public bool IsReadOnly => LoadError != null;
     [JsonIgnore] public IReadOnlyList<string> SelectedModIds => Profiles.TryGetValue(ActiveProfile, out var mods) ? mods.AsReadOnly() : Array.Empty<string>();
@@ -124,6 +126,35 @@ public sealed class AppSettings
         InstalledVersions[root] = versions;
     }
 
+    public string? SetupStateFor(string? launcherPath)
+    {
+        var root = Setup.ResolveRoot(launcherPath);
+        if (root.Length == 0) return null;
+        return SetupByRoot.FirstOrDefault(pair => Setup.NormalizePath(pair.Key).Equals(root, StringComparison.OrdinalIgnoreCase)).Value;
+    }
+
+    /// <summary>Record the user's choice in memory; the caller persists it with Save.</summary>
+    public void SuppressSetupFor(string? launcherPath)
+    {
+        if (IsReadOnly) throw new InvalidOperationException("Recover damaged settings before saving a setup decision.");
+        if (string.IsNullOrWhiteSpace(launcherPath)) { SetupDismissedWithoutRoot = true; return; }
+        RecordSetupState(launcherPath, "dismissed");
+    }
+
+    /// <summary>Record completion only after setup succeeds; the caller persists it with Save.</summary>
+    public void CompleteSetupFor(string launcherPath) => RecordSetupState(launcherPath, "completed");
+
+    private void RecordSetupState(string launcherPath, string state)
+    {
+        if (IsReadOnly) throw new InvalidOperationException("Recover damaged settings before saving a setup decision.");
+        var root = Setup.ResolveRoot(launcherPath);
+        if (root.Length == 0) throw new ArgumentException("Choose an installation before recording setup completion.", nameof(launcherPath));
+        var existing = SetupByRoot.Keys.FirstOrDefault(key => Setup.NormalizePath(key).Equals(root, StringComparison.OrdinalIgnoreCase));
+        if (existing is null && SetupByRoot.Count >= 64) throw new InvalidOperationException("At most 64 installation setup decisions can be stored.");
+        if (existing is not null) SetupByRoot.Remove(existing);
+        SetupByRoot[root] = state;
+    }
+
     private static bool ValidProfileName(string? name) => name is { Length: > 0 and <= 40 } && !string.IsNullOrWhiteSpace(name) && !name.Any(char.IsControl);
 
     private void Validate()
@@ -138,7 +169,10 @@ public sealed class AppSettings
                 || mods.Any(id => id == null || Catalog.ById(id) == null) || mods.Distinct().Count() != mods.Count)
             || InstalledVersions == null || InstalledVersions.Count > 64
             || InstalledVersions.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > 4096 || pair.Value == null
-                || pair.Value.Count > Catalog.Bundled.Count || pair.Value.Any(mod => Catalog.ById(mod.Key) == null || !SemanticVersion.TryParse(mod.Value, out _))))
+                || pair.Value.Count > Catalog.Bundled.Count || pair.Value.Any(mod => Catalog.ById(mod.Key) == null || !SemanticVersion.TryParse(mod.Value, out _)))
+            || SetupByRoot == null || SetupByRoot.Count > 64
+            || SetupByRoot.Any(pair => !Setup.IsValidStoredRoot(pair.Key) || pair.Value is not ("dismissed" or "completed"))
+            || SetupByRoot.Keys.Select(Setup.NormalizePath).Distinct(StringComparer.OrdinalIgnoreCase).Count() != SetupByRoot.Count)
             throw new InvalidDataException("Settings have an unsupported version or invalid values.");
     }
 }

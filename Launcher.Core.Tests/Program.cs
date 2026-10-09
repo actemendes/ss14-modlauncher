@@ -58,6 +58,8 @@ try { await CatalogUpdateTests.RunAsync(); }
 catch (Exception ex) { failures++; Console.Error.WriteLine("FAIL catalog/update tests\n" + ex); }
 try { await NotificationTests.RunAsync(); }
 catch (Exception ex) { failures++; Console.Error.WriteLine("FAIL automatic update notification tests\n" + ex); }
+try { SetupTests.Run(); }
+catch (Exception ex) { failures++; Console.Error.WriteLine("FAIL first-run setup tests\n" + ex); }
 var liveRepositoryIndex = Array.IndexOf(args, "--live-repository");
 if (liveRepositoryIndex >= 0 && liveRepositoryIndex + 1 < args.Length)
 {

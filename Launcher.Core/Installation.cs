@@ -655,6 +655,9 @@ public static class Installation
         }
     }
 
+    /// <summary>Read-only process preflight for setup UI; installation repeats this check before any write.</summary>
+    public static void CheckNotRunning(string root) => EnsureNotRunning(ValidateRoot(root));
+
     private static void EnsureNotRunning(string root)
     {
         foreach (var name in new[] { "SS14.Loader", "Robust.Client", "SS14.Launcher", "SS14.Launcher.clean" })

@@ -2,7 +2,7 @@
 
 ## Source, checks and trust
 
-The default source is `actemendes/ss14-modlauncher`; the user can change it to a trusted `owner/repository` or clear it. Existing saved sources are retained. Version 0.1.3 checks once when the app opens, unless `CheckUpdatesOnStartup` is false. A manual check is also available. Both use the latest stable GitHub Release and its exact `mods-manifest.json` asset.
+The default source is `actemendes/ss14-modlauncher`; the user can change it to a trusted `owner/repository` or clear it. Existing saved sources are retained. Since 0.1.3, the launcher checks once when the app opens, unless `CheckUpdatesOnStartup` is false. A manual check is also available. Both use the latest stable GitHub Release and its exact `mods-manifest.json` asset.
 
 Startup checks fetch metadata only. There is no automatic DLL download, installation, launcher replacement, periodic timer or closed-app/tray service. Offline failures do not interrupt startup; the Updates page exposes retry/status. Changed source, installation, installed versions or an opt-out invalidate an in-flight automatic result.
 
@@ -66,7 +66,7 @@ This example is not installable. Generate the real hashes from exact release DLL
 
 Publish the manifest and DLLs as separate assets. Mod filenames and IDs must match the known catalog. Download URLs must remain in the configured repository's release asset namespace. The launcher URL must identify `SS14ModLauncher-<launcher.version>-win-x64.zip` under tag `v<launcher.releaseVersion>`. The runtime checks that tag against the explicit hosting release, not against the application version. ZIP mod installation and dependency resolution are outside this format.
 
-A mod-only feed 0.1.4 can retain `launcher.version: 0.1.3` and `launcher.releaseVersion: 0.1.3`, pointing to the existing ZIP. A subsequent full feed 0.1.5 can publish app 0.1.4 with `launcher.releaseVersion: 0.1.5`; its URL ends in `/v0.1.5/SS14ModLauncher-0.1.4-win-x64.zip`. Only `launcher.version` determines whether a newer app exists.
+A future mod-only feed 0.1.5 could retain `launcher.version: 0.1.4` and `launcher.releaseVersion: 0.1.4`, pointing to the existing ZIP. A subsequent full feed 0.1.6 could publish app 0.1.5 with `launcher.releaseVersion: 0.1.6`; its URL would end in `/v0.1.6/SS14ModLauncher-0.1.5-win-x64.zip`. Only `launcher.version` determines whether a newer app exists.
 
 ## Artifact identity and build output
 

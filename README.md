@@ -6,11 +6,11 @@
 
 [Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.3/SS14ModLauncher-0.1.3-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.4/SS14ModLauncher-0.1.4-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.3** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.4** targets **Windows x64**.
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -20,6 +20,7 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 
 | Feature | In this release |
 | --- | --- |
+| First-run setup | Find SS14 automatically and set up the recommended Crew Console profile with one action |
 | Mod library | Choose the bundled Crew Console and Hello World mods |
 | Profiles | Save different selections and switch before starting the client |
 | RU / EN | Localized launcher and bundled mod labels |
@@ -35,11 +36,11 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.3-win-x64.zip` package to a writable folder. No separate .NET installation is required.
-2. Close the SS14 client and its original launcher, then run **SS14ModLauncher.exe**.
-3. Select the folder containing `SS14.Launcher.exe` and `loader/SS14.Loader.dll`. A Steam installation usually uses `Space Station 14 Playtest/bin_x64`.
-4. Choose a profile and mods, then install them or launch with the selected mods. Recognized Steam installations also receive the launch integration automatically.
-5. Start SS14 from Steam or ModLauncher. Steam Play opens ModLauncher; its Launch action opens the original SS14 launcher for your normal server connection.
+1. Extract the complete `SS14ModLauncher-0.1.4-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+2. Run **SS14ModLauncher.exe**. The first-run window looks for SS14 and offers the recommended default profile with **Crew Console** enabled.
+3. Press **Set up & play**. ModLauncher installs the selected mods, adds Steam integration for a recognized Steam installation, and opens the original SS14 launcher for your normal server connection.
+
+If the game was not found, choose its folder; ModLauncher also accepts the game folder above `bin_x64`. If the game or original launcher is running, close it and retry. Cancelling setup installs nothing and dismisses the automatic prompt for that installation. Return anytime through **Installation → Quick setup**. Existing installations skip the automatic popup. After setup, Steam Play opens ModLauncher, where profiles and individual mods remain editable.
 
 Steam integration is enabled by default when a matching Steam app manifest and library layout identify the installation. The mod patch and reversible launch bridge are installed together. Standalone installations keep their original entry point. Use **Disable integration** to opt out: that choice survives mod updates and reinstalls. Restoring clean SS14 removes the bridge immediately and preserves your preference for a later reinstall. See the [user guide](docs/user-guide.md).
 
@@ -47,7 +48,7 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
-Launcher **0.1.3** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
+Launcher **0.1.4** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
 
 ### Crew Console
 

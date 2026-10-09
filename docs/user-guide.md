@@ -2,15 +2,33 @@
 
 [English README](../README.md) · [Русский README](../README.ru.md)
 
-## First launch
+## First launch / Первый запуск
 
-Extract the entire release archive, then run `SS14ModLauncher.exe`. The application includes its .NET runtime. Select the directory containing both `SS14.Launcher.exe` and `loader/SS14.Loader.dll`; selecting the Steam library root is not sufficient.
+Extract the entire release archive, then run `SS14ModLauncher.exe`. The application includes its .NET runtime. For a new installation, the first-run setup window looks for SS14 and shows the active profile and its selected mods. The initial default profile has **Crew Console** enabled and **Hello World** disabled. Existing profiles remain available and are not replaced by the recommendation.
 
-Close both the game and original SS14 launcher before installation, updates, Steam integration, or restoration. The app can remain open. If the chosen folder is protected by Windows, use a writable installation folder or grant the required file access; elevation is not a substitute for selecting the right directory.
+Choose Russian or English, check the detected game folder, then press **Set up & play**. The action installs the selected mods and opens the original SS14 launcher for the normal server connection. A recognized Steam installation receives the mod patch and Steam launch integration together by default; an existing explicit opt-out is respected. Later, Steam Play opens ModLauncher. Standalone installations keep their original entry point.
 
-Choose Russian or English, select a profile and mods, then install them or launch with the selected mods. Since 0.1.2, a recognized Steam installation receives both the mod patch and Steam launch integration together by default. Steam Play subsequently opens ModLauncher; its Launch action opens the original launcher for your normal server connection. Standalone installations keep their original entry point. Changing a checkbox affects the next client session after applying it; already running client processes retain their loaded DLLs.
+If no game is found, use the folder chooser. Select the directory containing both `SS14.Launcher.exe` and `loader/SS14.Loader.dll`, or its game parent folder when those files are under `bin_x64`; the Steam library root is not sufficient. If the game or original launcher is running, close it and retry. ModLauncher itself can remain open; setup never forcibly closes game processes.
 
-Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Выберите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll`, а не корень библиотеки Steam. Перед установкой, обновлением и восстановлением закройте игру и штатный лаунчер. Выберите язык, профиль, набор модов и установите их или запустите игру. Начиная с 0.1.2 для распознанной установки Steam патч модов и интеграция запуска устанавливаются вместе по умолчанию: «Играть» открывает ModLauncher, затем его кнопка запуска — оригинальный лаунчер. Установка вне Steam сохраняет прежнюю точку запуска. Изменения модов действуют для следующего запуска клиента.
+**Later** or closing the setup window installs nothing and remembers the dismissal for that installation. A dismissal before any game folder is found applies only while the folder is missing; choosing a new installation can show setup again. Already installed or previously restored installations skip the automatic popup, as do settings that cannot safely be written. Open **Installation → Quick setup** whenever you want to return to the wizard.
+
+Close both the game and original launcher before subsequent installation, updates or restoration. If the chosen folder is protected by Windows, use a writable installation folder or grant the required file access; elevation is not a substitute for selecting the right directory. Profile and mod changes apply to the next client session; a running client retains its loaded DLLs.
+
+Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Для новой установки окно первого запуска найдёт SS14 и покажет текущий профиль с выбранными модами. Начальный стандартный профиль включает **Crew Console**, а **Hello World** оставляет выключенным. Существующие профили сохраняются и не заменяются рекомендуемым набором.
+
+Выберите русский или английский язык, проверьте найденную папку и нажмите **Настроить и играть**. Приложение установит выбранные моды и откроет штатный лаунчер для обычного подключения к серверу. Для распознанной установки Steam патч и интеграция запуска устанавливаются вместе по умолчанию; прежнее явное отключение интеграции сохраняется. В дальнейшем «Играть» открывает ModLauncher. Установка вне Steam сохраняет прежнюю точку запуска.
+
+Если игра не найдена, укажите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll` или папку игры, внутри которой они лежат в `bin_x64`. Корень библиотеки Steam не подходит. Если игра или штатный лаунчер работают, закройте их и повторите попытку; ModLauncher можно оставить открытым. Настройка сама не завершает игровые процессы.
+
+Кнопка **Позже** или закрытие окна ничего не устанавливает и сохраняет отказ от автоматического предложения для этой установки. Если папка игры ещё не найдена, отказ действует только до выбора установки. Для уже установленного или ранее восстановленного ModLauncher автоматическое окно не появляется; оно также пропускается, если настройки нельзя безопасно записать. Вернуться к мастеру можно через **Установка → Быстрая настройка**.
+
+Перед последующей установкой, обновлением и восстановлением также закрывайте игру и штатный лаунчер. Изменения профиля и модов действуют для следующего запуска клиента.
+
+## Help and hints / Справка и подсказки
+
+**Getting started** in the left navigation explains setup, launching, updates and restoration. Hover over controls with hints to read their purpose; hovering over the bottom status also shows its full text. If a requested action fails, the main window shows an explanatory message as well as the status. Setup errors appear inside the wizard, with a way to open Diagnostics. Background update failures remain quiet on the Updates page.
+
+Кнопка **Как начать?** слева объясняет настройку, запуск, обновления и восстановление. Наведите курсор на элементы с подсказками, чтобы узнать их назначение; наведение на нижнюю строку состояния показывает полный текст. Если действие не удалось, основное окно покажет пояснение и сообщение в строке состояния. Ошибки настройки выводятся внутри мастера, откуда можно открыть диагностику. Ошибки фоновой проверки обновлений остаются во вкладке «Обновления».
 
 ## Profiles
 
@@ -67,7 +85,7 @@ There is no periodic timer or tray updater, and nothing checks while ModLauncher
 
 The notification distinguishes a new **ModLauncher** version from individual **mod** updates. Use **Download & apply mods** only when you want to install the listed compatible updates, with the game and original launcher closed. A mod requiring a newer launcher is listed separately with its required version; compatible mods can still be updated. The launcher itself is downloaded from its own ZIP link and upgraded manually. Nothing is downloaded or applied by the startup check.
 
-Launcher **0.1.3** includes the previously published Crew Console **0.1.2** and Hello World **0.1.2** DLLs unchanged. A newer launcher does not imply new mod versions. A future release containing only mod updates can continue to point to an earlier, compatible launcher ZIP.
+Launcher **0.1.4** includes the previously published Crew Console **0.1.2** and Hello World **0.1.2** DLLs unchanged. A newer launcher does not imply new mod versions. A future release containing only mod updates can continue to point to an earlier, compatible launcher ZIP.
 
 Источник по умолчанию — `actemendes/ss14-modlauncher`. При открытии ModLauncher один раз в фоне проверяет последний релиз и `mods-manifest.json`; пользоваться лаунчером можно сразу. Отключите **Проверять обновления при запуске** во вкладке «Обновления», если эта проверка не нужна. Выбор сохраняется. В старых настройках без такого поля проверка включена по умолчанию.
 
@@ -75,7 +93,7 @@ Launcher **0.1.3** includes the previously published Crew Console **0.1.2** and 
 
 Уведомление отдельно показывает новую версию **ModLauncher** и обновления **модов**. Кнопка **Загрузить и применить моды** устанавливает только совместимые обновления по вашей команде; перед этим закройте игру и оригинальный лаунчер. Мод, которому нужен новый лаунчер, показан отдельно с минимальной версией и не мешает обновить остальные совместимые моды. Сам лаунчер скачивается отдельным ZIP и обновляется вручную. Проверка при запуске ничего не скачивает и не устанавливает.
 
-Лаунчер **0.1.3** включает прежние опубликованные DLL Crew Console **0.1.2** и Hello World **0.1.2** без изменения байтов. Новая версия лаунчера не означает новые версии модов. Релиз только с обновлениями модов может ссылаться на прежний совместимый ZIP лаунчера.
+Лаунчер **0.1.4** включает прежние опубликованные DLL Crew Console **0.1.2** и Hello World **0.1.2** без изменения байтов. Новая версия лаунчера не означает новые версии модов. Релиз только с обновлениями модов может ссылаться на прежний совместимый ZIP лаунчера.
 
 Use another `owner/repository` only if you trust that publisher. Invalid manifests, unsafe URLs and wrong hashes are rejected. Routine mod updates preserve an explicit Steam integration opt-out.
 
