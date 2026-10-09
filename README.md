@@ -58,7 +58,7 @@ A small example mod with a movable, resizable window. Press **F1**, **0**, or **
 
 ## Compatibility and trust
 
-The original prototype was exercised with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
+Version **0.1.0** was exercised in a local game with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. See the [verification record](docs/verification.md). Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
 
 Mods run as local DLLs with the game's process permissions. Use trusted code and follow the rules of the server you join. SHA-256 checks detect download corruption or a mismatch with the selected manifest; they do not establish that a publisher is trustworthy. Engine signature checks and normal SS14 authentication are not disabled.
 

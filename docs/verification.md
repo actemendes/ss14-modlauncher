@@ -1,31 +1,41 @@
 # Verification record — 0.1.0
 
-Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**.
-
-This record describes the publication candidate prepared locally. No GitHub release was published.
+Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**. Live game: **SS14 Launcher 0.40.2**, **Robust 275.0.0**, local Dev/Sandbox server bound to loopback with hub advertising disabled.
 
 ## Completed checks
 
 | Area | Result |
 | --- | --- |
 | Crew history, timeline, layout and map projection | 26 regression checks passed |
-| Installer and restore core | 23 cases passed, including exact restore, invalid payload/path rejection, changed backup protection, transaction recovery, Steam bridge state and upstream-baseline adoption |
-| Bootstrap selection | Offline checks passed for selection validation, path confinement, SHA-256 validation and clean-session bypass |
-| Catalog, profiles and updates | Offline checks passed for settings/profile persistence, semantic versions, manifest/source/download bounds and invalid update rejection |
-| Original loader compatibility | Install/restore roundtrip exercised on a copied real original SS14 loader; original bytes restored |
-| Published Steam bridge | Published executable handed off to the stable launcher; restoration exercised while that stable UI remained open |
-| Packaging | Self-contained EXE and ZIP created; runtime/dependency notices and artwork present; release-asset SHA-256 checksums verified |
-| Documentation | Relative Markdown links checked; Crew Console limits preserved separately from historical port research |
+| Installer and restore core | 24/24 cases passed: 21 core scenarios plus real-loader, published Steam handoff and self-contained executable tests |
+| Bootstrap selection | Selection validation, path confinement, SHA-256 validation and clean-session bypass passed |
+| Catalog, profiles and updates | Settings/profile persistence, semantic versions, HTTP pipeline, manifest/source/download bounds and invalid update rejection passed |
+| Self-contained package | Extracted EXE installed, inspected and restored a disposable installation with isolated runtime variables; host trace confirmed use of bundled runtime |
+| Original loader compatibility | Install/restore on a copied real SS14 loader restored exact original bytes |
+| Live Crew Console, English | Only Crew Console loaded; native console, portrait layout, crew row, map and health card displayed; loss of server telemetry preserved history and showed no telemetry |
+| Live Crew Console, Russian | Only Crew Console loaded through the actual Steam chain; current sensor count, health card, map, landscape layout, historical point selection, dragging the timeline and return to Live passed |
+| Live Hello World, Russian | Only Hello World loaded; F1 opened and closed its localized window; native crew console remained unchanged |
+| Live empty selection | A fresh client connected with no verified mods; bootstrap continued with the standard client and the native crew console |
+| Actual Steam integration | Steam Play opened the stable ModLauncher; its Launch action opened the preserved original launcher, which connected the client to the local server |
+| Actual Steam restoration | Product restore returned exact original loader and launcher bytes and disabled the bridge; the pre-test legacy installation was then reinstated, matching all 92 baseline files by path and SHA-256; Steam Play then opened the original launcher normally |
+| Published executable handoff fixture | Stable launcher handoff and restoration while that UI remained open passed |
+| Packaging | Self-contained EXE and ZIP, runtime/dependency notices, MIT license, documentation and artwork present; release asset SHA-256 checksums verified |
+| Documentation and source audit | Relative links checked; publication files/history checked for secrets and proprietary game binaries |
 | Build version guard | An inconsistent requested version was rejected before output mutations |
+| GitHub CI | Windows build and test workflow passed on the published source |
 
-The UI has native Russian and English screenshots under `docs/assets/`. Those renders document appearance; they are not evidence of a successful multiplayer session.
+The live sessions used the game's own sensor network and locally spawned test NPCs. A disposable test server with an independent power supply was used after the Dev map's original sensor server lost power. No public multiplayer server was used for these tests. The original installation and ModLauncher settings were restored; the local test server was stopped.
 
-## Limits of this verification
+## Publication verification
 
-- The final new bootstrap/mod selection path has not yet been rechecked in a live game session. Existing compatibility experience with Launcher 0.40.2 and Robust 275.0.0 does not prove every new release path or every server fork.
-- The executable handoff test is not a claim that the actual Steam Play button was exercised on every installation layout.
-- Update tests used controlled offline responses. A live public GitHub Release, download redirects and publisher configuration still need a smoke test after the owner publishes the intended assets.
-- Fresh-machine execution without an installed .NET runtime, all Windows DPI settings, antivirus reputation and code-signing behaviour have not been exhaustively tested.
-- The application is not digitally signed by a public code-signing certificate.
+The release package is built from a clean Git revision recorded in `build-info.json`. Public GitHub API, release download and update checks are performed after publication; their outcome is recorded in the current [online verification record](https://github.com/actemendes/ss14-modlauncher/blob/main/docs/verification.md) and release notes.
 
-Before publication, follow the remaining relevant steps in the [release checklist](releasing.md). Update this record with actual results when those checks are performed; do not silently convert pending checks into compatibility claims.
+## Scope and remaining compatibility limits
+
+- These results cover the tested Windows installation and engine version, not every server fork, future SS14 update or Steam library layout.
+- Russian and English native UI and both crew console layouts were inspected at the desktop's current display settings. All Windows DPI combinations were not tested.
+- The self-contained trace confirms the bundled runtime on this computer; a fresh Windows machine without an installed .NET runtime was not available.
+- The application is not digitally signed by a public code-signing certificate. Antivirus reputation and SmartScreen behaviour vary by machine.
+- Normal authentication and engine signature verification were preserved. No claim is made that every possible argument accepted by the original launcher was individually exercised.
+
+See the [release checklist](releasing.md) for future versions.
