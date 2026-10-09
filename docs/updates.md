@@ -12,22 +12,22 @@ If GitHub rejects the anonymous API request with a primary quota limit (HTTP 403
 
 ```json
 {
-  "version": "0.1.1",
-  "minLauncherVersion": "0.1.1",
+  "version": "0.1.2",
+  "minLauncherVersion": "0.1.2",
   "mods": [
     {
       "id": "crew-console",
       "file": "CrewConsole.Mod.dll",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "sha256": "<64 hexadecimal SHA-256 characters>",
-      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.1/CrewConsole.Mod.dll"
+      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.2/CrewConsole.Mod.dll"
     },
     {
       "id": "hello-world",
       "file": "HelloWorld.Mod.dll",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "sha256": "<64 hexadecimal SHA-256 characters>",
-      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.1/HelloWorld.Mod.dll"
+      "downloadUrl": "https://github.com/owner/repository/releases/download/v0.1.2/HelloWorld.Mod.dll"
     }
   ]
 }
@@ -48,5 +48,7 @@ With `-Repository ''`, the build emits `mods-manifest.local.json` with real hash
 ## Applying an update
 
 The app validates the manifest and downloads before replacing supported DLLs. Close the game and original launcher first. Apply the resulting selection before launching a new client so its selected hashes match the installed bytes. The bootstrap independently checks each selected DLL's hash.
+
+Routine mod updates retain the installation's explicit Steam integration preference. An earlier **Disable integration** choice is not reset by updating or reinstalling mods. New 0.1.2 launcher behaviour is delivered by the launcher ZIP, not by downloading mod DLLs alone.
 
 A rejected update should leave a clear error. Do not bypass validation by manually editing hashes in installation state or selection files.

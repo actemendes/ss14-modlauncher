@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 — 2026-10-09
+
+- Steam integration becomes the default for installations identified by a matching Steam app manifest and library layout. Installing mods or launching them for the first time also installs the bridge; CLI `--install` follows the same policy.
+- The loader patch and Steam bridge are applied as one transaction, so a failed install rolls them back together.
+- Explicit **Disable integration** and **Enable integration** choices are retained through routine mod updates, reinstalls and restoration. Restoring clean SS14 removes the active bridge while preserving the preference for a future reinstall.
+- Standalone installations keep their original launcher entry point by default. A published single-file executable is required only when installation enables the Steam bridge.
+- Upgrade the launcher using the 0.1.2 ZIP to receive this change; mod DLL updates alone do not replace the launcher.
+
 ## 0.1.1 — 2026-10-09
 
 - Mod update checks can retrieve the latest public release manifest when the anonymous GitHub API quota is exhausted.

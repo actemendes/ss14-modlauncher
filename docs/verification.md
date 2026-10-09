@@ -2,9 +2,22 @@
 
 Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**. Live game: **SS14 Launcher 0.40.2**, **Robust 275.0.0**, local Dev/Sandbox server bound to loopback with hub advertising disabled.
 
-Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged.
+Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy and must be verified separately.
 
-## Completed checks
+## 0.1.2 — verification pending
+
+The new default enables the Steam bridge together with the mod patch on a recognized Steam installation, unless the user explicitly opted out. Standalone installs keep their original entry point. The checks below are required for this change; no 0.1.2 pass is claimed yet.
+
+- Default integration through GUI install, first mod launch and CLI `--install`, with matching Steam manifest/layout detection.
+- Joint rollback of loader and bridge changes on failure; unchanged standalone installation behaviour.
+- Explicit disable retained through routine updates, reinstall and restoration; explicit enable and later restore/reinstall follow the saved preference.
+- Missing preference uses the new default; old stable-launcher/ownership files are not treated as an opt-out.
+- Published single-file enforcement only when the policy enables Steam integration, plus Steam handoff/argument preservation.
+- Package, checksums and relevant existing regression suites for the final 0.1.2 source.
+
+The current local Steam installation has integration enabled using 0.1.1 and is being retained in that state. That is operational context, not evidence that the new 0.1.2 default has passed. Prior test cleanup statements below refer to their recorded historical sessions.
+
+## Completed checks — 0.1.0 / 0.1.1
 
 | Area | Result |
 | --- | --- |
@@ -42,7 +55,7 @@ The initial anonymous API update check encountered GitHub's shared-IP quota limi
 - ZIP SHA-256: `E0AC42064B61F97AC0DB5B41B806DC42E5FFCE117E983D450586537810F24109`.
 - The downloaded self-contained EXE installed both bundled mods on a disposable legacy installation, then restored the original loader and launcher bytes. Embedded DLLs matched the public release assets.
 - Production UpdateService successfully checked the actual latest 0.1.1 release, downloaded both mod DLLs with matching SHA-256 and local bytes, then reported zero updates for current installed versions. The public fallback worked while the anonymous API quota remained exhausted.
-- The published tag resolves to the build's source commit. Original 0.1.0 assets remain unchanged; 0.1.1 is the latest stable release.
+- The published tag resolves to the build's source commit. Original 0.1.0 assets remained unchanged; 0.1.1 was the latest stable release at that verification.
 
 ## Scope and remaining compatibility limits
 

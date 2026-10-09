@@ -183,7 +183,7 @@ internal sealed class LauncherWindow : Form
         stack.Controls.Add(Theme.Label(StateText, 9, Theme.Mint, true));
         var steam = Section(page, 183); stack = Stack(steam);
         stack.Controls.Add(Theme.Label(T("Запуск из Steam", "Launch from Steam") + (Installation.IsSteamEnabled(_settings.LauncherPath) ? T("  ·  включён", "  ·  enabled") : T("  ·  выключен", "  ·  disabled")), 15, bold: true));
-        stack.Controls.Add(Theme.Label(T("Кнопка «Играть» сначала откроет ModLauncher. Параметры запуска сохраняются.\nОригинальный запускатор резервируется; проверка файлов Steam может отключить интеграцию.", "Steam's Play button opens ModLauncher first. Launch arguments are preserved.\nThe original launcher is backed up; Steam file verification may remove this integration."), 10, Theme.Muted));
+        stack.Controls.Add(Theme.Label(T("При установке в Steam включается автоматически: «Играть» открывает ModLauncher.\nРучное отключение запоминается. Оригинальный запускатор сохраняется для восстановления.", "Enabled automatically when installing into Steam: Play opens ModLauncher.\nAn explicit opt-out is remembered. The original launcher is backed up for restoration."), 10, Theme.Muted));
         var steamButtons = new FlowLayoutPanel { Width = 850, Height = 48, WrapContents = false };
         steamButtons.Controls.Add(Theme.Button(T("Включить интеграцию", "Enable integration"), (_, _) => Run(() => { NeedRoot(); if (!AppRuntime.IsSingleFile()) throw new InvalidOperationException(T("Для интеграции используйте опубликованную single-file сборку из dist.", "Use the published single-file build from dist for Steam integration.")); Installation.EnableSteam(_settings.LauncherPath, Environment.ProcessPath!); RefreshState(); Render(); }, T("Интеграция включена. Теперь запускайте SS14 из Steam.", "Integration enabled. Launch SS14 from Steam."))));
         steamButtons.Controls.Add(Theme.Button(T("Отключить интеграцию", "Disable integration"), (_, _) => Run(() => { NeedRoot(); Installation.DisableSteam(_settings.LauncherPath); RefreshState(); Render(); }, T("Оригинальный запускатор Steam восстановлен.", "Original Steam launcher restored.")))); stack.Controls.Add(steamButtons);
@@ -265,14 +265,14 @@ internal sealed class LauncherWindow : Form
         var bundled = Payload.Read();
         _settings.RecordInstalledVersions(_settings.LauncherPath, Catalog.Bundled.Where(mod => payload.TryGetValue(mod.File, out var bytes) && bytes.AsSpan().SequenceEqual(bundled[mod.File])).Select(mod => new ModUpdate { Id = mod.Id, Version = mod.Version }));
     }
-    private void Install() => Run(() => { NeedRoot(); var payload = CurrentPayload(); Installation.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); Save(); RefreshState(); Render(); }, T("Моды установлены. Можно запускать SS14.", "Mods installed. Ready to launch SS14."));
+    private void Install() => Run(() => { NeedRoot(); var payload = CurrentPayload(); AppRuntime.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); Save(); RefreshState(); Render(); }, T("Установка завершена. Для Steam запуск ModLauncher включается автоматически, если вы его не отключали.", "Installation complete. Steam opens ModLauncher automatically unless you previously opted out."));
     private void Launch(bool clean)
     {
         Run(() =>
         {
             NeedRoot(); RefreshState();
             if (_installationState == "installed") Installation.SetSelection(_settings.LauncherPath, clean ? [] : SelectedFiles, _settings.Language);
-            else if (!clean) { var payload = CurrentPayload(); Installation.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); }
+            else if (!clean) { var payload = CurrentPayload(); AppRuntime.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); }
             else if (_installationState != "clean") throw new InvalidOperationException(T("Сначала восстановите чистую установку на вкладке «Установка».", "Restore a clean installation in the Installation tab first."));
             var executable = Installation.GetLaunchExecutable(_settings.LauncherPath);
             var start = new ProcessStartInfo(executable) { UseShellExecute = false, WorkingDirectory = _settings.LauncherPath };

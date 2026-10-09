@@ -10,7 +10,7 @@
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.1** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.2** targets **Windows x64**.
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -24,8 +24,8 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 | Profiles | Save different selections and switch before starting the client |
 | RU / EN | Localized launcher and bundled mod labels |
 | Installer and patcher | Back up the original loader and verify file hashes before changing it |
-| Steam integration | Optionally open ModLauncher from the normal Steam Play action |
-| Restore clean SS14 | Restore the loader and optional Steam entry point using verified backups |
+| Steam integration | Steam Play opens ModLauncher by default after installation; you can opt out |
+| Restore clean SS14 | Restore the loader and Steam entry point using verified backups |
 | Mod updates | Manually check a configured GitHub repository; verify downloaded DLLs against its manifest |
 | Diagnostics | Inspect installation state, save a local report, or launch once without mods |
 | Local operation | Use bundled mods without an account or an update service |
@@ -34,13 +34,13 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.1-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+1. Extract the complete `SS14ModLauncher-0.1.2-win-x64.zip` package to a writable folder. No separate .NET installation is required.
 2. Close the SS14 client and its original launcher, then run **SS14ModLauncher.exe**.
 3. Select the folder containing `SS14.Launcher.exe` and `loader/SS14.Loader.dll`. A Steam installation usually uses `Space Station 14 Playtest/bin_x64`.
-4. Choose a profile and mods, then install/apply the selection.
-5. Launch SS14 from ModLauncher. Connect to your server using the original SS14 launcher.
+4. Choose a profile and mods, then install them or launch with the selected mods. Recognized Steam installations also receive the launch integration automatically.
+5. Start SS14 from Steam or ModLauncher. Steam Play opens ModLauncher; its Launch action opens the original SS14 launcher for your normal server connection.
 
-Optional Steam integration replaces the launcher entry point with a reversible bridge. Steam Play then opens ModLauncher, which starts the original launcher when you are ready. See the [user guide](docs/user-guide.md) before enabling it.
+Steam integration is enabled by default when a matching Steam app manifest and library layout identify the installation. The mod patch and reversible launch bridge are installed together. Standalone installations keep their original entry point. Use **Disable integration** to opt out: that choice survives mod updates and reinstalls. Restoring clean SS14 removes the bridge immediately and preserves your preference for a later reinstall. See the [user guide](docs/user-guide.md).
 
 To remove the integration, close the client and original launcher and use **Restore originals**. Do not delete the backups manually. A Steam update or file verification can overwrite patched files; the app checks the installation instead of blindly overwriting unexpected changes.
 
@@ -58,7 +58,7 @@ A small example mod with a movable, resizable window. Press **F1**, **0**, or **
 
 ## Compatibility and trust
 
-The bundled mods were exercised in a local game with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. See the [verification record](docs/verification.md). Other launcher versions, server forks, and future client updates require separate verification. This first release does not promise compatibility with every server.
+The **0.1.0** bundled mods were exercised in a local game with **SS14 Launcher 0.40.2** and **Robust 275.0.0**. See the [verification record](docs/verification.md). Other launcher versions, server forks, and future client updates require separate verification. Compatibility with every server is not guaranteed.
 
 Mods run as local DLLs with the game's process permissions. Use trusted code and follow the rules of the server you join. SHA-256 checks detect download corruption or a mismatch with the selected manifest; they do not establish that a publisher is trustworthy. Engine signature checks and normal SS14 authentication are not disabled.
 

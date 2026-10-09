@@ -28,6 +28,15 @@ var tests = new List<(string Name, Action Run)>
     ("adoption refuses a still-patched loader or active wrapper", UnsafeRebase),
     ("verified updated mods survive restore and tampered bytes are never adopted", VerifiedInstalledMods),
     ("Steam integration refuses an unrelated executable", UnrelatedLauncher),
+    ("Steam detection requires matching library layout and app manifest", SteamDetection),
+    ("default Steam installation patches and enables the launcher together", SteamDefaultInstallation),
+    ("invalid default bridge fails before any installation writes", SteamDefaultPreflightFailure),
+    ("locked Steam executable rolls back the entire default installation", SteamDefaultAtomicFailure),
+    ("explicit Steam disable survives installs, selections, updates and restore", SteamDisablePreference),
+    ("restore preserves default Steam enable for explicit reinstall", SteamRestoreReinstallDefault),
+    ("mods-only legacy install adopts default only through explicit install", SteamLegacyDefault),
+    ("standalone default installation never replaces its executable", StandaloneDefault),
+    ("invalid Steam preference fails without adopting a default", InvalidSteamPreference),
 };
 var realLoaderIndex = Array.IndexOf(args, "--real-loader");
 if (realLoaderIndex >= 0 && realLoaderIndex + 1 < args.Length)
@@ -37,7 +46,7 @@ if (publishedIndex >= 0 && publishedIndex + 1 < args.Length)
     tests.Add(("published executable Steam handoff in isolated fixture", () => PublishedHandoff(args[publishedIndex + 1])));
 var selfContainedIndex = Array.IndexOf(args, "--self-contained-launcher");
 if (selfContainedIndex >= 0 && selfContainedIndex + 1 < args.Length)
-    tests.Add(("self-contained executable CLI install/restore with isolated runtime environment", () => SelfContainedCli(args[selfContainedIndex + 1])));
+    tests.Add(("self-contained CLI standalone/Steam defaults, restore and explicit opt-out", () => SelfContainedCli(args[selfContainedIndex + 1])));
 var failures = 0;
 foreach (var (name, run) in tests)
 {
@@ -348,28 +357,170 @@ static void UnrelatedLauncher()
     True(!File.Exists(f.Path("SS14ModLauncher/steam.json")));
 }
 
+static void SteamDetection()
+{
+    using var f = new Fixture(steam: true);
+    True(Installation.IsSteamInstallation(f.Root));
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    var originalManifest = File.ReadAllText(f.ManifestPath!);
+    File.WriteAllText(f.ManifestPath!, originalManifest.Replace("\"1482520\"", "\"12345\""));
+    True(!Installation.IsSteamInstallation(f.Root));
+    File.WriteAllText(f.ManifestPath!, originalManifest.Replace("\"installdir\"\t\t\"Space Station 14 Playtest\"", "\"installdir\"\t\t\"Other game\""));
+    True(!Installation.IsSteamInstallation(f.Root));
+    File.WriteAllText(f.ManifestPath!, originalManifest.Replace("\"installdir\"\t\t\"Space Station 14 Playtest\"", "\"installdir\"\t\t\"../Space Station 14 Playtest\""));
+    True(!Installation.IsSteamInstallation(f.Root));
+    File.WriteAllText(f.ManifestPath!, originalManifest.Replace("\"StateFlags\"", "\"installdir\""));
+    True(!Installation.IsSteamInstallation(f.Root));
+    File.Delete(f.ManifestPath!);
+    True(!Installation.IsSteamInstallation(f.Root));
+    using var standalone = new Fixture();
+    standalone.Write("appmanifest_1482520.acf", Encoding.UTF8.GetBytes(originalManifest));
+    True(!Installation.IsSteamInstallation(standalone.Root));
+}
+
+static void SteamDefaultInstallation()
+{
+    using var f = new Fixture(steam: true);
+    f.InstallDefaults();
+    Equal("installed", Installation.Inspect(f.Root).State);
+    True(Installation.IsSteamEnabled(f.Root));
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    Bytes(f.Wrapper, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.clean.exe")));
+    True(File.Exists(f.Path("SS14ModLauncher/preferences.json")));
+}
+
+static void SteamDefaultPreflightFailure()
+{
+    using var f = new Fixture(steam: true);
+    f.Write("bad-wrapper.exe", [1, 2, 3]);
+    Code("steam-unsupported", () => Installation.InstallWithDefaults(f.Root, f.Payload, ["Test.Mod.dll"], "en", f.Path("bad-wrapper.exe")));
+    Bytes(f.OriginalLoader, File.ReadAllBytes(f.Path("loader/SS14.Loader.dll")));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+    True(!Directory.Exists(f.Path("loader/SS14LocalMods")));
+    True(!Directory.Exists(f.Path("SS14ModLauncher")));
+}
+
+static void SteamDefaultAtomicFailure()
+{
+    if (!OperatingSystem.IsWindows()) return;
+    using var f = new Fixture(steam: true);
+    using (var held = new FileStream(f.Path("SS14.Launcher.exe"), FileMode.Open, FileAccess.Read, FileShare.Read))
+    {
+        var error = Throws<Exception>(() => f.InstallDefaults());
+        True(error is IOException or UnauthorizedAccessException);
+        Bytes(f.OriginalLoader, File.ReadAllBytes(f.Path("loader/SS14.Loader.dll")));
+        Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+        True(!File.Exists(f.Path("loader/SS14LocalMods/installation.json")));
+        True(!File.Exists(f.Path("loader/SS14LocalMods/SS14.Loader.original.dll")));
+        True(!File.Exists(f.Path("SS14.Launcher.clean.exe")));
+        True(!File.Exists(f.Path("SS14ModLauncher/SS14ModLauncher.exe")));
+        True(!File.Exists(f.Path("SS14ModLauncher/preferences.json")));
+        True(!Directory.Exists(f.Path(".ss14-modlauncher-transaction")));
+    }
+    f.InstallDefaults();
+    True(Installation.IsSteamEnabled(f.Root));
+}
+
+static void SteamDisablePreference()
+{
+    using var f = new Fixture(steam: true);
+    // An explicit disable also works before the first installation.
+    Installation.DisableSteam(f.Root);
+    True(!Installation.ShouldEnableSteamByDefault(f.Root));
+    Installation.InstallWithDefaults(f.Root, f.Payload, ["Test.Mod.dll"], "en", f.Path("does-not-exist.exe"));
+    True(!Installation.IsSteamEnabled(f.Root));
+    f.EnableSteam();
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    Installation.DisableSteam(f.Root);
+    f.Payload["Test.Mod.dll"] = [91, 92, 93];
+    f.InstallDefaults();
+    f.Install();
+    Installation.SetSelection(f.Root, [], "en");
+    True(!Installation.IsSteamEnabled(f.Root));
+    True(!Installation.ShouldEnableSteamByDefault(f.Root));
+    Installation.Restore(f.Root);
+    f.InstallDefaults();
+    True(!Installation.IsSteamEnabled(f.Root));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+    f.EnableSteam();
+    True(Installation.IsSteamEnabled(f.Root));
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+}
+
+static void SteamRestoreReinstallDefault()
+{
+    using var f = new Fixture(steam: true);
+    f.InstallDefaults();
+    Installation.Restore(f.Root);
+    True(!Installation.IsSteamEnabled(f.Root));
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    f.InstallDefaults();
+    True(Installation.IsSteamEnabled(f.Root));
+    Installation.Restore(f.Root);
+    File.Delete(f.Path("SS14ModLauncher/preferences.json")); // Pre-0.1.2 restore footprint.
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    f.InstallDefaults();
+    True(Installation.IsSteamEnabled(f.Root));
+}
+
+static void SteamLegacyDefault()
+{
+    using var f = new Fixture(steam: true);
+    f.Install();
+    Installation.SetSelection(f.Root, [], "en");
+    True(!Installation.IsSteamEnabled(f.Root));
+    True(!File.Exists(f.Path("SS14ModLauncher/preferences.json")));
+    True(Installation.ShouldEnableSteamByDefault(f.Root));
+    f.InstallDefaults();
+    True(Installation.IsSteamEnabled(f.Root));
+}
+
+static void StandaloneDefault()
+{
+    using var f = new Fixture();
+    True(!Installation.IsSteamInstallation(f.Root));
+    True(!Installation.ShouldEnableSteamByDefault(f.Root));
+    Installation.InstallWithDefaults(f.Root, f.Payload, ["Test.Mod.dll"], "ru", f.Path("does-not-exist.exe"));
+    Equal("installed", Installation.Inspect(f.Root).State);
+    True(!Installation.IsSteamEnabled(f.Root));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+    True(!File.Exists(f.Path("SS14ModLauncher/preferences.json")));
+}
+
+static void InvalidSteamPreference()
+{
+    using var f = new Fixture(steam: true);
+    f.Write("SS14ModLauncher/preferences.json", "{}"u8.ToArray());
+    Code("state-invalid", () => f.InstallDefaults());
+    Bytes(f.OriginalLoader, File.ReadAllBytes(f.Path("loader/SS14.Loader.dll")));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
+    True(!File.Exists(f.Path("loader/SS14LocalMods/installation.json")));
+}
+
 static void SelfContainedCli(string published)
 {
     using var f = new Fixture();
     var executable = System.IO.Path.GetFullPath(published);
-    var emptyRuntime = f.Path("empty-runtime");
-    var extraction = f.Path("bundle-extraction");
-    Directory.CreateDirectory(emptyRuntime);
-    void Run(string operation)
+    void Run(string operation, Fixture? fixture = null)
     {
+        var target = fixture ?? f;
+        var emptyRuntime = target.Path("empty-runtime");
+        var extraction = target.Path("bundle-extraction");
+        Directory.CreateDirectory(emptyRuntime);
         var start = new System.Diagnostics.ProcessStartInfo(executable)
         {
-            UseShellExecute = false, WorkingDirectory = f.Root, CreateNoWindow = true,
+            UseShellExecute = false, WorkingDirectory = target.Root, CreateNoWindow = true,
             RedirectStandardOutput = true, RedirectStandardError = true,
             WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
         };
-        start.ArgumentList.Add(operation); start.ArgumentList.Add(f.Root);
+        start.ArgumentList.Add(operation); start.ArgumentList.Add(target.Root);
         start.Environment["DOTNET_ROOT"] = emptyRuntime;
         start.Environment["DOTNET_ROOT_X64"] = emptyRuntime;
         start.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
         start.Environment["DOTNET_BUNDLE_EXTRACT_BASE_DIR"] = extraction;
         start.Environment["DOTNET_HOST_TRACE"] = "1";
-        start.Environment["DOTNET_HOST_TRACEFILE"] = f.Path(operation.TrimStart('-') + "-host-trace.txt");
+        start.Environment["DOTNET_HOST_TRACEFILE"] = target.Path(operation.TrimStart('-') + "-host-trace.txt");
         using var process = System.Diagnostics.Process.Start(start)!;
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
@@ -383,6 +534,9 @@ static void SelfContainedCli(string published)
     }
     Run("--install");
     Equal("installed", Installation.Inspect(f.Root).State);
+    True(!Installation.IsSteamInstallation(f.Root));
+    True(!Installation.IsSteamEnabled(f.Root));
+    Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
     Equal("CrewConsole.Mod.dll", Installation.ReadSelection(f.Root)!.EnabledMods.Single().File);
     var mods = Installation.ReadVerifiedInstalledMods(f.Root);
     Equal(Catalog.Bundled.Count, mods.Count);
@@ -401,7 +555,33 @@ static void SelfContainedCli(string published)
     Equal("clean", Installation.Inspect(f.Root).State);
     Bytes(f.OriginalLoader, File.ReadAllBytes(f.Path("loader/SS14.Loader.dll")));
     Bytes(f.OriginalLauncher, File.ReadAllBytes(f.Path("SS14.Launcher.exe")));
-    Console.WriteLine($"Self-contained EXE SHA-256: {Hash(File.ReadAllBytes(executable))}");
+    var publishedHash = Hash(File.ReadAllBytes(executable));
+    using var steam = new Fixture(steam: true);
+    True(Installation.IsSteamInstallation(steam.Root));
+    Run("--install", steam);
+    Equal("installed", Installation.Inspect(steam.Root).State);
+    True(Installation.IsSteamEnabled(steam.Root));
+    Equal(publishedHash, Hash(File.ReadAllBytes(steam.Path("SS14.Launcher.exe"))));
+    Equal(publishedHash, Hash(File.ReadAllBytes(steam.Path("SS14ModLauncher/SS14ModLauncher.exe"))));
+    Run("--restore", steam);
+    Bytes(steam.OriginalLauncher, File.ReadAllBytes(steam.Path("SS14.Launcher.exe")));
+    Bytes(steam.OriginalLoader, File.ReadAllBytes(steam.Path("loader/SS14.Loader.dll")));
+    True(Installation.ShouldEnableSteamByDefault(steam.Root));
+    Run("--install", steam);
+    True(Installation.IsSteamEnabled(steam.Root));
+    Installation.DisableSteam(steam.Root);
+    True(!Installation.ShouldEnableSteamByDefault(steam.Root));
+    Run("--install", steam);
+    True(!Installation.IsSteamEnabled(steam.Root));
+    Bytes(steam.OriginalLauncher, File.ReadAllBytes(steam.Path("SS14.Launcher.exe")));
+    Run("--restore", steam);
+    Run("--install", steam);
+    True(!Installation.IsSteamEnabled(steam.Root));
+    True(!Installation.ShouldEnableSteamByDefault(steam.Root));
+    Run("--restore", steam);
+    Bytes(steam.OriginalLauncher, File.ReadAllBytes(steam.Path("SS14.Launcher.exe")));
+    Bytes(steam.OriginalLoader, File.ReadAllBytes(steam.Path("loader/SS14.Loader.dll")));
+    Console.WriteLine($"Self-contained EXE SHA-256: {publishedHash}");
 }
 
 static void PublishedHandoff(string published)
@@ -490,7 +670,9 @@ static T Throws<T>(Action action) where T : Exception
 
 sealed class Fixture : IDisposable
 {
-    public string Root { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ss14-modlauncher-core-tests", Guid.NewGuid().ToString("N"));
+    private string Sandbox { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ss14-modlauncher-core-tests", Guid.NewGuid().ToString("N"));
+    public string Root { get; }
+    public string? ManifestPath { get; }
     public byte[] OriginalLoader { get; }
     public byte[] OriginalLauncher { get; } = Encoding.ASCII.GetBytes("MZSS14.Launcher.dll" + new string('A', 110));
     public byte[] Wrapper { get; } = Encoding.ASCII.GetBytes("MZ" + new string('W', 126));
@@ -498,8 +680,15 @@ sealed class Fixture : IDisposable
     {
         ["SS14LocalMods.Bootstrap.dll"] = [1, 2, 3], ["0Harmony.dll"] = [4, 5, 6], ["Test.Mod.dll"] = [7, 8, 9]
     };
-    public Fixture()
+    public Fixture(bool steam = false)
     {
+        Root = steam ? System.IO.Path.Combine(Sandbox, "steamapps", "common", "Space Station 14 Playtest", "bin_x64") : Sandbox;
+        if (steam)
+        {
+            ManifestPath = System.IO.Path.Combine(Sandbox, "steamapps", "appmanifest_1482520.acf");
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(ManifestPath)!);
+            File.WriteAllText(ManifestPath, "\"AppState\"\n{\n\t\"appid\"\t\t\"1482520\"\n\t\"name\"\t\t\"Space Station 14 Playtest\"\n\t\"installdir\"\t\t\"Space Station 14 Playtest\"\n\t\"StateFlags\"\t\t\"4\"\n\t\"UserConfig\"\n\t{\n\t\t\"language\"\t\t\"english\"\n\t}\n}\n");
+        }
         using var assembly = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition("SS14.Loader", new Version(1, 0)), "SS14.Loader", ModuleKind.Dll);
         var type = new TypeDefinition("SS14.Loader", "Program", TypeAttributes.Class | TypeAttributes.Public, assembly.MainModule.TypeSystem.Object);
         assembly.MainModule.Types.Add(type);
@@ -513,6 +702,7 @@ sealed class Fixture : IDisposable
     public string Path(string relative) => System.IO.Path.Combine(Root, relative.Replace('/', System.IO.Path.DirectorySeparatorChar));
     public void Write(string relative, byte[] bytes) { var path = Path(relative); Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!); File.WriteAllBytes(path, bytes); }
     public void Install() => Installation.Install(Root, Payload, ["Test.Mod.dll"], "ru");
+    public void InstallDefaults() { Write("test-wrapper.exe", Wrapper); Installation.InstallWithDefaults(Root, Payload, ["Test.Mod.dll"], "ru", Path("test-wrapper.exe")); }
     public void EnableSteam() { Write("test-wrapper.exe", Wrapper); Installation.EnableSteam(Root, Path("test-wrapper.exe")); }
     public void Journal(string target, byte[] before, byte[] after)
     {
@@ -525,7 +715,7 @@ sealed class Fixture : IDisposable
     }
     public void Dispose()
     {
-        var full = System.IO.Path.GetFullPath(Root);
+        var full = System.IO.Path.GetFullPath(Sandbox);
         var allowed = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ss14-modlauncher-core-tests")) + System.IO.Path.DirectorySeparatorChar;
         if (!full.StartsWith(allowed, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Unsafe test cleanup path.");
         Directory.Delete(full, recursive: true);

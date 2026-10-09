@@ -19,7 +19,7 @@ The directory name `Installer` is retained for source continuity; its published 
 
 ```mermaid
 flowchart LR
-    A[Direct launch or optional Steam bridge] --> B[ModLauncher]
+    A[Direct launch or default Steam bridge] --> B[ModLauncher]
     B --> C[Original SS14 launcher]
     C --> D[Patched SS14 loader]
     D --> E[Local bootstrap]
@@ -35,12 +35,13 @@ A small call is added to `SS14.Loader.dll`. Normal authentication and engine ver
 Paths below are relative to the selected SS14 launcher directory:
 
 ```text
-SS14.Launcher.exe                    original apphost, or optional Steam bridge
+SS14.Launcher.exe                    original apphost, or enabled Steam bridge
 SS14.Launcher.clean.exe              original apphost backup for Steam integration
 SS14ModLauncher/
   SS14ModLauncher.exe               stable installed mod launcher
   steam.json                        active Steam integration hashes/state
   launcher.json                     retained stable launcher ownership
+  preferences.json                  retained explicit Steam integration choice
 loader/
   SS14.Loader.dll                   original or patched loader
   SS14LocalMods/
@@ -57,11 +58,19 @@ loader/
 
 The original launcher apphost is kept in its original directory so it can resolve its existing launcher DLL/runtime files. No Steam library configuration is rewritten.
 
+## Steam installation policy
+
+Version 0.1.2 recognizes `steamapps/common/<installdir>/bin_x64` only when a matching `appmanifest_<appid>.acf` exists with the same internal `appid` and `installdir`. A Steam-like directory name alone is insufficient. `InstallWithDefaults` prepares the loader patch and Steam bridge for one transaction. The GUI install action, first mod launch that needs installation, and CLI `--install` use this policy. Standalone installations retain their original entry point.
+
+The explicit choice is stored in `SS14ModLauncher/preferences.json` with a boolean `SteamIntegration` and `Version: 1`, for example `{"SteamIntegration":true,"Version":1}`. Disable records false, including before the first installation; enable records true. Routine mod updates and reinstall preserve that decision. Restore removes the active bridge while retaining the preference for future installation. Missing preference means a detected Steam installation defaults to on; retained launcher ownership or stable executable files must not be interpreted as an explicit opt-out. Lower-level `Install` and `SetSelection` update mods without changing integration.
+
+When this policy calls for a bridge, the application must supply a published single-file executable. That requirement is specific to installing/updating the bridge; standalone installation and an explicitly disabled Steam integration do not acquire it.
+
 Per-user settings live in `%LOCALAPPDATA%/SS14ModLauncher/settings.json`. Runtime mod logs remain in `%LOCALAPPDATA%/SS14LocalMods/mods.log`.
 
 ## Integrity and failure behaviour
 
-Installation state records SHA-256 values. Existing and backup files are checked before changing or restoring them. Unknown changes produce an error rather than being overwritten. The core uses a transaction journal and rollback for installation mutations; restoration checks the loader and optional Steam integration together.
+Installation state records SHA-256 values. Existing and backup files are checked before changing or restoring them. Unknown changes produce an error rather than being overwritten. The core uses a transaction journal and rollback for installation mutations. When Steam integration is enabled, installation stages the mod patch and bridge together, and failure rolls both back. Restoration checks the loader and installed Steam integration together.
 
 Selection is explicit. Missing or corrupt selection data does not enable arbitrary DLLs. Bootstrap loads only selected, hash-matching filenames, and catches individual mod failures. This is integrity checking, not a security sandbox.
 
@@ -71,6 +80,6 @@ Mod update manifests are obtained only from the configured GitHub release source
 
 ## Supported scope
 
-Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.1. Profile changes take effect on a newly launched game client.
+Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.2. Profile changes take effect on a newly launched game client.
 
 The [Crew Console reference](mods/crew-console.md) describes telemetry limits. The older [port research](crew-monitor-port.md) is preserved as historical design context.

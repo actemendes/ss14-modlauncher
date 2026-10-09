@@ -8,9 +8,9 @@ Extract the entire release archive, then run `SS14ModLauncher.exe`. The applicat
 
 Close both the game and original SS14 launcher before installation, updates, Steam integration, or restoration. The app can remain open. If the chosen folder is protected by Windows, use a writable installation folder or grant the required file access; elevation is not a substitute for selecting the right directory.
 
-Choose Russian or English, select a profile and mods, and apply the selection. Then start SS14 from ModLauncher and connect normally through the original launcher. Changing a checkbox affects the next client session after applying it; already running client processes retain their loaded DLLs.
+Choose Russian or English, select a profile and mods, then install them or launch with the selected mods. In 0.1.2, a recognized Steam installation receives both the mod patch and Steam launch integration together by default. Steam Play subsequently opens ModLauncher; its Launch action opens the original launcher for your normal server connection. Standalone installations keep their original entry point. Changing a checkbox affects the next client session after applying it; already running client processes retain their loaded DLLs.
 
-Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Выберите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll`, а не корень библиотеки Steam. Перед установкой, обновлением и восстановлением закройте игру и штатный лаунчер. Выберите язык, профиль, набор модов и примените его. Изменения действуют для следующего запуска клиента.
+Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Выберите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll`, а не корень библиотеки Steam. Перед установкой, обновлением и восстановлением закройте игру и штатный лаунчер. Выберите язык, профиль, набор модов и установите их или запустите игру. В 0.1.2 для распознанной установки Steam патч модов и интеграция запуска устанавливаются вместе по умолчанию: «Играть» открывает ModLauncher, затем его кнопка запуска — оригинальный лаунчер. Установка вне Steam сохраняет прежнюю точку запуска. Изменения модов действуют для следующего запуска клиента.
 
 ## Profiles
 
@@ -20,13 +20,23 @@ A profile is a saved set of enabled mod IDs. Use one for Crew Console, another f
 
 ## Steam integration
 
-Integration is optional. It backs up the original launcher executable beside its DLL, installs a bridge at `SS14.Launcher.exe`, and stores ModLauncher in the installation's `SS14ModLauncher` folder. Steam's normal Play action then opens ModLauncher; the app starts the backed-up original launcher.
+Steam integration is **on by default** for an installation identified by a matching Steam app manifest and the expected library layout. Installing mods, the first launch that installs mods, and CLI `--install` use the same default. The patch and bridge are applied in one transaction; a failed installation is rolled back together.
+
+The integration backs up the original launcher executable beside its DLL, installs a bridge at `SS14.Launcher.exe`, and stores ModLauncher in the installation's `SS14ModLauncher` folder. Steam Play then opens ModLauncher; the app starts the backed-up original launcher. Automatic integration requires the published single-file build from the release ZIP. A standalone installation does not acquire a Steam bridge automatically.
+
+Use **Disable integration** in Installation to keep Steam launching the original launcher directly. This does not uninstall mods. The explicit off setting survives normal mod updates, repeated installs and restoration. **Enable integration** saves the on setting. Restoring clean SS14 removes the active bridge but retains the preference: a later reinstall enables it again if you left it on, and leaves it off if you explicitly disabled it.
 
 No Steam account data, library metadata, or global Steam settings are edited. The integration affects this SS14 installation and also its existing shortcuts that target `SS14.Launcher.exe`. Starting ModLauncher directly works without integration.
 
 Steam updates and Verify integrity can replace the bridge or loader. Refresh the installation state after a game update. If the app reports a hash conflict, keep the backups and stop modifying that installation until the changed files have been identified.
 
-Интеграция Steam необязательна. Оригинальный EXE сохраняется рядом со своей DLL, на место `SS14.Launcher.exe` устанавливается мост, а ModLauncher копируется в подпапку установки. Обычная кнопка Steam открывает ModLauncher, затем он запускает оригинальный лаунчер. Настройки и аккаунт Steam не меняются. Обновление игры может заменить мост или загрузчик; после обновления проверьте состояние установки.
+Для установки с соответствующим манифестом приложения и ожидаемой структурой библиотеки Steam интеграция **включена по умолчанию**. Обычная установка модов, первый запуск с установкой модов и CLI `--install` применяют одно правило. Патч и мост записываются одной транзакцией; при ошибке изменения откатываются вместе.
+
+Оригинальный EXE сохраняется рядом со своей DLL, на место `SS14.Launcher.exe` устанавливается мост, а ModLauncher копируется в подпапку установки. Кнопка Steam открывает ModLauncher, затем он запускает оригинальный лаунчер. Для автоматической интеграции нужна опубликованная single-file сборка из ZIP релиза. Установка вне Steam не получает мост автоматически.
+
+Кнопка **Отключить интеграцию** возвращает прямой запуск оригинального лаунчера из Steam, сохраняя установленные моды. Явное отключение сохраняется при обычных обновлениях модов, повторной установке и восстановлении. **Включить интеграцию** сохраняет включённое состояние. Восстановление чистого SS14 убирает действующий мост, но оставляет предпочтение: при следующей установке он вернётся, если вы оставили интеграцию включённой, и останется отключённым после явного отказа.
+
+Настройки и аккаунт Steam не меняются. Обновление игры может заменить мост или загрузчик; после обновления проверьте состояние установки.
 
 ## Restore clean SS14
 
@@ -35,11 +45,11 @@ Steam updates and Verify integrity can replace the bridge or loader. Refresh the
 3. Choose the restore-clean action and read the result.
 4. Start SS14 normally to verify that the original launcher works.
 
-The restore path checks backup and installed-file hashes. A file altered by another tool is not silently overwritten. It restores the original loader and removes the optional Steam entry-point replacement. Retained mod files/settings are inactive after restoring the original loader; personal profiles do not have to be deleted.
+The restore path checks backup and installed-file hashes. A file altered by another tool is not silently overwritten. It restores the original loader and removes the Steam entry-point replacement if installed. Retained mod files/settings are inactive after restoring the original loader; personal profiles do not have to be deleted. The Steam integration preference is retained for a later reinstall; restoration itself leaves the original launcher active.
 
 Never remove `installation.json`, `SS14.Loader.original.dll`, `steam.json`, or `SS14.Launcher.clean.exe` to bypass an error. They are recovery evidence. If Steam has already restored original files, the app can recognize their recorded hashes. If backups are unavailable, preserve the installation for investigation before using Steam's own Verify integrity as an external recovery route.
 
-Для возврата чистого SS14 закройте игру и оригинальный лаунчер, выберите установку и нажмите восстановление. Проверяются хеши файлов и резервных копий; неизвестные изменения не затираются. Оставшиеся моды и настройки неактивны после восстановления исходного загрузчика. Не удаляйте файлы состояния и резервные копии ради обхода ошибки.
+Для возврата чистого SS14 закройте игру и оригинальный лаунчер, выберите установку и нажмите восстановление. Проверяются хеши файлов и резервных копий; неизвестные изменения не затираются. Оставшиеся моды и настройки неактивны после восстановления исходного загрузчика. Предпочтение интеграции Steam сохраняется для будущей переустановки; сразу после восстановления работает оригинальный лаунчер. Не удаляйте файлы состояния и резервные копии ради обхода ошибки.
 
 ### After an upstream Steam update / После обновления Steam
 

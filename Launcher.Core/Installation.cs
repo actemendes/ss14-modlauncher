@@ -36,6 +36,7 @@ public static class Installation
     private const string StableLauncher = "SS14ModLauncher/SS14ModLauncher.exe";
     private const string SteamRecord = "SS14ModLauncher/steam.json";
     private const string StableRecord = "SS14ModLauncher/launcher.json";
+    private const string Preferences = "SS14ModLauncher/preferences.json";
     private const string JournalDirectory = ".ss14-modlauncher-transaction";
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
     private static readonly string[] RuntimeFiles = ["SS14LocalMods.Bootstrap.dll", "0Harmony.dll"];
@@ -45,6 +46,7 @@ public static class Installation
     private sealed record LoaderState(string OriginalHash, string PatchedHash, Dictionary<string, string>? OwnedFiles = null, int Version = 2);
     private sealed record SteamState(string OriginalHash, string WrapperHash, int Version = 1);
     private sealed record StableState(string Hash, int Version = 1);
+    private sealed record IntegrationPreferences(bool? SteamIntegration, int Version = 1);
     private sealed record JournalEntry(string Path, string? BeforeHash, string? AfterHash, string? Snapshot);
     private sealed record Journal(int Version, IReadOnlyList<JournalEntry> Entries);
 
@@ -90,6 +92,29 @@ public static class Installation
         using var guard = Lock(root);
         EnsureNotRunning(root);
         RecoverPending(root);
+        Commit(root, PrepareInstallWrites(root, payload, enabledFiles, language));
+    }
+
+    /// <summary>
+    /// Installs mods and, for a detected Steam installation, its default launcher bridge
+    /// in one transaction. A prior explicit integration preference is respected.
+    /// </summary>
+    public static void InstallWithDefaults(string root, IReadOnlyDictionary<string, byte[]> payload,
+        IReadOnlyList<string> enabledFiles, string language, string modLauncherExecutable)
+    {
+        root = ValidateRoot(root);
+        using var guard = Lock(root);
+        EnsureNotRunning(root);
+        RecoverPending(root);
+        var writes = PrepareInstallWrites(root, payload, enabledFiles, language);
+        if (ShouldEnableSteamByDefault(root))
+            foreach (var (path, bytes) in PrepareSteamWrites(root, modLauncherExecutable)) writes.Add(path, bytes);
+        Commit(root, writes);
+    }
+
+    private static Dictionary<string, byte[]?> PrepareInstallWrites(string root, IReadOnlyDictionary<string, byte[]> payload,
+        IReadOnlyList<string> enabledFiles, string language)
+    {
         ValidateLanguage(language);
         if (payload is null || RuntimeFiles.Any(x => !payload.ContainsKey(x)))
             throw Error("payload-invalid", "The bootstrap and Harmony payloads are required.");
@@ -143,7 +168,7 @@ public static class Installation
         writes[Record] = Encode(new LoaderState(Hash(original), Hash(patched), owned));
         // Publish the loader last, after its dependencies, selection, backup and state.
         writes[Loader] = patched;
-        Commit(root, writes);
+        return writes;
     }
 
     public static void SetSelection(string root, IReadOnlyList<string> enabledFiles, string language)
@@ -249,17 +274,68 @@ public static class Installation
         catch { return false; }
     }
 
+    /// <summary>Detect the selected SS14 folder from Steam's library layout and its matching app manifest.</summary>
+    public static bool IsSteamInstallation(string root)
+    {
+        try
+        {
+            root = ValidateRoot(root);
+            var bin = new DirectoryInfo(root);
+            var game = bin.Parent;
+            var common = game?.Parent;
+            var steamapps = common?.Parent;
+            if (!bin.Name.Equals("bin_x64", StringComparison.OrdinalIgnoreCase) || game is null
+                || common?.Name.Equals("common", StringComparison.OrdinalIgnoreCase) != true
+                || steamapps?.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase) != true) return false;
+            foreach (var manifest in steamapps.EnumerateFiles("appmanifest_*.acf", SearchOption.TopDirectoryOnly))
+            {
+                if (manifest.Length is <= 0 or > 512 * 1024) continue;
+                EnsureNoLinks(manifest.FullName);
+                var text = File.ReadAllText(manifest.FullName);
+                if (!Regex.IsMatch(text, @"\A\s*""AppState""\s*\{", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)) continue;
+                var id = ManifestValue(text, "appid");
+                var installDir = ManifestValue(text, "installdir");
+                if (id is null || !Regex.IsMatch(id, @"\A[0-9]+\z")
+                    || !manifest.Name.Equals("appmanifest_" + id + ".acf", StringComparison.OrdinalIgnoreCase)
+                    || installDir is null || installDir.IndexOfAny(['/', '\\', ':']) >= 0 || installDir is "." or "..") continue;
+                if (game.Name.Equals(installDir, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InstallationException) { }
+        return false;
+    }
+
+    /// <summary>Resolve the Steam default without modifying any files.</summary>
+    public static bool ShouldEnableSteamByDefault(string root)
+    {
+        root = ValidateRoot(root);
+        if (!IsSteamInstallation(root)) return false;
+        var preference = ReadIntegrationPreferences(root);
+        return preference?.SteamIntegration ?? true;
+    }
+
+    private static string? ManifestValue(string text, string key)
+    {
+        var matches = Regex.Matches(text, "\"" + Regex.Escape(key) + "\"\\s+\"([^\"\\\\]*)\"", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        return matches.Count == 1 ? matches[0].Groups[1].Value : null;
+    }
+
     public static void EnableSteam(string root, string modLauncherExecutable)
     {
         root = ValidateRoot(root);
         using var guard = Lock(root);
         EnsureNotRunning(root);
         RecoverPending(root);
-        if (!File.Exists(At(root, "SS14.Launcher.dll")))
-            throw Error("steam-unsupported", "Steam integration requires SS14.Launcher.dll beside its executable.");
         var installed = ReadLoaderState(root) ?? throw Error("not-installed", "Install the mod launcher before enabling Steam integration.");
         ValidateBackup(root, installed);
         if (!Same(HashFile(At(root, Loader)), installed.PatchedHash)) throw Error("loader-changed", "Install against the current game loader first.");
+        Commit(root, PrepareSteamWrites(root, modLauncherExecutable));
+    }
+
+    private static Dictionary<string, byte[]?> PrepareSteamWrites(string root, string modLauncherExecutable)
+    {
+        if (!File.Exists(At(root, "SS14.Launcher.dll")))
+            throw Error("steam-unsupported", "Steam integration requires SS14.Launcher.dll beside its executable.");
         var source = Path.GetFullPath(modLauncherExecutable);
         if (string.Equals(source, At(root, Launcher), StringComparison.OrdinalIgnoreCase) || string.Equals(source, At(root, CleanLauncher), StringComparison.OrdinalIgnoreCase))
             throw Error("steam-unsupported", "Use the published SS14ModLauncher executable as the integration payload.");
@@ -293,8 +369,9 @@ public static class Installation
         writes[StableLauncher] = wrapper;
         writes[StableRecord] = Encode(new StableState(Hash(wrapper)));
         writes[SteamRecord] = Encode(new SteamState(Hash(original), Hash(wrapper)));
+        writes[Preferences] = Encode(new IntegrationPreferences(true));
         writes[Launcher] = wrapper;
-        Commit(root, writes);
+        return writes;
     }
 
     public static void DisableSteam(string root)
@@ -303,7 +380,9 @@ public static class Installation
         using var guard = Lock(root);
         EnsureNotRunning(root);
         RecoverPending(root);
-        Commit(root, SteamRestoreWrites(root));
+        var writes = SteamRestoreWrites(root);
+        writes[Preferences] = Encode(new IntegrationPreferences(false));
+        Commit(root, writes);
     }
 
     /// <summary>
@@ -431,6 +510,15 @@ public static class Installation
         var state = Read<StableState>(At(root, StableRecord));
         if (state.Version != 1 || !IsHash(state.Hash)) throw Error("state-invalid", "The stable launcher record is invalid.");
         return state;
+    }
+
+    private static IntegrationPreferences? ReadIntegrationPreferences(string root)
+    {
+        if (!File.Exists(At(root, Preferences))) return null;
+        var preferences = Read<IntegrationPreferences>(At(root, Preferences));
+        if (preferences.Version != 1 || preferences.SteamIntegration is null)
+            throw Error("state-invalid", "The Steam integration preference is invalid.");
+        return preferences;
     }
 
     private static Dictionary<string, string> ReadOwnership(string root)
@@ -707,7 +795,7 @@ public static class Installation
 
     private static void ValidateTransactionTarget(string relative)
     {
-        if (relative is Loader or Record or Backup or Selection or Ownership or Launcher or CleanLauncher or StableLauncher or SteamRecord or StableRecord) return;
+        if (relative is Loader or Record or Backup or Selection or Ownership or Launcher or CleanLauncher or StableLauncher or SteamRecord or StableRecord or Preferences) return;
         if (relative.StartsWith(Home + "/", StringComparison.Ordinal))
         {
             var file = relative[(Home.Length + 1)..];

@@ -7,7 +7,7 @@ namespace SS14ModLauncher;
 
 internal static class Program
 {
-    internal const string Version = "0.1.1";
+    internal const string Version = "0.1.2";
     internal static string[] ForwardedArguments = [];
     [STAThread]
     private static int Main(string[] args)
@@ -30,7 +30,7 @@ internal static class Program
             }
             if (args.Length == 2 && args[0] is "--install" or "--uninstall" or "--restore" or "--status")
             {
-                if (args[0] == "--install") Installation.Install(args[1], Payload.ForInstallation(args[1]), ["CrewConsole.Mod.dll"], "en");
+                if (args[0] == "--install") AppRuntime.Install(args[1], Payload.ForInstallation(args[1]), ["CrewConsole.Mod.dll"], "en");
                 else if (args[0] == "--status") Console.WriteLine(JsonSerializer.Serialize(Installation.Inspect(args[1])));
                 else Installation.Restore(args[1]);
                 return 0;

@@ -13,7 +13,7 @@ cd ss14-modlauncher
 Outputs:
 
 - `dist/SS14ModLauncher/`: self-contained runnable app, documentation and notices.
-- `dist/SS14ModLauncher-0.1.1-win-x64.zip`: portable release package.
+- `dist/SS14ModLauncher-0.1.2-win-x64.zip`: portable release package.
 - `dist/mod-assets/`: individual mod DLLs and a manifest.
 - `dist/SHA256SUMS.txt`: SHA-256 checksums of release assets.
 - `dist/build-info.json`: SDK, source revision and build metadata.
@@ -21,7 +21,7 @@ Outputs:
 Default builds generate manifest URLs for `actemendes/ss14-modlauncher` without publishing. The explicit release command is:
 
 ```powershell
-./build.ps1 -Version 0.1.1 -Repository actemendes/ss14-modlauncher
+./build.ps1 -Version 0.1.2 -Repository actemendes/ss14-modlauncher
 ```
 
 Use `-Repository ''` for a local manifest template with empty download URLs, or specify your own repository when building a fork.
@@ -66,7 +66,7 @@ The bundled mods use Harmony. Core libraries are stored beside the bootstrap and
 4. Include both RU and EN launcher text; separately test the mod's own localization.
 5. Add targeted tests and user documentation.
 
-Version 0.1.1 deliberately uses a known catalog. Dropping an unknown DLL into `Mods/` is not a supported installation mechanism.
+Version 0.1.2 deliberately uses a known catalog. Dropping an unknown DLL into `Mods/` is not a supported installation mechanism.
 
 ## Future Git submodules
 
@@ -96,7 +96,9 @@ These maintenance commands return exit code 0 on success and a nonzero code on f
 ./SS14ModLauncher.exe --restore "C:\path\to\bin_x64"
 ```
 
-`--uninstall` is an alias for `--restore`. CLI operations have the same compatibility and hash checks as the UI; close the client and original launcher first.
+`--uninstall` is an alias for `--restore`. CLI operations have the same compatibility and hash checks as the UI; close the client and original launcher first. In 0.1.2, `--install` uses the default Steam policy: a matching Steam app manifest and library layout enable the bridge unless the user explicitly opted out. The loader patch and bridge share one transaction. Supply the published single-file app when the policy enables Steam integration; standalone installs and an explicit opt-out keep the original entry point.
+
+Use the core `InstallWithDefaults` path for CLI installation, GUI installation and the first mod launch. Lower-level `Install` and `SetSelection` leave integration unchanged for mods-only operations. Keep detection and `SS14ModLauncher/preferences.json` handling in the core. Do not infer an opt-out from an old stable launcher or ownership record. Explicit disable/enable and restoration must preserve the documented preference lifecycle; see [architecture](architecture.md).
 
 For a controlled UI session or screenshot:
 
