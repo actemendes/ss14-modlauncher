@@ -6,11 +6,11 @@
 
 [Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/latest) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.3/SS14ModLauncher-0.1.3-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.2** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.3** targets **Windows x64**.
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -26,15 +26,16 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 | Installer and patcher | Back up the original loader and verify file hashes before changing it |
 | Steam integration | Steam Play opens ModLauncher by default after installation; you can opt out |
 | Restore clean SS14 | Restore the loader and Steam entry point using verified backups |
-| Mod updates | Manually check a configured GitHub repository; verify downloaded DLLs against its manifest |
+| Update notifications | Check once at startup; show launcher and mod updates separately |
+| Independent mod updates | Apply compatible DLL updates with SHA-256 verification; see which need a newer launcher |
 | Diagnostics | Inspect installation state, save a local report, or launch once without mods |
 | Local operation | Use bundled mods without an account or an update service |
 
-The default update source is [`actemendes/ss14-modlauncher`](https://github.com/actemendes/ss14-modlauncher). Checks run only when requested. ModLauncher does not silently update itself or install arbitrary ZIP packages.
+The default update source is [`actemendes/ss14-modlauncher`](https://github.com/actemendes/ss14-modlauncher). ModLauncher checks once in the background when opened; disable **Check for updates at startup** in Updates if preferred. Manual checks remain available. Nothing downloads or installs automatically, and checks do not run while the app is closed. An unavailable network does not block launch.
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.2-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+1. Extract the complete `SS14ModLauncher-0.1.3-win-x64.zip` package to a writable folder. No separate .NET installation is required.
 2. Close the SS14 client and its original launcher, then run **SS14ModLauncher.exe**.
 3. Select the folder containing `SS14.Launcher.exe` and `loader/SS14.Loader.dll`. A Steam installation usually uses `Space Station 14 Playtest/bin_x64`.
 4. Choose a profile and mods, then install them or launch with the selected mods. Recognized Steam installations also receive the launch integration automatically.
@@ -45,6 +46,8 @@ Steam integration is enabled by default when a matching Steam app manifest and l
 To remove the integration, close the client and original launcher and use **Restore originals**. Do not delete the backups manually. A Steam update or file verification can overwrite patched files; the app checks the installation instead of blindly overwriting unexpected changes.
 
 ## Included mods
+
+Launcher **0.1.3** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
 
 ### Crew Console
 
@@ -72,7 +75,7 @@ cd ss14-modlauncher
 ./build.ps1
 ```
 
-The script runs the test harnesses, builds the bundled mods, and creates the self-contained app, release ZIP, and checksums in `dist/`. This only builds local artifacts; it does not create a GitHub release or publish anything.
+The script runs the test harnesses, builds the launcher, reuses hash-locked published mod DLLs (or builds newly versioned mods), and creates the self-contained app, release ZIP, and checksums in `dist/`. This only builds local artifacts; it does not create a GitHub release or publish anything.
 
 Read [development](docs/development.md), [architecture](docs/architecture.md), and [mod update format](docs/updates.md) for details. Future independent mod repositories can be pinned as Git submodules; no placeholder submodule URLs are configured.
 

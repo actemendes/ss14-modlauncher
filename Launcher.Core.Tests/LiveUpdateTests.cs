@@ -12,11 +12,11 @@ internal static class LiveUpdateTests
         // the production updater exercises both asset downloads instead of returning no updates.
         var oldVersions = Catalog.Bundled.ToDictionary(mod => mod.Id, _ => "0.0.0", StringComparer.Ordinal);
         var check = await updater.CheckAsync(repository, oldVersions);
-        Assert(check.Version == Catalog.LauncherVersion, "latest public release matches this release candidate");
+        Assert(check.LauncherVersion == Catalog.LauncherVersion, "advertised launcher matches this release candidate independently of the feed tag");
         Assert(!check.RequiresLauncherUpdate, "published manifest accepts the current launcher");
-        Assert(check.Mods.Count == Catalog.Bundled.Count, "manifest includes every bundled mod");
+        Assert(check.BlockedMods.Count == 0, "candidate supports all advertised mod updates");
         var downloaded = await updater.DownloadAsync(check);
-        Assert(downloaded.Count == Catalog.Bundled.Count, "both release mod assets downloaded and verified");
+        Assert(downloaded.Count == check.Mods.Count, "all advertised newer mod assets downloaded and verified");
         foreach (var update in check.Mods)
         {
             var bytes = downloaded[update.File];

@@ -12,6 +12,7 @@ public sealed class AppSettings
     public string Language { get; set; } = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "ru" : "en";
     public string LauncherPath { get; set; } = "";
     public string UpdateRepository { get; set; } = "actemendes/ss14-modlauncher";
+    public bool CheckUpdatesOnStartup { get; set; } = true;
     public string ActiveProfile { get; set; } = "Default";
     public Dictionary<string, List<string>> Profiles { get; set; } = new() { ["Default"] = ["crew-console"] };
     public Dictionary<string, Dictionary<string, string>> InstalledVersions { get; set; } = new(StringComparer.OrdinalIgnoreCase);

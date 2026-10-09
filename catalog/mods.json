@@ -2,6 +2,7 @@
   {
     "id": "crew-console",
     "version": "0.1.2",
+    "minLauncherVersion": "0.1.2",
     "file": "CrewConsole.Mod.dll",
     "nameRu": "Crew Console",
     "nameEn": "Crew Console",
@@ -13,6 +14,7 @@
   {
     "id": "hello-world",
     "version": "0.1.2",
+    "minLauncherVersion": "0.1.2",
     "file": "HelloWorld.Mod.dll",
     "nameRu": "Hello World",
     "nameEn": "Hello World",

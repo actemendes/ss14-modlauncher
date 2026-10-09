@@ -42,8 +42,8 @@ internal static class CatalogUpdateTests
         {
             var result = await updater.DownloadAsync(check);
             Assert(result[mod.File].SequenceEqual(bytes), "verified download");
-            await ThrowsAsync(() => updater.DownloadAsync(check with { Mods = [mod with { Sha256 = new string('0', 64) }] }), "hash mismatch");
-            await ThrowsAsync(() => updater.DownloadAsync(check with { RequiresLauncherUpdate = true }), "minimum launcher blocks download");
+            await ThrowsAsync(() => updater.DownloadAsync(check with { Mods = [check.Mods[0] with { Sha256 = new string('0', 64) }] }), "hash mismatch");
+            await ThrowsAsync(() => updater.DownloadAsync(check with { Mods = [check.Mods[0] with { MinLauncherVersion = "99.0.0" }] }), "per-mod minimum blocks download");
         }
         using (var updater = new UpdateService(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Redirect) { Headers = { Location = new Uri("https://evil.test/payload.dll") } })))
             await ThrowsAsync(() => updater.DownloadAsync(check), "untrusted redirect");
@@ -56,6 +56,7 @@ internal static class CatalogUpdateTests
 
         await ReleaseApiPipeline(repo, page, mod, bytes, Manifest(mod));
         await RateLimitFallbackTests.RunAsync();
+        await IndependentUpdateTests.RunAsync();
 
         var folder = Path.Combine(Path.GetTempPath(), "SS14ModLauncherSettingsTests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);

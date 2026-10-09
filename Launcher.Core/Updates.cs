@@ -10,6 +10,7 @@ public sealed record ModUpdate
     public string Id { get; init; } = "";
     public string File { get; init; } = "";
     public string Version { get; init; } = "";
+    public string MinLauncherVersion { get; init; } = "";
     public string Sha256 { get; init; } = "";
     public string DownloadUrl { get; init; } = "";
 }
@@ -19,9 +20,13 @@ public sealed record UpdateCheck
     public string Repository { get; init; } = "";
     public string Version { get; init; } = "";
     public string ReleaseUrl { get; init; } = "";
+    public string LauncherVersion { get; init; } = "";
+    public string LauncherReleaseVersion { get; init; } = "";
+    public string LauncherDownloadUrl { get; init; } = "";
     public bool HasLauncherUpdate { get; init; }
     public bool RequiresLauncherUpdate { get; init; }
     public IReadOnlyList<ModUpdate> Mods { get; init; } = Array.Empty<ModUpdate>();
+    public IReadOnlyList<ModUpdate> BlockedMods { get; init; } = Array.Empty<ModUpdate>();
 }
 
 /// <summary>Explicit, bounded GitHub release checks. No network activity occurs before CheckAsync.</summary>
@@ -37,7 +42,14 @@ public sealed class UpdateService : IDisposable
     {
         public string Version { get; init; } = "";
         public string MinLauncherVersion { get; init; } = "";
+        public LauncherManifest? Launcher { get; init; }
         public List<ModUpdate> Mods { get; init; } = [];
+    }
+    private sealed record LauncherManifest
+    {
+        public string Version { get; init; } = "";
+        public string? ReleaseVersion { get; init; }
+        public string DownloadUrl { get; init; } = "";
     }
 
     public UpdateService() : this(new HttpClientHandler { AllowAutoRedirect = false }) { }
@@ -140,24 +152,43 @@ public sealed class UpdateService : IDisposable
         var latest = SemanticVersion.Parse(manifest.Version);
         if (latest.IsPrerelease || !latest.Equals(SemanticVersion.Parse(releaseVersion))) throw new InvalidDataException("Manifest and stable release versions differ.");
         var current = SemanticVersion.Parse(Catalog.LauncherVersion);
-        var minimum = SemanticVersion.Parse(manifest.MinLauncherVersion);
+        var minimum = StableVersion(manifest.MinLauncherVersion);
+        var launcherVersion = manifest.Launcher?.Version ?? manifest.Version;
+        var launcherReleaseVersion = manifest.Launcher?.ReleaseVersion ?? launcherVersion;
+        var launcher = StableVersion(launcherVersion);
+        _ = StableVersion(launcherReleaseVersion);
+        if (launcher.CompareTo(minimum) < 0)
+            throw new InvalidDataException("The advertised launcher cannot satisfy the manifest's minimum launcher version.");
+        var launcherDownload = manifest.Launcher?.DownloadUrl ?? "";
+        if (manifest.Launcher is not null && !IsLauncherDownloadUrl(launcherDownload, repository, launcherVersion, launcherReleaseVersion))
+            throw new InvalidDataException("Invalid launcher package URL or version.");
         if (manifest.Mods == null || manifest.Mods.Count > Catalog.Bundled.Count
             || manifest.Mods.Select(mod => mod?.Id).Distinct(StringComparer.Ordinal).Count() != manifest.Mods.Count)
             throw new InvalidDataException("Manifest contains invalid or duplicate mods.");
         var updates = new List<ModUpdate>();
+        var blocked = new List<ModUpdate>();
         foreach (var mod in manifest.Mods)
         {
             ValidateMod(mod, repository);
+            var effectiveMinimum = string.IsNullOrEmpty(mod.MinLauncherVersion) ? manifest.MinLauncherVersion : mod.MinLauncherVersion;
+            var modMinimum = StableVersion(effectiveMinimum);
+            // Older launchers know only the global minimum. It must remain a conservative
+            // ceiling so they cannot install a DLL requiring a newer launcher by mistake.
+            if (modMinimum.CompareTo(minimum) > 0)
+                throw new InvalidDataException("A mod minimum exceeds the legacy global launcher minimum.");
             var localVersion = installedVersions != null && installedVersions.TryGetValue(mod.Id, out var known)
                 ? SemanticVersion.Parse(known) : SemanticVersion.Parse(Catalog.ById(mod.Id)!.Version);
-            if (SemanticVersion.Parse(mod.Version).CompareTo(localVersion) > 0) updates.Add(mod);
+            if (SemanticVersion.Parse(mod.Version).CompareTo(localVersion) <= 0) continue;
+            var normalized = mod with { MinLauncherVersion = effectiveMinimum };
+            (modMinimum.CompareTo(current) > 0 ? blocked : updates).Add(normalized);
         }
         return new UpdateCheck
         {
             Repository = repository, Version = manifest.Version, ReleaseUrl = releaseUrl,
-            HasLauncherUpdate = latest.CompareTo(current) > 0,
-            RequiresLauncherUpdate = minimum.CompareTo(current) > 0,
-            Mods = updates.AsReadOnly()
+            LauncherVersion = launcherVersion, LauncherReleaseVersion = launcherReleaseVersion, LauncherDownloadUrl = launcherDownload,
+            HasLauncherUpdate = launcher.CompareTo(current) > 0,
+            RequiresLauncherUpdate = blocked.Count > 0,
+            Mods = updates.AsReadOnly(), BlockedMods = blocked.AsReadOnly()
         };
     }
 
@@ -165,13 +196,21 @@ public sealed class UpdateService : IDisposable
     public async Task<IReadOnlyDictionary<string, byte[]>> DownloadAsync(UpdateCheck check, CancellationToken cancellationToken = default)
     {
         ValidateRepository(check.Repository);
-        if (check.RequiresLauncherUpdate) throw new InvalidOperationException("Install the newer launcher release before updating mods.");
-        if (check.Mods.Count > Catalog.Bundled.Count) throw new InvalidDataException("Too many mod updates.");
-        var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        if (check.Mods == null || check.Mods.Count > Catalog.Bundled.Count) throw new InvalidDataException("Too many or invalid mod updates.");
+        // Validate the complete selection before requesting bytes. Mixed feeds may contain
+        // blocked updates elsewhere, but compatible mods remain independently installable.
+        var selectedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var mod in check.Mods)
         {
             ValidateMod(mod, check.Repository);
-            if (result.ContainsKey(mod.File)) throw new InvalidDataException("Duplicate mod update.");
+            if (string.IsNullOrEmpty(mod.MinLauncherVersion)
+                || StableVersion(mod.MinLauncherVersion).CompareTo(SemanticVersion.Parse(Catalog.LauncherVersion)) > 0)
+                throw new InvalidOperationException("Install the required launcher version before updating this mod.");
+            if (!selectedFiles.Add(mod.File)) throw new InvalidDataException("Duplicate mod update.");
+        }
+        var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mod in check.Mods)
+        {
             var bytes = await GetBytesAsync(new Uri(mod.DownloadUrl), MaximumModBytes, false, cancellationToken);
             var expected = Convert.FromHexString(mod.Sha256);
             if (!CryptographicOperations.FixedTimeEquals(SHA256.HashData(bytes), expected))
@@ -190,9 +229,32 @@ public sealed class UpdateService : IDisposable
     {
         var bundled = mod == null ? null : Catalog.ById(mod.Id);
         if (mod == null || bundled == null || mod.File != bundled.File || !Catalog.IsSafeModFileName(mod.File)
-            || !SemanticVersion.TryParse(mod.Version, out _) || mod.Sha256 == null || mod.Sha256.Length != 64
+            || !SemanticVersion.TryParse(mod.Version, out var version) || version!.IsPrerelease || mod.MinLauncherVersion is null
+            || mod.MinLauncherVersion.Length > 0 && (!SemanticVersion.TryParse(mod.MinLauncherVersion, out var minimum) || minimum!.IsPrerelease)
+            || mod.Sha256 == null || mod.Sha256.Length != 64
             || !mod.Sha256.All(Uri.IsHexDigit) || !IsReleaseAssetUrl(mod.DownloadUrl, repository))
             throw new InvalidDataException("Manifest contains an unknown mod, unsafe file, invalid version/hash or untrusted download URL.");
+    }
+
+    private static SemanticVersion StableVersion(string value)
+    {
+        var version = SemanticVersion.Parse(value);
+        if (version.IsPrerelease) throw new InvalidDataException("A stable version is required.");
+        return version;
+    }
+
+    public static bool IsLauncherDownloadUrl(string? url, string repository, string version, string? releaseVersion = null)
+    {
+        releaseVersion ??= version;
+        if (!SemanticVersion.TryParse(version, out var parsed) || parsed!.IsPrerelease
+            || !SemanticVersion.TryParse(releaseVersion, out var release) || release!.IsPrerelease
+            || !IsReleaseAssetUrl(url, repository)) return false;
+        var uri = new Uri(url!);
+        var parts = uri.AbsolutePath[("/" + repository + "/releases/download/").Length..].Split('/');
+        if (parts.Length != 2) return false;
+        var tag = Uri.UnescapeDataString(parts[0]);
+        if (tag.StartsWith('v')) tag = tag[1..];
+        return tag == releaseVersion && Uri.UnescapeDataString(parts[1]) == $"SS14ModLauncher-{version}-win-x64.zip";
     }
 
     public static bool IsReleaseAssetUrl(string? url, string repository) => IsRepositoryUrl(url, repository, "releases/download/");

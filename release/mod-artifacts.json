@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "crew-console",
+      "version": "0.1.2",
+      "file": "CrewConsole.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.2",
+      "sha256": "339AB0DE26AC32D745277E02779AA83C6F4245FFC689CB90285EABEE871F525C"
+    },
+    {
+      "id": "hello-world",
+      "version": "0.1.2",
+      "file": "HelloWorld.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.2",
+      "sha256": "C66B137A9EF31C37FA9110C2E1FA382926EE9CB979BA0EA035372B0FF1EA2C12"
+    }
+  ]
+}

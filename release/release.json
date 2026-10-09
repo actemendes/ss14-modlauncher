@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "mode": "Full",
+  "releaseVersion": "0.1.3",
+  "launcherVersion": "0.1.3",
+  "launcherReleaseVersion": "0.1.3",
+  "bootstrapVersion": "0.1.2",
+  "repository": "actemendes/ss14-modlauncher"
+}

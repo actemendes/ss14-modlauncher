@@ -6,6 +6,7 @@ public sealed record ModDefinition
 {
     public string Id { get; init; } = "";
     public string Version { get; init; } = "";
+    public string MinLauncherVersion { get; init; } = "0.1.2";
     public string File { get; init; } = "";
     public string NameRu { get; init; } = "";
     public string NameEn { get; init; } = "";
@@ -19,7 +20,7 @@ public sealed record ModDefinition
 
 public static class Catalog
 {
-    public const string LauncherVersion = "0.1.2";
+    public const string LauncherVersion = "0.1.3";
     public static IReadOnlyList<ModDefinition> Bundled { get; } = ReadBundled();
     public static ModDefinition? ById(string id) => Bundled.FirstOrDefault(m => m.Id == id);
 
@@ -36,7 +37,7 @@ public static class Catalog
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? throw new InvalidDataException("Embedded mod catalog is empty.");
         if (mods.Count == 0 || mods.Any(m => string.IsNullOrWhiteSpace(m.Id) || !IsSafeModFileName(m.File)
-                || !SemanticVersion.TryParse(m.Version, out _))
+                || !SemanticVersion.TryParse(m.Version, out _) || !SemanticVersion.TryParse(m.MinLauncherVersion, out _))
             || mods.Select(m => m.Id).Distinct(StringComparer.Ordinal).Count() != mods.Count
             || mods.Select(m => m.File).Distinct(StringComparer.OrdinalIgnoreCase).Count() != mods.Count)
             throw new InvalidDataException("Embedded mod catalog is invalid.");

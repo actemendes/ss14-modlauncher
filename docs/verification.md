@@ -4,6 +4,19 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy; its separate checks are recorded below.
 
+## 0.1.3 — completed pre-publication checks
+
+This change adds startup notifications and independently versioned releases. Launcher 0.1.3 targets the unchanged published 0.1.2 mod DLLs; prior live-game evidence remains associated with 0.1.0. No new live gameplay pass is claimed.
+
+- **30 core installer checks passed**, together with startup-notification and update-schema suites.
+- Startup tests cover default-on settings migration, saved opt-out, corrupt-file preservation, a nonblocking single attempt, quiet offline errors, cancellation and stale-result suppression for repository, installation, version and preference changes. Metadata checking does not download/apply updates or mutate installation/settings files.
+- Update-schema checks cover independent launcher/mod versions, compatible versus blocked mods, per-mod requirements and conservative global requirements for older clients.
+- **Eight actual WinForms UI scenarios passed:** RU/EN mod-only notifications, mixed compatibility, launcher-only notification, offline status, disabled checking, cancellation and preservation of an unsaved installation path. Updated RU/EN layouts were also inspected.
+- Synthetic build tests passed for a new mod version **2.4.0** while bootstrap stays **0.1.2**, and for reuse of locked published mod bytes even when their old source is deliberately unbuildable.
+- Documentation links and whitespace checks passed.
+
+Final clean-source packaging, optional real-loader/published-executable checks, final artifact hashes, public downloads and publication verification remain pending. These pre-publication results do not replace those checks.
+
 ## 0.1.2 — completed installation and package checks
 
 The new default enables the Steam bridge together with the mod patch on a recognized Steam installation, unless the user explicitly opted out. Standalone installs keep their original entry point.

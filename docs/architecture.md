@@ -60,7 +60,7 @@ The original launcher apphost is kept in its original directory so it can resolv
 
 ## Steam installation policy
 
-Version 0.1.2 recognizes `steamapps/common/<installdir>/bin_x64` only when a matching `appmanifest_<appid>.acf` exists with the same internal `appid` and `installdir`. A Steam-like directory name alone is insufficient. `InstallWithDefaults` prepares the loader patch and Steam bridge for one transaction. The GUI install action, first mod launch that needs installation, and CLI `--install` use this policy. Standalone installations retain their original entry point.
+Since 0.1.2, the launcher recognizes `steamapps/common/<installdir>/bin_x64` only when a matching `appmanifest_<appid>.acf` exists with the same internal `appid` and `installdir`. A Steam-like directory name alone is insufficient. `InstallWithDefaults` prepares the loader patch and Steam bridge for one transaction. The GUI install action, first mod launch that needs installation, and CLI `--install` use this policy. Standalone installations retain their original entry point.
 
 The explicit choice is stored in `SS14ModLauncher/preferences.json` with a boolean `SteamIntegration` and `Version: 1`, for example `{"SteamIntegration":true,"Version":1}`. Disable records false, including before the first installation; enable records true. Routine mod updates and reinstall preserve that decision. Restore removes the active bridge while retaining the preference for future installation. Missing preference means a detected Steam installation defaults to on; retained launcher ownership or stable executable files must not be interpreted as an explicit opt-out. Lower-level `Install` and `SetSelection` update mods without changing integration.
 
@@ -76,10 +76,18 @@ Selection is explicit. Missing or corrupt selection data does not enable arbitra
 
 After Steam has verified a new upstream build, explicit `RebaseAfterPlatformUpdate` archives the previous backups and state in `loader/SS14LocalMods/History/<id>/` and adopts the new compatible originals as the baseline. It rejects an active patch/bridge. This requires a deliberate user confirmation; structural checks are not publisher authentication.
 
-Mod update manifests are obtained only from the configured GitHub release source. Downloads are checked before replacement. See [updates](updates.md) for the schema and publisher trust boundary.
+## Update notifications and independent versions
+
+`AppSettings.CheckUpdatesOnStartup` defaults to true, including when upgrading older settings without that field. False is persisted. Corrupt settings remain read-only and do not initiate an automatic check.
+
+`AutomaticUpdateChecker` starts at most one background metadata request per app session. It supports cancellation, returns failures as nonmodal state, and rejects results when the source repository, installation root, installed versions or opt-in setting changed. The UI also checks its captured context before displaying a notification. No timer, tray process, automatic DLL download or automatic installation is involved.
+
+`UpdateService` validates only the configured GitHub release source. The feed/tag version, explicit launcher application version, its hosting release tag, bootstrap version and individual mod versions are independent. In 0.1.3, the launcher is 0.1.3 while the bundled mods and bootstrap remain 0.1.2. The checked-in artifact ledger preserves released mod bytes by version and SHA-256.
+
+The manifest's explicit `launcher.version` determines whether a launcher update exists; `launcher.releaseVersion` identifies the hosting tag of its ZIP. Build configuration records `mode: Full|ModsOnly`; Auto follows this field. Full requires the feed tag to match the ZIP's hosting tag, not the app version, so intervening mod-only releases do not consume launcher version numbers. Compatible mod updates are returned in `Mods`; updates needing a newer launcher are returned in `BlockedMods` with their minimum version. A blocked mod does not prevent applying compatible mods from the same feed. The global minimum remains at least the highest per-mod minimum to keep older clients safe. Downloads are checked before replacement. See [updates](updates.md) for the full schema and [releasing](releasing.md) for artifact handling.
 
 ## Supported scope
 
-Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.2. Profile changes take effect on a newly launched game client.
+Windows x64, a compatible existing SS14 installation, and the bundled catalog. Linux/macOS, workshop distribution, arbitrary plugin dependency solving, and launcher self-update are outside version 0.1.3. Profile changes take effect on a newly launched game client.
 
 The [Crew Console reference](mods/crew-console.md) describes telemetry limits. The older [port research](crew-monitor-port.md) is preserved as historical design context.

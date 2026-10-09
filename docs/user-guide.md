@@ -8,9 +8,9 @@ Extract the entire release archive, then run `SS14ModLauncher.exe`. The applicat
 
 Close both the game and original SS14 launcher before installation, updates, Steam integration, or restoration. The app can remain open. If the chosen folder is protected by Windows, use a writable installation folder or grant the required file access; elevation is not a substitute for selecting the right directory.
 
-Choose Russian or English, select a profile and mods, then install them or launch with the selected mods. In 0.1.2, a recognized Steam installation receives both the mod patch and Steam launch integration together by default. Steam Play subsequently opens ModLauncher; its Launch action opens the original launcher for your normal server connection. Standalone installations keep their original entry point. Changing a checkbox affects the next client session after applying it; already running client processes retain their loaded DLLs.
+Choose Russian or English, select a profile and mods, then install them or launch with the selected mods. Since 0.1.2, a recognized Steam installation receives both the mod patch and Steam launch integration together by default. Steam Play subsequently opens ModLauncher; its Launch action opens the original launcher for your normal server connection. Standalone installations keep their original entry point. Changing a checkbox affects the next client session after applying it; already running client processes retain their loaded DLLs.
 
-Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Выберите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll`, а не корень библиотеки Steam. Перед установкой, обновлением и восстановлением закройте игру и штатный лаунчер. Выберите язык, профиль, набор модов и установите их или запустите игру. В 0.1.2 для распознанной установки Steam патч модов и интеграция запуска устанавливаются вместе по умолчанию: «Играть» открывает ModLauncher, затем его кнопка запуска — оригинальный лаунчер. Установка вне Steam сохраняет прежнюю точку запуска. Изменения модов действуют для следующего запуска клиента.
+Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Выберите папку с `SS14.Launcher.exe` и `loader/SS14.Loader.dll`, а не корень библиотеки Steam. Перед установкой, обновлением и восстановлением закройте игру и штатный лаунчер. Выберите язык, профиль, набор модов и установите их или запустите игру. Начиная с 0.1.2 для распознанной установки Steam патч модов и интеграция запуска устанавливаются вместе по умолчанию: «Играть» открывает ModLauncher, затем его кнопка запуска — оригинальный лаунчер. Установка вне Steam сохраняет прежнюю точку запуска. Изменения модов действуют для следующего запуска клиента.
 
 ## Profiles
 
@@ -59,13 +59,27 @@ The previous loader/launcher backups and state are archived under `loader/SS14Lo
 
 Если Steam установил новую версию файлов, сначала выполните **проверку целостности в Steam**, закройте игру и штатный лаунчер и только затем подтвердите принятие проверенных оригиналов в ModLauncher. Старые копии и состояние сохраняются в `loader/SS14LocalMods/History/<id>/`. Новые оригиналы не меняются до повторной установки модов. Проверка структуры файла не заменяет проверку его происхождения.
 
-## Mod updates
+## Updates and notifications / Обновления и уведомления
 
-The default source is `actemendes/ss14-modlauncher`. Updates are checked manually against that repository's latest GitHub Release and its `mods-manifest.json` asset. Review offered updates before applying them with the game closed. You may enter another trusted publisher's `owner/repository` in update settings or leave the field empty to disable checks.
+The default source is `actemendes/ss14-modlauncher`. When ModLauncher opens, it checks that repository's latest release and `mods-manifest.json` once in the background. You can keep using the launcher while it checks. Turn off **Check for updates at startup** in Updates to disable this behaviour; the choice is saved. Existing settings without this option default to enabled.
 
-Settings saved by an earlier local build keep their existing source; enter `actemendes/ss14-modlauncher` if that field is empty. The update feature updates supported mod DLLs, not the launcher executable. Download a new launcher package from [Releases](https://github.com/actemendes/ss14-modlauncher/releases/latest) when needed. A release with no compatible manifest, an invalid hash, an unsupported version, or an unexpected URL is rejected.
+There is no periodic timer or tray updater, and nothing checks while ModLauncher is closed. An offline startup shows a quiet status on the Updates page instead of interrupting launch. **Check for updates** remains available for a manual retry. A missing source disables checks; source settings saved by an earlier build remain unchanged.
 
-Источник по умолчанию — `actemendes/ss14-modlauncher`. Если сохранились настройки ранней локальной сборки с пустым полем, укажите этот адрес вручную. Проверка запускается по кнопке и читает последний GitHub Release с файлом `mods-manifest.json`. Перед применением закройте игру. Обновляется код поддерживаемых модов; новый EXE лаунчера скачивается отдельным пакетом из Releases. Другой источник можно указать в формате `owner/repository`, только если вы доверяете его автору; пустое поле отключает проверку.
+The notification distinguishes a new **ModLauncher** version from individual **mod** updates. Use **Download & apply mods** only when you want to install the listed compatible updates, with the game and original launcher closed. A mod requiring a newer launcher is listed separately with its required version; compatible mods can still be updated. The launcher itself is downloaded from its own ZIP link and upgraded manually. Nothing is downloaded or applied by the startup check.
+
+Launcher **0.1.3** includes the previously published Crew Console **0.1.2** and Hello World **0.1.2** DLLs unchanged. A newer launcher does not imply new mod versions. A future release containing only mod updates can continue to point to an earlier, compatible launcher ZIP.
+
+Источник по умолчанию — `actemendes/ss14-modlauncher`. При открытии ModLauncher один раз в фоне проверяет последний релиз и `mods-manifest.json`; пользоваться лаунчером можно сразу. Отключите **Проверять обновления при запуске** во вкладке «Обновления», если эта проверка не нужна. Выбор сохраняется. В старых настройках без такого поля проверка включена по умолчанию.
+
+Периодического таймера и обновляющего процесса в трее нет; при закрытом ModLauncher проверок нет. Без сети запуск продолжается, а во вкладке «Обновления» появляется спокойное сообщение о недоступности проверки. Для повторной попытки есть **Проверить обновления**. Пустое поле источника отключает проверки; сохранённый ранее источник сам не заменяется.
+
+Уведомление отдельно показывает новую версию **ModLauncher** и обновления **модов**. Кнопка **Загрузить и применить моды** устанавливает только совместимые обновления по вашей команде; перед этим закройте игру и оригинальный лаунчер. Мод, которому нужен новый лаунчер, показан отдельно с минимальной версией и не мешает обновить остальные совместимые моды. Сам лаунчер скачивается отдельным ZIP и обновляется вручную. Проверка при запуске ничего не скачивает и не устанавливает.
+
+Лаунчер **0.1.3** включает прежние опубликованные DLL Crew Console **0.1.2** и Hello World **0.1.2** без изменения байтов. Новая версия лаунчера не означает новые версии модов. Релиз только с обновлениями модов может ссылаться на прежний совместимый ZIP лаунчера.
+
+Use another `owner/repository` only if you trust that publisher. Invalid manifests, unsafe URLs and wrong hashes are rejected. Routine mod updates preserve an explicit Steam integration opt-out.
+
+Другой `owner/repository` указывайте только при доверии к автору. Неверные манифесты, небезопасные URL и несовпадающие хеши отклоняются. Обновления модов сохраняют явное отключение интеграции Steam.
 
 ## One launch without mods / Один запуск без модов
 

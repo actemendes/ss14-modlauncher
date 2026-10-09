@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.3 — 2026-10-09
+
+- One background update check when ModLauncher opens, enabled by default with a saved opt-out in Updates. Offline failures stay nonmodal; there is no timer or closed-app/tray updater.
+- Separate notifications for launcher and individual mod updates. Downloads and installation remain explicit user actions.
+- Independent feed, launcher, bootstrap and mod versions. Launcher 0.1.3 keeps the published Crew Console and Hello World 0.1.2 DLLs byte-for-byte.
+- Per-mod minimum launcher versions: compatible updates remain installable while blocked mods show the version they require. The global minimum keeps older clients safe.
+- Explicit launcher package metadata supports releases containing only mod updates without announcing a new launcher.
+- A checked-in mod artifact ledger prevents rebuilding different bytes under an existing published mod version.
+
 ## 0.1.2 — 2026-10-09
 
 - Steam integration becomes the default for installations identified by a matching Steam app manifest and library layout. Installing mods or launching them for the first time also installs the bridge; CLI `--install` follows the same policy.

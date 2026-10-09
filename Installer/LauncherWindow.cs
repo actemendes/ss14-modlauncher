@@ -33,9 +33,14 @@ internal sealed class LauncherWindow : Form
     private readonly Label _status = Theme.Label("", 9, Theme.Muted);
     private readonly Dictionary<string, CheckBox> _toggles = [];
     private readonly ToolTip _tips = new();
-    private readonly UpdateService _updates = new();
+    private readonly UpdateService _updates;
+    private readonly AutomaticUpdateChecker _automaticUpdates;
     private readonly CancellationTokenSource _lifetime = new();
     private UpdateCheck? _available;
+    private string? _availableContext;
+    private string? _updateProblem;
+    private bool _updateChecking;
+    private Label? _updateStateLabel;
     private string _view = "library";
     private bool _busy;
     private string _installationState = "clean";
@@ -44,9 +49,11 @@ internal sealed class LauncherWindow : Form
     private string T(string ru, string en) => _settings.Language == "ru" ? ru : en;
     private string[] SelectedFiles => Catalog.Bundled.Where(m => _settings.SelectedModIds.Contains(m.Id)).Select(m => m.File).ToArray();
 
-    public LauncherWindow(AppSettings settings, string? settingsPath, string? initialView = null)
+    public LauncherWindow(AppSettings settings, string? settingsPath, string? initialView = null, bool enableAutomaticCheck = true, UpdateService? updateService = null)
     {
         _settings = settings; _settingsPath = settingsPath;
+        _updates = updateService ?? new UpdateService();
+        _automaticUpdates = new AutomaticUpdateChecker((repository, versions, token) => _updates.CheckAsync(repository, versions, token));
         if (initialView is "library" or "installation" or "updates" or "diagnostics" or "about") _view = initialView;
         Text = "SS14 ModLauncher by actemendes"; Font = new Font("Segoe UI", 10); BackColor = Theme.Background; ForeColor = Theme.Text;
         ClientSize = new Size(1240, 850); MinimumSize = new Size(1160, 800); StartPosition = FormStartPosition.CenterScreen;
@@ -62,7 +69,8 @@ internal sealed class LauncherWindow : Form
         RefreshState(); Render();
         SetStatus(_settings.LoadError is { Length: > 0 } ? T("Настройки повреждены. Исходный файл сохранён; откройте диагностику.", "Settings are damaged. Original file preserved; open Diagnostics.") : T("Готов к запуску. Выбор модов применяется кнопкой запуска.", "Ready. Your mod selection is applied when you launch."));
         FormClosing += (_, e) => { if (_busy) { e.Cancel = true; SetStatus(T("Дождитесь завершения операции.", "Wait for the current operation to finish.")); } };
-        FormClosed += (_, _) => { _lifetime.Cancel(); _lifetime.Dispose(); _tips.Dispose(); _updates.Dispose(); };
+        if (enableAutomaticCheck) Shown += async (_, _) => await CheckAtStartupAsync();
+        FormClosed += (_, _) => { _automaticUpdates.Dispose(); _lifetime.Cancel(); _lifetime.Dispose(); _tips.Dispose(); _updates.Dispose(); };
     }
     private void RefreshState()
     {
@@ -70,7 +78,75 @@ internal sealed class LauncherWindow : Form
         try { var state = Installation.Inspect(_settings.LauncherPath); _installationState = state.State; _installationDetail = state.Detail; }
         catch (Exception e) { _installationState = "changed"; _installationDetail = e.Message; }
     }
-    private void Save() { _settings.Save(_settingsPath); }
+    private void Save()
+    {
+        _settings.Save(_settingsPath);
+        if (_availableContext != UpdateContext()) { _available = null; _availableContext = null; }
+    }
+    private string UpdateContext()
+    {
+        var versions = string.IsNullOrWhiteSpace(_settings.LauncherPath) ? null : _settings.VersionsFor(_settings.LauncherPath);
+        return _settings.UpdateRepository + "\n" + _settings.LauncherPath + "\n" + string.Join(";", versions?.OrderBy(pair => pair.Key).Select(pair => pair.Key + "=" + pair.Value) ?? []);
+    }
+    private bool HasUpdates => _available is { } update && (update.HasLauncherUpdate || update.Mods.Count > 0 || update.BlockedMods.Count > 0);
+    private string UpdateSummary()
+    {
+        if (_available is not { } update) return "";
+        var parts = new List<string>();
+        if (update.HasLauncherUpdate) parts.Add("ModLauncher " + update.LauncherVersion);
+        if (update.Mods.Count > 0) parts.Add(T("Обновлений модов: ", "Mod updates: ") + update.Mods.Count);
+        if (update.BlockedMods.Count > 0) parts.Add(T("Нужен новый лаунчер: ", "Newer launcher required: ") + update.BlockedMods.Count);
+        return parts.Count == 0 ? T("Установлены актуальные версии.", "Everything is up to date.") : string.Join("  ·  ", parts);
+    }
+    private async Task CheckAtStartupAsync()
+    {
+        if (!_settings.CheckUpdatesOnStartup || _settings.IsReadOnly || string.IsNullOrWhiteSpace(_settings.UpdateRepository)) return;
+        string context;
+        try { context = UpdateContext(); } catch { return; }
+        _updateChecking = true;
+        var result = await _automaticUpdates.CheckOnceAsync(_settings, _lifetime.Token);
+        if (IsDisposed || Disposing) return;
+        if (!_busy) _updateChecking = false;
+        RefreshUpdateCheckState();
+        if (!_settings.CheckUpdatesOnStartup || context != UpdateContext()) return;
+        if (result != null)
+        {
+            _available = result; _availableContext = context; _updateProblem = null;
+            if (!_busy) { RefreshUpdateNotice(); if (HasUpdates) SetStatus(UpdateSummary()); }
+        }
+        else if (_automaticUpdates.LastError is { } error)
+        {
+            _updateProblem = ErrorText.Message(error, _settings.Language);
+            RefreshUpdateCheckState();
+            if (!_busy && _view == "updates") Render();
+        }
+    }
+    private void RefreshUpdateCheckState()
+    {
+        if (_updateStateLabel is not { IsDisposed: false }) return;
+        _updateStateLabel.Text = _updateChecking
+            ? T("Проверяем обновления… Можно продолжать пользоваться лаунчером.", "Checking for updates… You can keep using the launcher.")
+            : _updateProblem != null ? T("Проверка недоступна. Повторите позже; запуск игры доступен.", "Update check unavailable. Try again later; you can still launch the game.") : "";
+        _updateStateLabel.ForeColor = _updateProblem != null && !_updateChecking ? Theme.Amber : Theme.Muted;
+    }
+    private Button UpdateNoticeButton()
+    {
+        var notice = Theme.Button(T("Доступны обновления — открыть", "Updates available — open"), (_, _) => { _view = "updates"; Render(); }, true);
+        notice.Name = "update-notice"; _tips.SetToolTip(notice, UpdateSummary()); return notice;
+    }
+    private void RefreshUpdateNotice()
+    {
+        if (_view == "updates") { Render(); return; }
+        // Preserve controls, focus and unfinished edits while a background request completes.
+        var nav = _navigation.Controls.OfType<FlowLayoutPanel>().FirstOrDefault();
+        var button = nav?.Controls.OfType<Button>().FirstOrDefault(control => (string?)control.Tag == "updates");
+        if (button != null) button.Text = T("Обновления", "Updates") + (HasUpdates ? "  ●" : "");
+        var page = _page.Controls.OfType<FlowLayoutPanel>().FirstOrDefault();
+        if (HasUpdates && page != null && !page.Controls.ContainsKey("update-notice"))
+        {
+            var notice = UpdateNoticeButton(); page.Controls.Add(notice); page.Controls.SetChildIndex(notice, 2);
+        }
+    }
     private void SetStatus(string text, bool error = false) { _status.Text = text; _status.ForeColor = error ? Theme.Red : Theme.Muted; _tips.SetToolTip(_status, text); }
     private void Render()
     {
@@ -83,7 +159,8 @@ internal sealed class LauncherWindow : Form
         var by = Theme.Label("by actemendes", 9, Theme.Muted); by.Margin = new Padding(0, 0, 0, 40); nav.Controls.Add(by);
         foreach (var (id, ru, en) in new[] { ("library", "Мои моды", "My mods"), ("installation", "Установка", "Installation"), ("updates", "Обновления", "Updates"), ("diagnostics", "Диагностика", "Diagnostics"), ("about", "О проекте", "About") })
         {
-            var button = Theme.Button(T(ru, en), (_, _) => { _view = id; RefreshState(); Render(); }); button.AutoSize = false; button.Width = 148; button.Margin = new Padding(0, 0, 0, 10); button.TextAlign = ContentAlignment.MiddleLeft;
+            var button = Theme.Button(T(ru, en) + (id == "updates" && HasUpdates ? "  ●" : ""), (_, _) => { _view = id; RefreshState(); Render(); }); button.AutoSize = false; button.Width = 148; button.Margin = new Padding(0, 0, 0, 10); button.TextAlign = ContentAlignment.MiddleLeft;
+            button.Tag = id;
             if (_view == id) { button.BackColor = Theme.Raised; button.ForeColor = Theme.Mint; button.FlatAppearance.BorderColor = Theme.Mint; }
             else { button.BackColor = Theme.Surface; button.FlatAppearance.BorderSize = 0; }
             nav.Controls.Add(button);
@@ -102,6 +179,10 @@ internal sealed class LauncherWindow : Form
         var content = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, Padding = new Padding(0, 0, 18, 10) };
         var header = Theme.Label(title, 25, bold: true); content.Controls.Add(header);
         var sub = Theme.Label(description, 10, Theme.Muted); sub.Margin = new Padding(0, 0, 0, 22); content.Controls.Add(sub);
+        if (HasUpdates && _view != "updates")
+        {
+            content.Controls.Add(UpdateNoticeButton());
+        }
         content.SizeChanged += (_, _) => { foreach (Control item in content.Controls) if (item is Card or PictureBox) item.Width = Math.Max(600, content.ClientSize.Width - 24); };
         _page.Controls.Add(content); return content;
     }
@@ -194,25 +275,54 @@ internal sealed class LauncherWindow : Form
     }
     private void UpdatesPage()
     {
-        var page = Page(T("Обновления", "Updates"), T("Проверка по запросу. Загрузка по HTTPS. Контроль SHA-256.", "Check on demand. HTTPS downloads. SHA-256 verification."));
-        var source = Section(page, 246); var stack = Stack(source);
+        var page = Page(T("Обновления", "Updates"), T("Моды и лаунчер обновляются независимо. Установка — по вашему выбору.", "Mods and launcher update independently. You choose when to install."));
+        var source = Section(page, 304); var stack = Stack(source);
         stack.Controls.Add(Theme.Label(T("Источник релизов GitHub", "GitHub release source"), 15, bold: true));
-        stack.Controls.Add(Theme.Label(T("Репозиторий автора в формате owner/repository. Пока источник не задан, сеть не используется.\nМоды исполняют код на вашем компьютере — используйте только доверенный источник.", "Author's repository in owner/repository format. No network requests until you set a source.\nMods execute code on your computer — only use a source you trust."), 10, Theme.Muted));
+        stack.Controls.Add(Theme.Label(T("Проверяем при открытии ModLauncher. Ничего не устанавливаем автоматически.\nИспользуйте доверенный репозиторий автора в формате owner/repository.", "Check when ModLauncher opens. Nothing is installed automatically.\nUse the author's trusted repository in owner/repository format."), 10, Theme.Muted));
         var repo = Theme.TextBox(_settings.UpdateRepository); repo.PlaceholderText = "owner/repository"; stack.Controls.Add(repo);
+        repo.TextChanged += (_, _) => _automaticUpdates.Cancel();
+        var automatic = new CheckBox { Text = T("Проверять обновления при запуске", "Check for updates at startup"), Checked = _settings.CheckUpdatesOnStartup, AutoSize = true, ForeColor = Theme.Text, Margin = new Padding(0, 0, 0, 12) };
+        automatic.CheckedChanged += (_, _) => Run(() => { _settings.CheckUpdatesOnStartup = automatic.Checked; if (!automatic.Checked) { _automaticUpdates.Cancel(); _updateChecking = false; RefreshUpdateCheckState(); } Save(); }, T("Настройка уведомлений сохранена.", "Update notification preference saved."));
+        stack.Controls.Add(automatic);
         var row = new FlowLayoutPanel { Width = 830, Height = 48, WrapContents = false };
-        row.Controls.Add(Theme.Button(T("Проверить обновления", "Check for updates"), async (_, _) => await RunAsync(async () => { var value = repo.Text.Trim(); if (string.IsNullOrEmpty(value)) throw new InvalidOperationException(T("Сначала укажите GitHub-репозиторий автора.", "Enter the author's GitHub repository first.")); _available = await _updates.CheckAsync(value, string.IsNullOrWhiteSpace(_settings.LauncherPath) ? null : _settings.VersionsFor(_settings.LauncherPath), _lifetime.Token); _settings.UpdateRepository = value; Save(); Render(); }, T("Проверка завершена.", "Check complete.")), true));
+        void SaveSource()
+        {
+            var value = repo.Text.Trim();
+            if (value.Length > 0 && !UpdateService.IsValidRepository(value)) throw new InvalidOperationException(T("Укажите источник в формате owner/repository.", "Use owner/repository for the source."));
+            _automaticUpdates.Cancel(); _settings.UpdateRepository = value; _updateProblem = null; Save();
+        }
+        row.Controls.Add(Theme.Button(T("Проверить обновления", "Check for updates"), async (_, _) => await RunAsync(async () =>
+        {
+            SaveSource();
+            if (string.IsNullOrEmpty(_settings.UpdateRepository)) throw new InvalidOperationException(T("Сначала укажите GitHub-репозиторий автора.", "Enter the author's GitHub repository first."));
+            _available = null; _availableContext = null; _updateChecking = true;
+            try
+            {
+                var context = UpdateContext();
+                _available = await _updates.CheckAsync(_settings.UpdateRepository, string.IsNullOrWhiteSpace(_settings.LauncherPath) ? null : _settings.VersionsFor(_settings.LauncherPath), _lifetime.Token);
+                _availableContext = context;
+            }
+            catch (Exception error) { _updateProblem = ErrorText.Message(error, _settings.Language); throw; }
+            finally { _updateChecking = false; Render(); }
+        }, T("Проверка завершена.", "Check complete.")), true));
+        row.Controls.Add(Theme.Button(T("Сохранить источник", "Save source"), (_, _) => Run(() => { SaveSource(); Render(); }, T("Источник сохранён. Пустой источник отключает проверки.", "Source saved. An empty source disables checks."))));
         stack.Controls.Add(row);
+        _updateStateLabel = Theme.Label("", 9, Theme.Muted); stack.Controls.Add(_updateStateLabel); RefreshUpdateCheckState();
         if (_available is { } update)
         {
-            var result = Section(page, 230); stack = Stack(result);
-            stack.Controls.Add(Theme.Label(T("Последний релиз: ", "Latest release: ") + update.Version, 16, Theme.Mint, true));
-            stack.Controls.Add(Theme.Label(T("Источник: ", "Source: ") + update.Repository, 10, Theme.Muted));
-            stack.Controls.Add(Theme.Label(update.RequiresLauncherUpdate ? T("Сначала обновите сам ModLauncher из релиза.", "Update ModLauncher from the release first.") : (update.HasLauncherUpdate ? T("Доступна новая версия ModLauncher. ", "A new ModLauncher version is available. ") : "") + T("Обновлений модов: ", "Mod updates: ") + update.Mods.Count, 10));
+            var result = Section(page, 200 + 24 * (update.Mods.Count + update.BlockedMods.Count) + (update.HasLauncherUpdate ? 48 : 0)); stack = Stack(result);
+            var summary = Theme.Label(UpdateSummary(), 13, Theme.Mint, true); summary.MaximumSize = new Size(840, 0); stack.Controls.Add(summary);
+            foreach (var mod in update.Mods)
+                stack.Controls.Add(Theme.Label((Catalog.ById(mod.Id)?.Name(_settings.Language) ?? mod.Id) + "  →  " + mod.Version, 10));
+            foreach (var mod in update.BlockedMods)
+                stack.Controls.Add(Theme.Label((Catalog.ById(mod.Id)?.Name(_settings.Language) ?? mod.Id) + "  " + mod.Version + T(" — нужен ModLauncher ", " — requires ModLauncher ") + mod.MinLauncherVersion, 10, Theme.Amber));
             var actions = new FlowLayoutPanel { Width = 820, Height = 50, WrapContents = false };
-            var install = Theme.Button(T("Загрузить и применить моды", "Download & apply mods"), async (_, _) => await RunAsync(async () => { NeedRoot(); if (update.RequiresLauncherUpdate) throw new InvalidOperationException(T("Необходимо обновить ModLauncher.", "ModLauncher update required.")); var files = await _updates.DownloadAsync(update, _lifetime.Token); var payload = CurrentPayload(); foreach (var (name, bytes) in files) payload[name] = bytes; Installation.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); _settings.RecordInstalledVersions(_settings.LauncherPath, update.Mods); Save(); _available = null; RefreshState(); Render(); }, T("Пакеты проверены и установлены.", "Packages verified and installed.")), true);
-            install.Enabled = !update.RequiresLauncherUpdate && update.Mods.Count > 0; actions.Controls.Add(install);
-            actions.Controls.Add(Theme.Button(T("Открыть релиз", "Open release"), (_, _) => Open(update.ReleaseUrl.ToString()))); stack.Controls.Add(actions);
-            stack.Controls.Add(Theme.Label(T("Сам лаунчер обновляется вручную из ZIP релиза.", "Update the launcher itself manually from the release ZIP."), 9, Theme.Muted));
+            var install = Theme.Button(T("Загрузить и применить моды", "Download & apply mods"), async (_, _) => await RunAsync(async () => { NeedRoot(); var files = await _updates.DownloadAsync(update, _lifetime.Token); var payload = CurrentPayload(); foreach (var (name, bytes) in files) payload[name] = bytes; Installation.Install(_settings.LauncherPath, payload, SelectedFiles, _settings.Language); RecordBundledVersions(payload); _settings.RecordInstalledVersions(_settings.LauncherPath, update.Mods); Save(); _available = update with { Mods = [] }; _availableContext = UpdateContext(); RefreshState(); Render(); }, T("Пакеты проверены и установлены.", "Packages verified and installed.")), true);
+            install.Enabled = update.Mods.Count > 0; actions.Controls.Add(install);
+            actions.Controls.Add(Theme.Button(T("Открыть релиз", "Open release"), (_, _) => Open(update.ReleaseUrl))); stack.Controls.Add(actions);
+            if (update.HasLauncherUpdate)
+                stack.Controls.Add(Theme.Button(T("Скачать ModLauncher ", "Download ModLauncher ") + update.LauncherVersion, (_, _) => Open(string.IsNullOrEmpty(update.LauncherDownloadUrl) ? update.ReleaseUrl : update.LauncherDownloadUrl)));
+            stack.Controls.Add(Theme.Label(T("Закройте игру перед обновлением модов. Лаунчер устанавливается отдельно из ZIP.", "Close the game before applying mods. Install the launcher separately from its ZIP."), 9, Theme.Muted));
         }
     }
     private void Diagnostics()

@@ -32,5 +32,10 @@ jobs:
             dist/SHA256SUMS.txt
             dist/build-info.json
             dist/mod-assets/*
+            dist/mod-artifacts.next.json
+            dist/mod-release/SHA256SUMS.txt
+            dist/mod-release/build-info.json
+            dist/mod-release/mod-artifacts.next.json
+            dist/mod-release/mod-assets/*
           if-no-files-found: error
           retention-days: 14
