@@ -2,20 +2,21 @@
 
 Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.0.400**, self-contained .NET / Windows Desktop runtime **10.0.11**. Live game: **SS14 Launcher 0.40.2**, **Robust 275.0.0**, local Dev/Sandbox server bound to loopback with hub advertising disabled.
 
-Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy and must be verified separately.
+Game and Steam checks below cover the 0.1.0 implementation. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy; its separate checks are recorded below.
 
-## 0.1.2 — verification pending
+## 0.1.2 — completed installation and package checks
 
-The new default enables the Steam bridge together with the mod patch on a recognized Steam installation, unless the user explicitly opted out. Standalone installs keep their original entry point. The checks below are required for this change; no 0.1.2 pass is claimed yet.
+The new default enables the Steam bridge together with the mod patch on a recognized Steam installation, unless the user explicitly opted out. Standalone installs keep their original entry point.
 
-- Default integration through GUI install, first mod launch and CLI `--install`, with matching Steam manifest/layout detection.
-- Joint rollback of loader and bridge changes on failure; unchanged standalone installation behaviour.
-- Explicit disable retained through routine updates, reinstall and restoration; explicit enable and later restore/reinstall follow the saved preference.
-- Missing preference uses the new default; old stable-launcher/ownership files are not treated as an opt-out.
-- Published single-file enforcement only when the policy enables Steam integration, plus Steam handoff/argument preservation.
-- Package, checksums and relevant existing regression suites for the final 0.1.2 source.
+- **33/33 installer and packaged-executable tests passed**, including 30 core cases, a copied real SS14 loader, published Steam handoff and actual self-contained CLI execution.
+- The actual release EXE's `--install` enabled both wrapper copies in a fixture with a matching Steam manifest/layout. Standalone installation kept its original executable. GUI install and first mod launch use the same policy entry point, confirmed by independent source review.
+- Invalid bridge preflight and a locked Steam executable left the installation unchanged: loader and bridge writes roll back together.
+- Explicit disable survived updates, reinstall and restore/reinstall. Missing preferences, including legacy ownership files, enabled the default on explicit installation; restoration retained the saved preference.
+- The published wrapper handed off to the stable launcher, which stayed open while restoration replaced the entry point. Restored original loader and launcher bytes matched exactly.
+- **26 Crew Console checks passed**; bootstrap, profiles, catalog, semantic version, bounded update and rate-limit fallback suites passed. Independent review found no blocking defects.
+- Russian and English installation-page captures were inspected; the new default-integration explanation fit within the existing layout.
 
-The current local Steam installation has integration enabled using 0.1.1 and is being retained in that state. That is operational context, not evidence that the new 0.1.2 default has passed. Prior test cleanup statements below refer to their recorded historical sessions.
+The current local Steam integration is retained as enabled at the user's request. Prior test cleanup statements below refer to their recorded historical sessions. No new live gameplay run is claimed for 0.1.2; game and mod behaviour were unchanged by this installation-policy change.
 
 ## Completed checks — 0.1.0 / 0.1.1
 
@@ -56,6 +57,16 @@ The initial anonymous API update check encountered GitHub's shared-IP quota limi
 - The downloaded self-contained EXE installed both bundled mods on a disposable legacy installation, then restored the original loader and launcher bytes. Embedded DLLs matched the public release assets.
 - Production UpdateService successfully checked the actual latest 0.1.1 release, downloaded both mod DLLs with matching SHA-256 and local bytes, then reported zero updates for current installed versions. The public fallback worked while the anonymous API quota remained exhausted.
 - The published tag resolves to the build's source commit. Original 0.1.0 assets remained unchanged; 0.1.1 was the latest stable release at that verification.
+
+### Published 0.1.2 — passed
+
+- Release: [v0.1.2](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.2), source commit `7a602676963954c3c28b30dba6f8f569fd419b1f`; `sourceDirty: false`. The published tag resolves to this exact commit.
+- [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37928401127) succeeded for that source. The locally packaged EXE passed the 33 installation/executable checks above.
+- All six public assets downloaded anonymously and matched the build, sizes and SHA-256 checksums. Manifest URLs/hashes, archive contents, licenses and source provenance passed.
+- ZIP SHA-256: `E87B4AE9329EA7141A1481F03665E02CF1F6332AF85FD2AB90A70F052DF64025`. EXE SHA-256: `A942FEEE3E6BAF96CA770358D5352A3F3EA46A8A728294273EBC5A7063671D25`.
+- The downloaded self-contained EXE installed bundled mods on a disposable legacy installation with shared runtime discovery disabled. Embedded mod bytes matched the public DLLs, and restoration returned exact original loader and launcher bytes.
+- Production UpdateService checked the actual latest 0.1.2 release, downloaded both mod DLLs with matching SHA-256 and local bytes, then returned no updates for current versions.
+- 0.1.2 is the latest stable release at this verification. Prior release assets remain unchanged.
 
 ## Scope and remaining compatibility limits
 
