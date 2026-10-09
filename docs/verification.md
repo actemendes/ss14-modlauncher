@@ -27,6 +27,7 @@ The installed mod was subsequently updated to Conversations 0.1.1 and the client
 - The complete self-contained launcher passed **33/33 installation/executable checks**, including real-loader roundtrip, Steam handoff and isolated-runtime CLI installation. Package verification caught and fixed a hardcoded two-mod payload list; runtime/mod payload discovery now follows the catalog.
 - All seven public assets downloaded anonymously and matched the clean build, GitHub digests and flat checksums. Manifest URLs, three embedded mods, archive contents, notices and source provenance passed. The downloaded EXE installed and restored a disposable legacy installation with exact original bytes.
 - ZIP SHA-256: `A85A310F669ED545623F6CA53B3B80367233A47DB7934A67F708186E56A21C16`. Published Conversations 0.1.1 SHA-256: `7A0107C3A3C4519A081B7BB64EB1F5E7154108C481049D70DB78AA8ECA742ED4`.
+- Production UpdateService discovered the public 0.1.5 feed after the GitHub latest-download cache refreshed. Anonymous API rate limiting used the canonical public fallback; all three mod downloads matched the manifest and local bytes, and a repeated check offered no current mod or launcher updates.
 - The verified Conversations artifact was added to the immutable ledger. Crew Console and Hello World published bytes and prior releases remain unchanged. Live game smoke checks above refer to the earlier local build of the same mod source; no additional radio/scaling/audio pass is claimed.
 
 ## 0.1.4 — local checks completed and release published
