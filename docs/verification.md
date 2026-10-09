@@ -34,7 +34,15 @@ Release packages are built from the clean Git revision recorded in `build-info.j
 
 The initial anonymous API update check encountered GitHub's shared-IP quota limit (HTTP 403, remaining quota 0). Version **0.1.1** adds a public latest-release asset fallback. Its regression tests cover successful discovery/download, ordinary errors that must not fall back, canonical tag identity, foreign repositories, prereleases, invalid manifests, direct CDN routes, size limits and redirect loops. An independent code review found no blocking issues. Before packaging 0.1.1, the updated production UpdateService was exercised against the public 0.1.0 release: actual API 403 led to the canonical public manifest, both DLLs downloaded and matched the release bytes and SHA-256 values, and a repeated check returned zero updates.
 
-Post-publication results for the current package are recorded in this [online verification record](https://github.com/actemendes/ss14-modlauncher/blob/main/docs/verification.md) and its release notes.
+### Published 0.1.1 — passed
+
+- Release: [v0.1.1](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.1), source commit `1a00eeba5bb8e82a9efe38793e4eedf5e29f7ced`; `sourceDirty: false`.
+- [Windows CI](https://github.com/actemendes/ss14-modlauncher/actions/runs/37925681859) succeeded for that exact commit. The final extracted package passed all 24 installer/packaged-executable checks and the bootstrap, catalog and update suites.
+- All six public assets downloaded without authentication and matched the local build. Checksums, manifest URLs/hashes, archive contents, licenses and source provenance passed.
+- ZIP SHA-256: `E0AC42064B61F97AC0DB5B41B806DC42E5FFCE117E983D450586537810F24109`.
+- The downloaded self-contained EXE installed both bundled mods on a disposable legacy installation, then restored the original loader and launcher bytes. Embedded DLLs matched the public release assets.
+- Production UpdateService successfully checked the actual latest 0.1.1 release, downloaded both mod DLLs with matching SHA-256 and local bytes, then reported zero updates for current installed versions. The public fallback worked while the anonymous API quota remained exhausted.
+- The published tag resolves to the build's source commit. Original 0.1.0 assets remain unchanged; 0.1.1 is the latest stable release.
 
 ## Scope and remaining compatibility limits
 
