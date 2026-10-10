@@ -15,12 +15,14 @@ internal static class CatalogUpdateTests
     public static async Task RunAsync()
     {
         BootstrapSelectionTests.Run();
-        Assert(Catalog.Bundled.Count == 5 && Catalog.ById("crew-console")?.File == "CrewConsole.Mod.dll"
+        Assert(Catalog.Bundled.Count == 6 && Catalog.ById("crew-console")?.File == "CrewConsole.Mod.dll"
             && Catalog.ById("conversations")?.File == "Conversations.Mod.dll"
             && Catalog.ById("death-rattle")?.File == "DeathRattle.Mod.dll"
             && Catalog.ById("death-rattle")?.MinLauncherVersion == "0.1.6"
             && Catalog.ById("chem-master")?.File == "ChemMaster.Mod.dll"
-            && Catalog.ById("chem-master")?.MinLauncherVersion == "0.1.6", "embedded catalog");
+            && Catalog.ById("chem-master")?.MinLauncherVersion == "0.1.6"
+            && Catalog.ById("debug-vision")?.File == "DebugVision.Mod.dll"
+            && Catalog.ById("debug-vision")?.MinLauncherVersion == "0.1.8", "embedded catalog");
         foreach (var file in new[] { "../Evil.Mod.dll", "C:\\Evil.Mod.dll", "a/evil.Mod.dll", "foo.dll", ".hidden.Mod.dll", "x..Mod.dll" })
             Assert(!Catalog.IsSafeModFileName(file), "reject unsafe mod filename " + file);
         var versions = new[] { "0.1.0-alpha", "0.1.0-alpha.2", "0.1.0-alpha.10", "0.1.0-beta", "0.1.0", "0.2.0", "1.0.0" };

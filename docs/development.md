@@ -12,24 +12,25 @@ cd ss14-modlauncher
 
 The default `Auto` mode reads the explicit `mode` (`Full` or `ModsOnly`) from `release/release.json`; it does not infer the mode from version equality. Full mode builds the launcher from source. Already released mod versions are reused byte-for-byte from the artifact ledger; newly versioned mods are built from source.
 
-Current source versions (mod-only feed 0.1.7):
+Current source versions (unreleased full feed 0.1.8):
 
 | Component | Version | Source of truth |
 | --- | --- | --- |
-| Release/feed | 0.1.7 | `release/release.json`: `releaseVersion` |
-| ModLauncher | 0.1.6 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
-| Launcher hosting release | 0.1.6 | `release/release.json`: `launcherReleaseVersion`, the tag containing that ZIP |
+| Release/feed | 0.1.8 | `release/release.json`: `releaseVersion` |
+| ModLauncher | 0.1.8 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
+| Launcher hosting release | 0.1.8 | `release/release.json`: `launcherReleaseVersion`, the planned tag containing that ZIP |
 | Bootstrap | 0.1.2 | `release/release.json`: `bootstrapVersion`, checked against its project |
 | Crew Console | 0.1.2 | `catalog/mods.json` |
 | Hello World | 0.1.2 | `catalog/mods.json` |
 | Conversations | 0.1.1 | `catalog/mods.json`; new ID requires launcher 0.1.5 |
 | Death Rattle | 0.1.2 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
 | ChemMaster | 0.1.4 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
+| Debug Vision | 0.1.3 | `catalog/mods.json`; new ID requires launcher 0.1.8 |
 
 Full-build output under `dist/`:
 
 - `SS14ModLauncher/`: self-contained app, documentation and notices.
-- `SS14ModLauncher-0.1.6-win-x64.zip`: portable launcher package.
+- `SS14ModLauncher-0.1.8-win-x64.zip`: portable launcher package.
 - `mod-assets/`: individual DLLs and `mods-manifest.json`.
 - `SHA256SUMS.txt` and `build-info.json`: checksums and source/component provenance.
 - `mod-artifacts.next.json`: local maintainer receipt for ledger review after publication; not a public release asset.
@@ -77,6 +78,7 @@ dotnet run --project tests/CrewConsole.Tests.csproj -c Release
 
 dotnet run --project Conversations.Tests/Conversations.Tests.csproj -c Release
 dotnet run --project DeathRattle.Tests/DeathRattle.Tests.csproj -c Release
+dotnet run --project DebugVision.Tests/DebugVision.Tests.csproj -c Release
 dotnet run --project Launcher.Core.Tests/Launcher.Core.Tests.csproj -c Release
 ```
 

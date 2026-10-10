@@ -13,6 +13,8 @@
 | `DeathRattle.Tests/` | Distress policy and Harmony/game-contract regression harness |
 | `ChemMaster/` | Native recipes tab, connection-scoped chemistry catalog, planner and confirmed BUI execution |
 | `ChemMaster.Tests/` | Planner, execution lifecycle and saved target regression harness |
+| `DebugVision/` | Native F1 panel and connection-scoped camera, FOV, lighting and shadow overrides |
+| `DebugVision.Tests/` | Harmony, camera restoration, input and localized UI regression harness |
 | `tests/` | Crew history, map/layout, and timeline regression harness |
 | `Launcher.Core.Tests/` | Core regression harness with temporary fixtures |
 | `docs/` | User guide, contracts, recovery and release information |
@@ -70,6 +72,7 @@ loader/
       HelloWorld.Mod.dll
       DeathRattle.Mod.dll
       ChemMaster.Mod.dll
+      DebugVision.Mod.dll
 ```
 
 The original launcher apphost is kept in its original directory so it can resolve its existing launcher DLL/runtime files. No Steam library configuration is rewritten.
@@ -99,6 +102,8 @@ After Steam has verified a new upstream build, explicit `RebaseAfterPlatformUpda
 `AutomaticUpdateChecker` starts at most one background metadata request per app session. It supports cancellation, returns failures as nonmodal state, and rejects results when the source repository, installation root, installed versions or opt-in setting changed. The UI also checks its captured context before displaying a notification. No timer, tray process, automatic DLL download or automatic installation is involved.
 
 `UpdateService` validates only the configured GitHub release source. The feed/tag version, explicit launcher application version, its hosting release tag, bootstrap version and individual mod versions are independent. In 0.1.4, the launcher is 0.1.4 while the bundled mods and bootstrap remain 0.1.2. The checked-in artifact ledger preserves released mod bytes by version and SHA-256.
+
+From 0.1.8, explicit reinstall merges bundled payload with hash-verified installed mods by assembly identity/version: a newer bundled assembly replaces an older installed version. Equal/newer independent updates and unreadable version metadata preserve installed bytes. Unknown files are not adopted; bundled runtime files always come from the portable launcher.
 
 The manifest's explicit `launcher.version` determines whether a launcher update exists; `launcher.releaseVersion` identifies the hosting tag of its ZIP. Build configuration records `mode: Full|ModsOnly`; Auto follows this field. Full requires the feed tag to match the ZIP's hosting tag, not the app version, so intervening mod-only releases do not consume launcher version numbers. Compatible mod updates are returned in `Mods`; updates needing a newer launcher are returned in `BlockedMods` with their minimum version. A blocked mod does not prevent applying compatible mods from the same feed. The global minimum remains at least the highest per-mod minimum to keep older clients safe. Downloads are checked before replacement. See [updates](updates.md) for the full schema and [releasing](releasing.md) for artifact handling.
 

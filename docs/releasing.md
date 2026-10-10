@@ -41,7 +41,7 @@ Review and publish these assets under `v0.1.5`:
 - The mod DLLs under `dist/mod-assets/`
 - `dist/SHA256SUMS.txt` and `dist/build-info.json`
 
-The current five-mod catalog produces nine public assets for a full release. `mod-artifacts.next.json` is a local maintainer receipt and is excluded from public checksums; do not upload it as a release asset. The examples here illustrate independent versioning; the active release plan is always `release/release.json`.
+The current six-mod catalog produces ten public assets for a full release. `mod-artifacts.next.json` is a local maintainer receipt and is excluded from public checksums; do not upload it as a release asset. The examples here illustrate independent versioning; the active release plan is always `release/release.json`.
 
 The ZIP contains a self-contained launcher, current documentation, MIT and dependency/runtime notices. Inspect the actual archive and source provenance before uploading.
 
@@ -55,7 +55,7 @@ After changing a mod, incrementing its catalog version and verifying its minimum
 
 This is a future-release example. Persist it with `mode: ModsOnly` and `releaseVersion: 0.1.6`, leaving `launcherVersion` and `launcherReleaseVersion` at 0.1.5. The default `-Mode Auto` follows that configuration. `-ModsOnly` is a shorthand for explicit `-Mode ModsOnly`.
 
-ModsOnly defaults to `dist/mod-release` unless `-OutputRoot` is specified. It emits the manifest, mod DLLs, build metadata and checksums, with **no rebuilt launcher or new launcher ZIP**. For the current five-mod catalog those are eight public assets. The proposed ledger receipt is local-only and excluded from public checksums. A separate output folder avoids confusing these assets with an earlier full package.
+ModsOnly defaults to `dist/mod-release` unless `-OutputRoot` is specified. It emits the manifest, mod DLLs, build metadata and checksums, with **no rebuilt launcher or new launcher ZIP**. For the current six-mod catalog those are nine public assets. The proposed ledger receipt is local-only and excluded from public checksums. A separate output folder avoids confusing these assets with an earlier full package.
 
 The feed's explicit `launcher` entry uses `version` for the app, `releaseVersion` for its hosting tag and `downloadUrl` for the ZIP. In this example it still points to app 0.1.5 hosted under `v0.1.5`. The global minimum is the maximum mod requirement so older clients remain safe. A mod requiring a launcher newer than the configured published one needs a compatible launcher release first.
 

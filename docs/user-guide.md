@@ -4,9 +4,11 @@
 
 ## Mod library / Библиотека модов
 
-The library lists all five bundled mods in compact rows with localized names, categories, versions and enable switches. Search by Russian or English name, ID, description or the current language's category. Filtering does not change the active profile. Click **Details** for full descriptions and usage instructions; Auto Chemistry includes an embedded, offline screenshot of the Russian AUTO tab. Enable changes are saved to the active profile and apply on the next client launch.
+The library lists all six bundled mods in compact rows with localized names, categories, versions and enable switches. Search by Russian or English name, ID, description or the current language's category. Filtering does not change the active profile. Click **Details** for full descriptions and usage instructions; Auto Chemistry includes an embedded, offline screenshot of the Russian AUTO tab. Enable changes are saved to the active profile and apply on the next client launch.
 
-В списке пять модов: **Монитор экипажа**, **Переговоры**, **Зов о помощи**, **Автохимия**, **Тестовый мод**. Короткие строки показывают версию, категорию и переключатель. Поиск по названиям RU/EN, ID, описанию и категории не меняет профиль. **Подробнее** открывает описание и инструкцию; скриншот «Автохимии» доступен без сети. Выбор сохраняется в текущем профиле и применяется при следующем запуске клиента. Внутренние ID и имена DLL остались прежними.
+В списке шесть модов: **Монитор экипажа**, **Переговоры**, **Зов о помощи**, **Автохимия**, **Дебаг-видение**, **Тестовый мод**. Короткие строки показывают версию, категорию и переключатель. Поиск по названиям RU/EN, ID, описанию и категории не меняет профиль. **Подробнее** открывает описание и инструкцию; скриншот «Автохимии» доступен без сети. Выбор сохраняется в текущем профиле и применяется при следующем запуске клиента. Внутренние ID и имена DLL прежних модов остались прежними.
+
+**Debug Vision / Дебаг-видение:** press **F1** for the panel, **Ctrl+N** for omnivision, **Ctrl+L** for fullbright, **Ctrl+H** for shadows, **Ctrl+B** for visual effect protection and **Ctrl+R** to reset. Protection hides supported flash/blindness/welding blur and other screen effects; gameplay damage/debuffs remain. Extended zoom is always enabled: native Zoom in / Zoom out / Reset zoom bindings and panel buttons adjust the same scale. No number pad is needed. Debug Vision takes priority over Test Mod on F1 during gameplay; shortcuts are left to focused text fields. [Usage and limits / Использование и ограничения](mods/debug-vision.md).
 
 ## First launch / Первый запуск
 

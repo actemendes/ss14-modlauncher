@@ -7,7 +7,7 @@ namespace SS14ModLauncher;
 
 internal static class Program
 {
-    internal const string Version = "0.1.7";
+    internal const string Version = "0.1.8";
     internal static string[] ForwardedArguments = [];
     [STAThread]
     private static int Main(string[] args)
@@ -64,10 +64,7 @@ internal static class Payload
 {
     public static Dictionary<string, byte[]> ForInstallation(string root)
     {
-        var payload = Read();
-        foreach (var (filename, bytes) in Installation.ReadVerifiedInstalledMods(root))
-            if (Catalog.Bundled.Any(mod => mod.File == filename)) payload[filename] = bytes;
-        return payload;
+        return BundledPayload.Merge(Read(), Installation.ReadVerifiedInstalledMods(root));
     }
     public static Dictionary<string, byte[]> Read()
     {

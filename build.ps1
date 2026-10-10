@@ -83,6 +83,7 @@ if (-not $SkipTests) {
     Invoke-DotNet @('run', '--project', (Join-Path $projectRoot 'Conversations.Tests/Conversations.Tests.csproj'), '-c', 'Release')
     Invoke-DotNet @('run', '--project', (Join-Path $projectRoot 'DeathRattle.Tests/DeathRattle.Tests.csproj'), '-c', 'Release')
     Invoke-DotNet @('run', '--project', (Join-Path $projectRoot 'ChemMaster.Tests/ChemMaster.Tests.csproj'), '-c', 'Release')
+    Invoke-DotNet @('run', '--project', (Join-Path $projectRoot 'DebugVision.Tests/DebugVision.Tests.csproj'), '-c', 'Release')
     Invoke-DotNet @('run', '--project', (Join-Path $projectRoot 'Launcher.Core.Tests/Launcher.Core.Tests.csproj'), '-c', 'Release')
 }
 

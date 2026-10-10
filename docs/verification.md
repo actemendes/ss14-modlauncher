@@ -4,6 +4,42 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.8 — local Debug Vision build / 2026-10-10
+
+### Release candidate / 2026-10-11
+
+- The user confirmed that the installed Debug Vision 0.1.3 works and authorized publication. Read-only inspection confirmed installed assembly 0.1.3.0 and SHA-256 parity with the local effects package. This is user-reported gameplay acceptance, not a recorded sequence of flash/welding or English UI scenarios.
+- The release includes launcher 0.1.8, Debug Vision 0.1.3 and the five previous mod DLLs at their existing immutable versions, with bootstrap 0.1.2. Publication evidence is recorded after final package and public download checks.
+
+### Debug Vision 0.1.3 visual effect protection / 2026-10-11
+
+- Added Ctrl+B and a RU/EN panel switch for visual effect protection, independent of FOV/fullbright/shadows. Seven known overlays are suppressed: flash, blindness, blurry vision (including welding injury), drunk, drowsiness, rainbows and damage shading. Native effect updates/state continue; disabling protection restores ongoing effects. Reset/disconnect clears protection. Unrelated overlays are untouched.
+- Blindness may have disabled lighting before protection is enabled. Its draw prefix restores only the native render flags/light manager; `IsBlind` and `EyeDamage` remain unchanged. Damage, slowdowns, stuns and server-side visibility limits are not removed.
+- **109 lifecycle/rendering/UI/Harmony checks** passed, including real byref-like draw arguments, all seven effects, enabling during blindness, native lighting recovery, frame updates, unrelated overlays, active-effect restoration, Ctrl+B text focus/repeats, panel state and lifecycle reset. Actual SS220 assemblies passed **70 API checks**. Live flash/welding testing remains pending; this is not evidence of gameplay immunity.
+- Full offline packaging checks passed. `dist/debug-vision-effects/SS14ModLauncher-0.1.8-win-x64.zip` includes Debug Vision 0.1.3; its DLL SHA-256 matches the manifest and all **25 Harmony hooks** installed against actual SS220 assemblies. The game installation has not been updated automatically.
+
+### Debug Vision 0.1.2 zoom fix
+
+- User-reported live testing of 0.1.1 confirmed F1/Ctrl mode shortcuts and native zoom binding compatibility, but one press could zoom out excessively. Actual Robust input code replays the native handlers inside a past-prediction area; a regression with 20 such replays reproduced the extra multiplication before the fix.
+- Local targets now step only when `IGameTiming.IsFirstTimePredicted` is true. Original handlers continue running during replays. The displayed scale smoothly approaches each native target at 8/s, with consistent timing across render frame rates; reset cancels the transition.
+- **74 lifecycle/rendering/UI/Harmony checks** and **52 actual SS220 API checks** passed, including single-step prediction replay, repeated real presses, zoom reversal during animation, convergence, frame-rate independence and invalid frame times. Live testing of 0.1.2 remains pending.
+- Full offline packaging suites passed; `dist/debug-vision-stepped/SS14ModLauncher-0.1.8-win-x64.zip` contains Debug Vision 0.1.2 with a DLL hash matching its manifest. The packaged DLL installed all **18 Harmony hooks** against actual SS220 assemblies. The running server/client were retained; installation into the user's game is still a separate manual step.
+
+### Debug Vision 0.1.1 update
+
+- Ctrl+N/L/H/R shortcuts and permanently available extended zoom passed **63 lifecycle/rendering/UI/Harmony checks**. The fixture's remapped zoom bindings run the original native handlers and then update the shared local camera scale beyond the native clamp. Mouse/native controls, native reset, render bounds, other/null sessions, text focus, exact modifiers and shortcut repeats/releases are covered.
+- Actual SS220 client assemblies passed **48 API checks** and accepted all **17 Harmony hooks**. The native session-handler signatures and zoom-step constant are verified in Content.Shared. The original 0.1.0 test session remains open; the updated package uses `dist/debug-vision-hotkeys` so its executable can be built without replacing a running launcher. No current game client/server is restarted for this build.
+- The user subsequently confirmed working mode shortcuts and native zoom binding compatibility in a live session. Excessive zoom stepping was reported next and is addressed by 0.1.2 above.
+- Preparing the next local session exposed that reinstall always preferred the old installed mod DLL. The merge now selects newer bundled assemblies while preserving equal/newer independent updates and unknown metadata; **6 regression checks** and the **30/30 installation suite** passed. The rebuilt portable launcher requires explicit reinstall to move the user's installed Debug Vision from 0.1.0 to 0.1.1. The loopback SS220 server was restarted and reported Ready; this does not establish live hotkey behaviour.
+
+### Original 0.1.0 build
+
+- Full offline build produced `dist/SS14ModLauncher-0.1.8-win-x64.zip` with Debug Vision **0.1.0**, bootstrap **0.1.2** and the five existing mod DLLs reused byte-for-byte. Nothing was published or installed into the user's game.
+- **45 Debug Vision checks** passed: actual Harmony patches on contract fixtures, independent switches, camera replacement, latest native Zoom/Scale restoration, reset/disconnect, RU/EN window events, mouse zoom controls, text focus, modifier shortcuts and matched key releases. F1 opens only Debug Vision when the actual Test Mod is also installed; other keys retain native actions.
+- Actual SS220 client assemblies with **Robust.Shared 277.2.1.0** passed **41 API checks**; the packaged mod installed all **11 Harmony hooks** successfully in the assembly smoke harness.
+- Full packaging suites passed: release version/artifact checks, **26 crew checks**, **56 Conversations checks**, Death Rattle policy/integration scenarios, **108 chemistry checks**, **30/30 installation checks**, bootstrap/catalog/update/setup checks. All six packaged DLL hashes matched the generated manifest; the five existing DLLs matched the immutable ledger.
+- The built launcher rendered the six-row Russian catalog including **Дебаг-видение 0.1.0** in an isolated capture session. Live game rendering, FOV around walls and remote-server PVS limits remain unverified; API/hook installation is not a gameplay smoke test.
+
 ## 0.1.7 — published and verified / 2026-10-10
 
 - Stable release: [v0.1.7](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.7), built from clean implementation commit `2e76f089f820e5a5b0db9e401e5ca02a8b0d86bb`; public provenance records `sourceDirty: false` and `testsRun: true`. Launcher **0.1.7** has a compact searchable library, localized display names and offline mod details; Auto Chemistry (ChemMaster) **0.1.4** is built from source. Bootstrap **0.1.2** and the other four mods retain their published versions and bytes. Both READMEs feature the supplied Auto Chemistry artwork near the top; both artwork and gameplay screenshot are included in the ZIP.

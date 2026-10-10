@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>DebugVision.Mod</AssemblyName><Version>0.1.3</Version>
+    <Version Condition="'$(ModBuildId)' == 'debug-vision' and '$(ModBuildVersion)' != ''">$(ModBuildVersion)</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.4.2"/>
+    <ProjectReference Include="../Bootstrap/Bootstrap.csproj"/>
+    <Compile Include="../Conversations/NativeUi.cs" Link="NativeUi.cs"/>
+  </ItemGroup>
+</Project>
