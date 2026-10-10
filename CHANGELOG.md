@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.10 — 2026-10-11
+
+Mods-only feed: Distress Call 0.1.3; launcher stays 0.1.8, bootstrap 0.1.2 and the five other mod DLLs retain their published bytes.
+
+- Fresh injury trend replaces the awful-alert-only trigger. Healing, improving alerts and critical-state recovery cancel queued calls; small relapses stay quiet. Normal calls need 5 fresh damage; recovery needs 10 net damage from the best recovered value. A 500 ms settlement period, 3-second injury freshness, once-per-episode guard and shared 30-second cooldown prevent delayed calls for old injuries and threshold jitter.
+- Authoritative state application is distinguished from prediction replay: Robust marks both as not first-time prediction. Server healing/damage now updates the trend and optional source tracking; actual replays are ignored. Alerts cannot send midway through state application.
+- Optional server fauna-lunge/damage correlation adds visible natural-melee attacker names with “похоже” / “I think”. Strict direction/range/parent checks and a single-candidate rule reduce false attribution; explicit Origin takes priority. Lunge events do not identify victims, so correlation is always qualified. No postmortem radio message is attempted.
+- Added recovery/relapse/crit/jitter/cooldown and fauna evidence regressions, actual-game API validation and a release-DLL Harmony smoke harness. Live radio delivery on a server remains to be verified.
+
 ## 0.1.8 — 2026-10-11
 
 - New Debug Vision 0.1.3 mod: localized native panel on F1 with independent omnivision, fullbright, shadow and visual effect switches. Ctrl+N/L/H/B toggle these switches; Ctrl+R resets the view. Extended zoom is always enabled. The game's existing Zoom in / Zoom out / Reset zoom bindings and the panel buttons adjust the same scale, including beyond normal limits. No number pad is needed. Debug Vision takes priority over Test Mod on F1 during gameplay.

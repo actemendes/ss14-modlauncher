@@ -29,16 +29,16 @@
   },
   {
     "id": "death-rattle",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "minLauncherVersion": "0.1.6",
     "file": "DeathRattle.Mod.dll",
     "nameRu": "Зов о помощи",
     "nameEn": "Distress Call",
-    "descriptionRu": "При ужасном здоровье автоматически зовёт на помощь по рации. Называет нападающего, если клиент получил подтверждённый источник урона. Без спама.",
-    "descriptionEn": "Automatically calls for help over radio at awful health. Names the attacker when a confirmed damage source is available to the client. Prevents repeated spam.",
+    "descriptionRu": "Зовёт на помощь по рации при серьёзном ухудшении здоровья. Учитывает лечение и выход из крита. Называет подтверждённого нападающего или вероятную атакующую фауну.",
+    "descriptionEn": "Calls for help over radio when awful health seriously worsens. Accounts for healing and critical-state recovery. Names confirmed attackers or likely attacking fauna.",
     "category": "communication",
-    "instructionsRu": "Работает автоматически при критическом состоянии здоровья, если доступна рация. Один вызов за эпизод, с перерывом не менее 30 секунд. Имя нападающего добавляется только при подтверждённом источнике урона; иначе отправляется обычный зов о помощи.",
-    "instructionsEn": "Runs automatically at awful health when radio is available. Sends one call per episode with a minimum 30-second cooldown. Names the attacker only when a confirmed damage source is available; otherwise sends a basic distress call.",
+    "instructionsRu": "При ужасном здоровье и новом заметном уроне отправляет один зов по рации, с паузой не менее 30 секунд. Лечение и выход из крита отменяют ожидающий крик. После лечения требуется потерять ещё 10 единиц здоровья; мелкие колебания игнорируются. Если явного источника урона нет, направленный замах фауны рядом со свежим уроном может добавить имя со словом «похоже». Неоднозначные случаи дают обычный зов. Мёртвый или находящийся в крите персонаж не говорит.",
+    "instructionsEn": "At awful health with new significant damage, sends one radio call with at least 30 seconds between attempts. Healing and critical-state recovery cancel pending calls. After healing, another 10 damage is required; small fluctuations are ignored. Without explicit damage origin, a directed fauna swing close to fresh damage may add a name qualified with 'I think'. Ambiguous cases use the basic call. Dead or critical characters do not speak.",
     "source": "DeathRattle"
   },
   {

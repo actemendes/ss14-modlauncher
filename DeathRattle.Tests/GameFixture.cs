@@ -30,6 +30,16 @@ namespace Content.Client.Alerts
         public IReadOnlyDictionary<AlertKey, AlertState>? ActiveAlerts { get; set; }
     }
 }
+namespace Content.Client.Weapons.Melee
+{
+    public class MeleeWeaponSystem
+    {
+        public int NativeLunges;
+        public void Lunge(Content.Shared.Weapons.Melee.Events.MeleeLungeEvent ev) => OnMeleeLunge(ev);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void OnMeleeLunge(Content.Shared.Weapons.Melee.Events.MeleeLungeEvent ev) => NativeLunges++;
+    }
+}
 namespace Content.Client.UserInterface.Systems.Alerts
 {
     public class AlertsUIController(Robust.Client.Player.IPlayerManager player)

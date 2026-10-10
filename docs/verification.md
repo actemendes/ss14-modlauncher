@@ -4,6 +4,14 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.10 — release candidate / 2026-10-11
+
+- Distress Call **0.1.3** observes actual injury totals as well as awful alerts. Healing, improved severity and critical/dead state cancel pending calls; recovery requires 10 net damage from its best value, including a fresh 5-damage series. A 500 ms settlement, 3-second freshness limit and shared 30-second cooldown prevent recovery/jitter/stale-injury shouts. Attaching to an already injured body stays quiet.
+- Verified Robust's authoritative state timing: `StartStateApplication` sets both `ApplyingState = true` and `IsFirstTimePredicted = false`. Damage/healing in this state is accepted, while actual prediction replays are ignored. Radio attempts are prohibited during state application/replay.
+- Optional directed natural-melee fauna swing/damage correlation names a single likely attacker with “похоже” / “I think”. It requires close direction/range/parent checks and an 800 ms event window, works in both event orders, drops healing/ambiguous evidence and never claims confirmed Origin. Instant critical/dead characters cannot send a postmortem call.
+- **126 policy checks and 31 isolated Harmony integration scenarios** cover recovery, serious relapse, sustained worsening, small fluctuations, stale cooldown expiry, switching bodies, native radio prefix, RU/EN text, state application, replays, fauna ambiguity, other targets/parents, held weapons, humanoids and failure containment. Actual SS220 / Robust **277.2.1.0** passed the expanded API contract script and accepted all five hooks.
+- Planned mod-only feed retains launcher **0.1.8**, bootstrap **0.1.2** and the five other locked DLLs. Live radio delivery after treatment or a spider attack has not been tested. Publication/package evidence is recorded after the final build and public download verification.
+
 ## 0.1.9 — published and verified / 2026-10-11
 
 - Two independent, localized F1 panel toggles enable native health status and job icons without HUD equipment. Both default off, persist when the panel closes, and clear on reset/disconnect. Missing data stays missing; native icon visibility rules remain in effect.
