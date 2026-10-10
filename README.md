@@ -52,7 +52,7 @@ To remove the integration, close the client and original launcher and use **Rest
 
 Mod update **0.1.10** fixes **Distress Call 0.1.3**: healing and getting up from critical state no longer trigger calls; small relapses are ignored. A directed fauna attack with fresh damage can add its name qualified with “I think”. [Behaviour and limits](docs/mods/death-rattle.md). Install through Updates in ModLauncher **0.1.8**.
 
-Previous mod update **0.1.9** adds two independent **F1** panel switches in **Debug Vision 0.1.4**: **HUD: health status** and **HUD: job icon**. Native icons beside characters work without HUD glasses. Both start off; reset and disconnect clear them. Install the update through the Updates tab in ModLauncher **0.1.8**.
+Previous mod update **0.1.9** adds two independent **F1** panel switches in **Debug Vision 0.1.5**: **HUD: health bar** and **HUD: job icon**. Native health bars above characters and job icons work without HUD glasses. Both start off; reset and disconnect clear them. Install the update through the Updates tab in ModLauncher **0.1.8**.
 
 Launcher **0.1.8** adds **Debug Vision 0.1.3**: an **F1** panel with omnivision (**Ctrl+N**), fullbright (**Ctrl+L**), disabled shadows (**Ctrl+H**), visual effect protection (**Ctrl+B**) and reset (**Ctrl+R**). Protection hides flash, blindness/welding blur and other supported screen debuffs while keeping gameplay effects. Extended zoom is always enabled; native zoom bindings and panel buttons adjust the same scale, one smooth step per command. No number pad is needed. Only data received from the server is visible. [Usage](docs/mods/debug-vision.md).
 

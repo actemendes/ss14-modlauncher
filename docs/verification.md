@@ -15,7 +15,15 @@ Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 i
 - Published Distress Call **0.1.3** is locked with SHA-256 `A9A28D71D476CE31DCD9F47AB86FE2734B8D161E0361D0AEF044E02C9429AA6D`. Launcher **0.1.8**, bootstrap **0.1.2** and the five other mod DLLs retain their published versions/bytes; no launcher ZIP was rebuilt. Publication did not modify the user's game installation.
 - GitHub Actions passed for the [implementation commit on main](https://github.com/actemendes/ss14-modlauncher/actions/runs/38092748540) and [v0.1.10 release tag](https://github.com/actemendes/ss14-modlauncher/actions/runs/38092840327). Live radio delivery after treatment or a spider attack has not been tested; fixture dispatch and real-game hook installation are the recorded compatibility evidence.
 
-## 0.1.9 — published and verified / 2026-10-11
+## 0.1.11 — native health bar correction / 2026-10-11
+
+- Replaces the mistakenly implemented health status icons with the actual medical HUD **health bar above each character**. The native `EntityHealthBarOverlay` supplies bar geometry, colours, damage/critical/death threshold calculation and visibility filtering. Profession icons remain an independent option.
+- **135 lifecycle/rendering/UI/Harmony checks** passed: native bar registration, healthy/critical/dead progress, visibility, missing containers, medical visibility prototype, scoped configuration restoration after renderer exceptions, equipment container/prototype preservation, no duplicate overlays, glasses removal, reset/disconnect and RU/EN labels. Actual SS220 / Robust **277.2.1.0** passed **92 API checks** and installed the required Harmony hooks.
+- This correction is Debug Vision **0.1.5**, in mods-only feed **0.1.11**, retaining launcher **0.1.8** and the published Distress Call **0.1.3** from feed 0.1.10. Release 0.1.9 was returned to draft; previously downloaded 0.1.4 installations can upgrade normally. New bars have not been visually verified in a live game.
+
+## 0.1.9 — withdrawn / 2026-10-11
+
+The 0.1.9 release was withdrawn after the user clarified that the requested medical HUD means a health bar above the character. Debug Vision 0.1.4 incorrectly enabled only health status icons. The original publication evidence below is historical; the replacement is Debug Vision 0.1.5 in feed 0.1.11. Release 0.1.10 remains intact.
 
 - Two independent, localized F1 panel toggles enable native health status and job icons without HUD equipment. Both default off, persist when the panel closes, and clear on reset/disconnect. Missing data stays missing; native icon visibility rules remain in effect.
 - **130 lifecycle/rendering/UI/Harmony checks** passed, including native health states, missing health/job data, independent buttons, no duplicate job icons, preservation of other HUDs and equipment container sets, equipment changes, exception restoration, reset and reconnect. Actual SS220 assemblies (Robust **277.2.1.0**) passed **80 API checks** and accepted the required Harmony hooks.

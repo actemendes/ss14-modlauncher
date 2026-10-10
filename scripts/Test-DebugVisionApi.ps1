@@ -42,13 +42,25 @@ try {
     $blindable = Find-Type 'Content.Shared' 'Content.Shared.Eye.Blinding.Components.BlindableComponent'
     $hud = Find-Type 'Content.Client' 'Content.Client.Overlays.EquipmentHudSystem`1'
     Assert-Api (@($hud.Fields | Where-Object { $_.Name -eq '<IsActive>k__BackingField' -and $_.FieldType.FullName -eq 'System.Boolean' }).Count -eq 1) 'Native equipment HUD activation backing field'
-    $health = Find-Type 'Content.Client' 'Content.Client.Overlays.ShowHealthIconsSystem'
-    Assert-Api (@($health.Fields | Where-Object { $_.Name -eq 'DamageContainers' -and $_.FieldType.FullName -eq 'System.Collections.Generic.HashSet`1<System.String>' }).Count -eq 1) 'Health HUD damage containers'
+    $health = Find-Type 'Content.Client' 'Content.Client.Overlays.ShowHealthBarsSystem'
+    $healthOverlay = Find-Type 'Content.Client' 'Content.Client.Overlays.EntityHealthBarOverlay'
+    Assert-Api (@($health.Fields | Where-Object { $_.Name -eq '_overlay' -and $_.FieldType.FullName -eq $healthOverlay.FullName }).Count -eq 1) 'Native health bar overlay instance'
+    Assert-Api (@($health.Fields | Where-Object { $_.Name -eq '_overlayMan' -and $_.FieldType.FullName -eq 'Robust.Client.Graphics.IOverlayManager' }).Count -eq 1) 'Native health bar overlay manager'
+    Assert-Api (@($healthOverlay.Fields | Where-Object { $_.Name -eq 'DamageContainers' -and $_.FieldType.FullName -eq 'System.Collections.Generic.HashSet`1<System.String>' }).Count -eq 1) 'Health bar damage containers'
+    Assert-Api (@($healthOverlay.Fields | Where-Object { $_.Name -eq 'StatusIcon' -and $_.FieldType.FullName -eq 'System.Nullable`1<Robust.Shared.Prototypes.ProtoId`1<Content.Shared.StatusIcon.HealthIconPrototype>>' }).Count -eq 1) 'Health bar visibility prototype'
+    Assert-Api (@($healthOverlay.Methods | Where-Object { $_.Name -eq 'Draw' -and $_.Parameters.Count -eq 1 -and $_.Parameters[0].ParameterType.FullName -like 'Robust.Client.Graphics.OverlayDrawArgs&*' }).Count -eq 1) 'Actual native health bar Draw byref-like arguments'
+    Assert-Api ('DeactivateInternal' -in $health.Methods.Name) 'Native health bar removal lifecycle'
+    $systemManager = Find-Type 'Robust.Shared' 'Robust.Shared.GameObjects.IEntitySystemManager'
+    Assert-Api (@($systemManager.Methods | Where-Object { $_.Name -eq 'GetEntitySystem' -and $_.Parameters.Count -eq 1 -and $_.Parameters[0].ParameterType.FullName -eq 'System.Type' }).Count -eq 1) 'Native system resolution'
+    $overlayManager = Find-Type 'Robust.Client' 'Robust.Client.Graphics.IOverlayManager'
+    foreach ($method in @('AddOverlay', 'RemoveOverlay', 'HasOverlay', 'GetOverlay')) {
+        Assert-Api ($method -in $overlayManager.Methods.Name) "Overlay manager $method"
+    }
     $job = Find-Type 'Content.Client' 'Content.Client.Overlays.ShowJobIconsSystem'
     Assert-Api ($health.BaseType.ElementType.FullName -eq $hud.FullName -and $job.BaseType.ElementType.FullName -eq $hud.FullName) 'Health/job HUD inheritance'
     $jobStatus = Find-Type 'Content.Client' 'Content.Client.Access.Systems.JobStatusSystem'
     Assert-Api (@($jobStatus.Fields | Where-Object { $_.Name -eq '_showJobIcons' -and $_.FieldType.FullName -eq $job.FullName }).Count -eq 1) 'Job status HUD dependency'
-    foreach ($system in @($health, $jobStatus)) {
+    foreach ($system in @($jobStatus)) {
         Assert-Api (@($system.Methods | Where-Object { $_.Name -eq 'OnGetStatusIconsEvent' -and $_.Parameters.Count -eq 2 -and $_.Parameters[1].ParameterType.FullName -eq 'Content.Shared.StatusIcon.Components.GetStatusIconsEvent&' }).Count -eq 1) "$($system.FullName) native icon collection"
     }
     Assert-Api (@($blindable.Fields | Where-Object { $_.Name -in @('LightSetup', 'GraceFrame') -and $_.FieldType.FullName -eq 'System.Boolean' }).Count -eq 2) 'Blindness render bookkeeping'

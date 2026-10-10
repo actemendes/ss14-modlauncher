@@ -28,6 +28,14 @@ namespace Robust.Shared.IoC
         public static object ResolveType(Type type) => Services[type];
     }
 }
+namespace Robust.Shared.GameObjects
+{
+    public interface IEntitySystemManager { object GetEntitySystem(Type type); }
+}
+namespace Robust.Shared.Prototypes
+{
+    public readonly record struct ProtoId<T>(string Id);
+}
 namespace Robust.Shared.Player
 {
     public interface ICommonSession { }

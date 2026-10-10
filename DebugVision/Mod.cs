@@ -84,7 +84,12 @@ public static partial class Mod
                     patch.before = ["local.window.hello-world"];
                 }
                 harmony.Patch(target, prefix: prefix ? patch : null, postfix: prefix ? null : patch,
-                    finalizer: handler == nameof(BeforeHudIcons) ? new HarmonyMethod(typeof(Mod), nameof(RestoreHudIcons)) : null);
+                    finalizer: handler switch
+                    {
+                        nameof(BeforeHudIcons) => new HarmonyMethod(typeof(Mod), nameof(RestoreHudIcons)),
+                        nameof(BeforeHealthBarDraw) => new HarmonyMethod(typeof(Mod), nameof(RestoreHealthBarDraw)),
+                        _ => null
+                    });
             }
             _installed = true;
             Bootstrap.Log("Debug Vision: F1 panel, FOV, lighting, shadows, visual effect protection, health/job HUD and local zoom installed.");
@@ -127,6 +132,7 @@ public static partial class Mod
         finally
         {
             _eyeManager = _lightManager = _playerManager = _timing = null;
+            _healthBarsSystem = null;
             // Retain consumed releases until KeyUp so F1 cannot leak a half-keypress.
             if (_window != null)
             {
@@ -221,7 +227,12 @@ public static partial class Mod
             case "light": Fullbright = enabled; break;
             case "shadows": NoShadows = enabled; break;
             case "effects": NoEffects = enabled; break;
-            case "health": HealthHud = enabled; break;
+            case "health":
+                var previous = HealthHud;
+                HealthHud = enabled;
+                try { SyncHealthBars(); }
+                catch { HealthHud = previous; throw; }
+                break;
             case "job": JobHud = enabled; break;
             default: throw new ArgumentException("Unknown debug vision option.", nameof(option));
         }
@@ -235,6 +246,7 @@ public static partial class Mod
     public static void Reset()
     {
         Omnivision = Fullbright = NoShadows = NoEffects = HealthHud = JobHud = false;
+        SyncHealthBars();
         RestoreZoom(); Zoom = _displayZoom = 1;
         if (_inGame) ApplyZoom();
         Refresh();
@@ -292,7 +304,7 @@ public static partial class Mod
             AddToggle(panel, "light", T("Полная яркость · Ctrl+L", "Fullbright · Ctrl+L"));
             AddToggle(panel, "shadows", T("Отключить тени · Ctrl+H", "Disable shadows · Ctrl+H"));
             AddToggle(panel, "effects", T("Защита от визуальных эффектов · Ctrl+B", "Visual effect protection · Ctrl+B"));
-            AddToggle(panel, "health", T("HUD: состояние здоровья", "HUD: health status"));
+            AddToggle(panel, "health", T("HUD: полоса здоровья", "HUD: health bar"));
             AddToggle(panel, "job", T("HUD: иконка профессии", "HUD: job icon"));
             Add(panel, Label(T("Расширенный зум всегда включён", "Extended zoom is always enabled")));
             var row = Box("Horizontal");

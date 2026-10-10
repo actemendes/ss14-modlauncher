@@ -226,45 +226,60 @@ Mod.SetOption("effects", true);
 game.Shutdown();
 Check(!Mod.NoEffects, "Disconnect clears visual protection");
 effects[0].Render(); Check(effects[0].Draws == 3, "Menu restores normal effect rendering after disconnect");
-game.Startup(); Tap("F1");
-var healthHud = new Content.Client.Overlays.ShowHealthIconsSystem();
+var overlays = new OverlayManager();
+var bars = new Content.Client.Overlays.ShowHealthBarsSystem(overlays);
+var systems = new Robust.Client.GameObjects.EntitySystemManager();
+systems.Systems[bars.GetType()] = bars;
+IoCManager.Services[typeof(Robust.Shared.GameObjects.IEntitySystemManager)] = systems;
+var bar = bars.Bar;
+var originalContainers = bar.DamageContainers;
 var jobHud = new Content.Client.Overlays.ShowJobIconsSystem();
 var jobs = new Content.Client.Access.Systems.JobStatusSystem(jobHud);
-var originalContainers = healthHud.DamageContainers;
-Check(!Mod.HealthHud && !Mod.JobHud && healthHud.Collect("Biological").Count == 0 && jobs.Collect("Doctor").Count == 0,
-    "HUD overrides start off without equipment");
+var healthIcons = new Content.Client.Overlays.ShowHealthIconsSystem();
+game.Startup(); Tap("F1");
 var hudButtons = DefaultWindow.Last!.Contents.Children.Single().Children.OfType<Button>().Where(b => b.Text.StartsWith("HUD:")).ToArray();
-Check(hudButtons.Length == 2 && !hudButtons[0].Pressed && !hudButtons[1].Pressed, "Independent HUD buttons are initially off");
+Check(hudButtons[0].Text == "HUD: health bar" && !Mod.HealthHud && overlays.Overlays.Count == 0, "Health bar explicitly labelled and off by default");
 hudButtons[0].Click();
-foreach (var state in new[] { "Healthy", "Critical", "Dead", "Rotting" })
-    Check(healthHud.Collect("Biological", state).SequenceEqual([state]), "Native health status is retained: " + state);
-Check(!Mod.JobHud && jobs.Collect("Doctor").Count == 0, "Health HUD does not enable job HUD");
-Check(!healthHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers) && originalContainers.Count == 0,
-    "Collection restores native activation and original container set");
-Check(healthHud.Collect(null).Count == 0 && healthHud.Collect("Unknown").Count == 0, "Missing/unsupported health data is not invented");
-hudButtons[1].Click();
-Check(jobs.Collect("Doctor").SequenceEqual(["Doctor"]) && !jobHud.IsActive, "Native job icon is collected without changing equipment state");
-Check(jobs.Collect(null).Count == 0, "Missing job icon is not invented");
-jobs.CrewHud = true;
-Check(jobs.Collect("Doctor").SequenceEqual(["Doctor", "Crew border"]), "Other native HUD icons remain intact and job icon is not duplicated");
-foreach (var collect in new Action[] { () => healthHud.Collect("Biological", fail: true), () => jobs.Collect("Doctor", fail: true) })
-{
-    try { collect(); throw new Exception("Expected native failure"); } catch (InvalidOperationException) { }
-    Check(!healthHud.IsActive && !jobHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers), "Finalizer restores HUD state after native exception");
-}
-healthHud.SetEquipment(true); originalContainers.Add("Machine"); jobHud.SetEquipment(true);
-Check(healthHud.Collect("Machine").Count == 1 && healthHud.Collect("Biological").Count == 1 && healthHud.IsActive,
-    "Equipped damage containers are preserved alongside debug medical HUD");
-healthHud.SetEquipment(false); jobHud.SetEquipment(false);
-Check(healthHud.Collect("Biological").Count == 1 && !healthHud.IsActive, "Equipment removal while enabled does not cancel debug HUD");
-Tap("F1"); Check(Mod.HealthHud && Mod.JobHud, "Closing panel retains both HUD options");
-Mod.Reset();
-Check(!Mod.HealthHud && !Mod.JobHud && !hudButtons[0].Pressed && !hudButtons[1].Pressed && healthHud.Collect("Biological").Count == 0,
-    "Reset clears HUD options and panel buttons");
-healthHud.SetEquipment(true); jobHud.SetEquipment(true);
-Check(healthHud.Collect("Machine").Count == 1 && jobs.Collect("Doctor").Count == 2, "Reset leaves equipped HUDs working");
+Check(Mod.HealthHud && overlays.Overlays.Count == 1 && ReferenceEquals(overlays.GetOverlay(bar.GetType()), bar) && !bars.IsActive,
+    "Enabling health HUD registers the actual native bar without faking equipment activation");
+bar.Damage = 25; bar.Render();
+Check(bar.Draws == 1 && bar.Ratio == 0.75f && bar.UsedVisibilityIcon == "HealthIconFine", "Native bar draws remaining health with medical visibility rules");
+bar.Damage = 150; bar.Render(); Check(bar.Ratio == 0.5f, "Native critical bar retains its threshold calculation");
+bar.Damage = 200; bar.Render(); Check(bar.Ratio == 0, "Native dead bar remains empty");
+Check(ReferenceEquals(originalContainers, bar.DamageContainers) && originalContainers.Count == 0 && bar.StatusIcon == null,
+    "Draw restores original container object and native visibility prototype");
+Check(healthIcons.Collect("Biological").Count == 0 && jobs.Collect("Doctor").Count == 0 && !Mod.JobHud,
+    "Health switch renders bars, not status icons, and does not enable professions");
+bar.Visible = false; bar.Render(); Check(bar.Ratio == null, "Native visibility filtering remains effective"); bar.Visible = true;
+bar.Container = null; bar.Render(); Check(bar.Ratio == null, "Missing native health container has no invented bar");
+bar.Container = "Unknown"; bar.Render(); Check(bar.Ratio == null, "Unsupported damage container has no bar"); bar.Container = "Biological";
+bar.Fail = true;
+try { bar.Render(); throw new Exception("Expected renderer failure"); } catch (InvalidOperationException) { }
+Check(ReferenceEquals(originalContainers, bar.DamageContainers) && bar.StatusIcon == null, "Draw finalizer restores state after native rendering exception"); bar.Fail = false;
+hudButtons[1].Click(); Check(jobs.Collect("Doctor").SequenceEqual(["Doctor"]) && !jobHud.IsActive, "Profession HUD remains independent and restores activation");
+Check(jobs.Collect(null).Count == 0, "Missing profession is not guessed"); jobs.CrewHud = true;
+Check(jobs.Collect("Doctor").SequenceEqual(["Doctor", "Crew border"]), "Job icon is not duplicated and other HUDs remain intact");
+try { jobs.Collect("Doctor", fail: true); throw new Exception("Expected prototype failure"); } catch (InvalidOperationException) { }
+Check(!jobHud.IsActive, "Job finalizer restores state after native exception");
+bars.Equip("Silicon");
+bar.Container = "Silicon"; bar.Render(); Check(bar.Ratio == 0 && bar.UsedVisibilityIcon == "EquipmentIcon", "Equipped diagnostic HUD containers and visibility prototype are preserved");
+bar.Container = "Biological"; bar.Render(); Check(bar.Ratio == 0 && overlays.Overlays.Count == 1, "Medical bar shares one native overlay with equipped diagnostic HUD");
+Check(bars.IsActive && ReferenceEquals(originalContainers, bar.DamageContainers) && originalContainers.SetEquals(["Silicon"]), "Native equipped configuration is restored after drawing");
+bars.Unequip(); bar.Render();
+Check(!bars.IsActive && overlays.Overlays.Count == 1 && bar.Ratio == 0, "Removing HUD glasses keeps debug health bars registered");
+Tap("F1"); Check(Mod.HealthHud && Mod.JobHud && overlays.Overlays.Count == 1, "Closing panel retains bars and profession HUD");
+Mod.Reset(); Check(!Mod.HealthHud && !Mod.JobHud && !hudButtons[0].Pressed && !hudButtons[1].Pressed && overlays.Overlays.Count == 0,
+    "Reset removes debug-only health bar overlay and clears panel buttons");
+bars.Equip("Biological"); jobHud.SetEquipment(true);
+Mod.SetOption("health", true); Mod.SetOption("health", false);
+Check(overlays.Overlays.Count == 1 && bars.IsActive, "Disabling debug health bar retains equipped medical HUD");
 Mod.SetOption("health", true); Mod.SetOption("job", true); game.Shutdown();
-Check(!Mod.HealthHud && !Mod.JobHud && healthHud.IsActive && jobHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers),
-    "Disconnect clears overrides and preserves native equipment state");
-game.Startup(); Check(!Mod.HealthHud && !Mod.JobHud, "Reconnect starts with HUD overrides off"); game.Shutdown();
+Check(!Mod.HealthHud && !Mod.JobHud && overlays.Overlays.Count == 1 && bars.IsActive && jobHud.IsActive, "Disconnect preserves equipped native HUDs");
+bars.Unequip(); jobHud.SetEquipment(false);
+game.Startup(); Mod.SetOption("health", true); game.Shutdown();
+Check(overlays.Overlays.Count == 0, "Disconnect removes debug-only overlay without leaving bars in menu");
+game.Startup(); Check(!Mod.HealthHud && !Mod.JobHud && overlays.Overlays.Count == 0, "Reconnect starts clean");
+Environment.SetEnvironmentVariable("SS14_MOD_LANGUAGE", "ru"); Tap("F1");
+Check(DefaultWindow.Last!.Contents.Children.Single().Children.OfType<Button>().Any(b => b.Text == "HUD: полоса здоровья"), "Russian panel explicitly labels the health bar");
+game.Shutdown();
 Console.WriteLine($"Debug Vision: {checks} lifecycle, rendering, UI and Harmony checks passed.");

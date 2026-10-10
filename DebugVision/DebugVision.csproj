@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
-    <AssemblyName>DebugVision.Mod</AssemblyName><Version>0.1.4</Version>
+    <AssemblyName>DebugVision.Mod</AssemblyName><Version>0.1.5</Version>
     <Version Condition="'$(ModBuildId)' == 'debug-vision' and '$(ModBuildVersion)' != ''">$(ModBuildVersion)</Version>
   </PropertyGroup>
   <ItemGroup>

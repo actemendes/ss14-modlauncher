@@ -12,11 +12,11 @@ cd ss14-modlauncher
 
 The default `Auto` mode reads the explicit `mode` (`Full` or `ModsOnly`) from `release/release.json`; it does not infer the mode from version equality. Full mode builds the launcher from source. Already released mod versions are reused byte-for-byte from the artifact ledger; newly versioned mods are built from source.
 
-Current source versions (mods-only feed 0.1.10, existing launcher 0.1.8):
+Current source versions (mods-only feed 0.1.11, existing launcher 0.1.8):
 
 | Component | Version | Source of truth |
 | --- | --- | --- |
-| Release/feed | 0.1.10 | `release/release.json`: `releaseVersion` |
+| Release/feed | 0.1.11 | `release/release.json`: `releaseVersion` |
 | ModLauncher | 0.1.8 | `release/release.json`: `launcherVersion`, checked against launcher source/project metadata |
 | Launcher hosting release | 0.1.8 | `release/release.json`: `launcherReleaseVersion`, the planned tag containing that ZIP |
 | Bootstrap | 0.1.2 | `release/release.json`: `bootstrapVersion`, checked against its project |
@@ -25,7 +25,7 @@ Current source versions (mods-only feed 0.1.10, existing launcher 0.1.8):
 | Conversations | 0.1.1 | `catalog/mods.json`; new ID requires launcher 0.1.5 |
 | Death Rattle | 0.1.3 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
 | ChemMaster | 0.1.4 | `catalog/mods.json`; new ID requires launcher 0.1.6 |
-| Debug Vision | 0.1.4 | `catalog/mods.json`; new ID requires launcher 0.1.8 |
+| Debug Vision | 0.1.5 | `catalog/mods.json`; new ID requires launcher 0.1.8 |
 
 Full-build output under `dist/`:
 
