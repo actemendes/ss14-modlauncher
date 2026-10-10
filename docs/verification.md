@@ -4,6 +4,15 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.7 — ChemMaster 0.1.4 prepared, not published / 2026-10-10
+
+- Mod-only feed **0.1.7**: ChemMaster **0.1.4** is built from source; launcher **0.1.6**, bootstrap and the other four mods are unchanged and reuse their published bytes. Nothing is tagged, pushed or uploaded; no ledger entry exists for 0.1.4 until the published DLL is verified.
+- The mod-only build completed with its regression suites: **108 chemistry checks** standalone, **30/30 installation checks**, and the launcher/update suites. With the full SS220 rules export the chemistry harness passes **124 checks**.
+- Actual SS220 assemblies (Robust **277.2.1**) pass **131 ChemMaster API contracts**, including the controls added for the reworked tab, and all seven Harmony hooks install.
+- Live check on the local loopback SS220 Dev server through the QA client host, not through an installed ModLauncher package: the user exercised the reworked AUTO tab, automatic replanning after loading a missing reagent, the combined missing-stock message and the stopped completion timer, and accepted the result. The session was not recorded step by step.
+- Not verified: the English layout in game, beaker-replacement flow in the new tab, Replan after a failure with a non-empty beaker, and installation of the 0.1.4 DLL through the packaged launcher.
+- Behaviour change to review before publishing: reactions are no longer rejected because of their effects, so recipes with EMP, explosion or entity-spawning effects are planned and executed like any other. Execution still stops when a resulting composition differs from the plan.
+
 ## 0.1.6 — published and verified / 2026-10-10
 
 - Stable release: [v0.1.6](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.6). The tag resolves to clean implementation commit `8bccb851f81e6c4fd14ba5a66b96908f337bed38`; public `build-info.json` records this revision, `sourceDirty: false` and completed tests. Launcher **0.1.6**, ChemMaster **0.1.3**, Death Rattle **0.1.2**, Conversations **0.1.1**, Crew Console/Hello World/bootstrap **0.1.2**.

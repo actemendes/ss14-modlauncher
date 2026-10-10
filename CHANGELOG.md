@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.7 — 2026-10-10
+
+Mod-only feed: launcher 0.1.6 and its ZIP are unchanged; the other four mods keep their published bytes.
+
+- ChemMaster 0.1.4 reworks the AUTO tab. Typing a reagent lists matches below the field; Enter adds the first one. Target amounts are edited in place next to the current buffer stock, with More / Up to buttons for the mode.
+- The plan is built automatically after every edit and whenever the machine contents change; the Preview button is gone. A failed plan offers Retry and recalculates by itself once the buffer changes.
+- One status row replaces the five permanent buttons: step count and estimated time, a coloured progress bar and only the buttons valid for the current state. Targets, mode and saved recipes are locked while a recipe runs.
+- Beaker replacement shows the required and current temperature; Resume confirms the required phase. The cold/hot choice appears only when the client cannot read the temperature.
+- After Stop or a failure, Replan continues to the same absolute goals from the current stock. Saved recipes load on selection and can be deleted.
+- Missing stock is reported in one message listing every reagent with the amount to add. Sources that need an external apparatus are no longer mentioned.
+- Reaction effects no longer block a plan. Execution still verifies the composition after every command and stops on any difference.
+
 ## 0.1.6 — 2026-10-10
 
 - New ChemMaster 0.1.3: RU/EN AUTO tab inside the native ChemMaster, reagent search, saved production targets, Make/Ensure modes and ingredient-order preview. Chemistry comes from the current connection's prototypes.

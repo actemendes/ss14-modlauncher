@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "mode": "Full",
-  "releaseVersion": "0.1.6",
+  "mode": "ModsOnly",
+  "releaseVersion": "0.1.7",
   "launcherVersion": "0.1.6",
   "launcherReleaseVersion": "0.1.6",
   "bootstrapVersion": "0.1.2",

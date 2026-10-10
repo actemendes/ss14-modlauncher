@@ -48,8 +48,8 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
-**0.1.6** includes **ChemMaster 0.1.3**: native AUTO and AUTO settings tabs
-with server-specific reaction rules, saved production targets, preview and automated
+Feed **0.1.7** updates **ChemMaster** to **0.1.4**: native AUTO and AUTO settings tabs
+with server-specific reaction rules, a plan that rebuilds itself after every change, saved production targets and automated
 mixing with confirmed transfers, adjustable speed, reagent-switch pauses and random intervals. Open a ChemMaster with an empty input beaker and
 base reagents in its buffer. [Usage and limitations](docs/mods/chemmaster.md).
 
