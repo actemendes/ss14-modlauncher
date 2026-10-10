@@ -15,11 +15,15 @@ Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 i
 - Published Distress Call **0.1.3** is locked with SHA-256 `A9A28D71D476CE31DCD9F47AB86FE2734B8D161E0361D0AEF044E02C9429AA6D`. Launcher **0.1.8**, bootstrap **0.1.2** and the five other mod DLLs retain their published versions/bytes; no launcher ZIP was rebuilt. Publication did not modify the user's game installation.
 - GitHub Actions passed for the [implementation commit on main](https://github.com/actemendes/ss14-modlauncher/actions/runs/38092748540) and [v0.1.10 release tag](https://github.com/actemendes/ss14-modlauncher/actions/runs/38092840327). Live radio delivery after treatment or a spider attack has not been tested; fixture dispatch and real-game hook installation are the recorded compatibility evidence.
 
-## 0.1.11 — native health bar correction / 2026-10-11
+## 0.1.11 — published and verified / 2026-10-11
 
 - Replaces the mistakenly implemented health status icons with the actual medical HUD **health bar above each character**. The native `EntityHealthBarOverlay` supplies bar geometry, colours, damage/critical/death threshold calculation and visibility filtering. Profession icons remain an independent option.
 - **135 lifecycle/rendering/UI/Harmony checks** passed: native bar registration, healthy/critical/dead progress, visibility, missing containers, medical visibility prototype, scoped configuration restoration after renderer exceptions, equipment container/prototype preservation, no duplicate overlays, glasses removal, reset/disconnect and RU/EN labels. Actual SS220 / Robust **277.2.1.0** passed **92 API checks** and installed the required Harmony hooks.
 - This correction is Debug Vision **0.1.5**, in mods-only feed **0.1.11**, retaining launcher **0.1.8** and the published Distress Call **0.1.3** from feed 0.1.10. Release 0.1.9 was returned to draft; previously downloaded 0.1.4 installations can upgrade normally. New bars have not been visually verified in a live game.
+- Stable [v0.1.11](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.11) was built from clean commit `e66dfaf630cc4e91e9482697c33a6744191440e7`, with `sourceDirty: false` and `testsRun: true`. Full packaging suites passed, including **30/30 installation cases**. The final packaged DLL installed its required hooks against actual SS220 game assemblies.
+- All **nine public assets** were downloaded anonymously and matched local bytes and GitHub digests; all **eight checksum entries** matched. Production `UpdateService` exercised GitHub API quota fallback, discovered v0.1.11, verified all six downloads and assembly versions, and suppressed already-current updates. Launcher remains **0.1.8**; the five other mod artifacts retain their published hashes.
+- Debug Vision **0.1.5** is locked in the artifact ledger with SHA-256 `D686B10F93FCF75677743EBDF78FDEB7E47A5C9A7163B4BF696B024134A95768`. The user's game installation was not changed by publication.
+- GitHub Actions passed for both [main](https://github.com/actemendes/ss14-modlauncher/actions/runs/38093247851) and [v0.1.11](https://github.com/actemendes/ss14-modlauncher/actions/runs/38093249726).
 
 ## 0.1.9 — withdrawn / 2026-10-11
 
