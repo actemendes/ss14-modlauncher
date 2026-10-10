@@ -56,6 +56,14 @@
       "repository": "actemendes/ss14-modlauncher",
       "sourceRelease": "0.1.8",
       "sha256": "73E4D9D871B930165933B87839552DD0CF06DC6CBF6514688CD20618E305FA7A"
+    },
+    {
+      "id": "debug-vision",
+      "version": "0.1.4",
+      "file": "DebugVision.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.9",
+      "sha256": "FD732A87DE72E09045F2C02DB36D141B8E8B674C3B3203DC16067D9498A628CB"
     }
   ]
 }
