@@ -50,6 +50,8 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
+Mod update **0.1.9** adds two independent **F1** panel switches in **Debug Vision 0.1.4**: **HUD: health status** and **HUD: job icon**. Native icons beside characters work without HUD glasses. Both start off; reset and disconnect clear them. Install the update through the Updates tab in ModLauncher **0.1.8**.
+
 Launcher **0.1.8** adds **Debug Vision 0.1.3**: an **F1** panel with omnivision (**Ctrl+N**), fullbright (**Ctrl+L**), disabled shadows (**Ctrl+H**), visual effect protection (**Ctrl+B**) and reset (**Ctrl+R**). Protection hides flash, blindness/welding blur and other supported screen debuffs while keeping gameplay effects. Extended zoom is always enabled; native zoom bindings and panel buttons adjust the same scale, one smooth step per command. No number pad is needed. Only data received from the server is visible. [Usage](docs/mods/debug-vision.md).
 
 In **0.1.7**, the compact library puts search, versions, categories and toggles in short rows. **Details** opens descriptions and usage instructions; **Auto Chemistry** includes an AUTO tab screenshot. Display names changed; profiles and saved settings are preserved.

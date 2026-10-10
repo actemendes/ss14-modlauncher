@@ -18,6 +18,8 @@ public static partial class Mod
     public static bool Fullbright { get; private set; }
     public static bool NoShadows { get; private set; }
     public static bool NoEffects { get; private set; }
+    public static bool HealthHud { get; private set; }
+    public static bool JobHud { get; private set; }
     public static bool ExpandedZoom => _inGame;
     public static float Zoom { get; private set; } = 1;
     // A finite, positive range keeps projection matrices valid. These are rendering
@@ -67,6 +69,7 @@ public static partial class Mod
             (method, nameof(BeforeNativeZoom), true), (method, nameof(AfterNativeZoom), false)
         })];
         hooks = [.. hooks, .. EffectHooks(content)];
+        hooks = [.. hooks, .. HudHooks(content)];
         var harmony = new Harmony("local.debug-vision.camera");
         try
         {
@@ -80,10 +83,11 @@ public static partial class Mod
                     patch.priority = Priority.First;
                     patch.before = ["local.window.hello-world"];
                 }
-                harmony.Patch(target, prefix: prefix ? patch : null, postfix: prefix ? null : patch);
+                harmony.Patch(target, prefix: prefix ? patch : null, postfix: prefix ? null : patch,
+                    finalizer: handler == nameof(BeforeHudIcons) ? new HarmonyMethod(typeof(Mod), nameof(RestoreHudIcons)) : null);
             }
             _installed = true;
-            Bootstrap.Log("Debug Vision: F1 panel, FOV, lighting, shadows, visual effect protection and local zoom installed.");
+            Bootstrap.Log("Debug Vision: F1 panel, FOV, lighting, shadows, visual effect protection, health/job HUD and local zoom installed.");
         }
         catch { harmony.UnpatchAll(harmony.Id); throw; }
     }
@@ -217,6 +221,8 @@ public static partial class Mod
             case "light": Fullbright = enabled; break;
             case "shadows": NoShadows = enabled; break;
             case "effects": NoEffects = enabled; break;
+            case "health": HealthHud = enabled; break;
+            case "job": JobHud = enabled; break;
             default: throw new ArgumentException("Unknown debug vision option.", nameof(option));
         }
         Refresh();
@@ -228,7 +234,7 @@ public static partial class Mod
     }
     public static void Reset()
     {
-        Omnivision = Fullbright = NoShadows = NoEffects = false;
+        Omnivision = Fullbright = NoShadows = NoEffects = HealthHud = JobHud = false;
         RestoreZoom(); Zoom = _displayZoom = 1;
         if (_inGame) ApplyZoom();
         Refresh();
@@ -279,13 +285,15 @@ public static partial class Mod
         {
             window = Activator.CreateInstance(Engine.GetType("Robust.Client.UserInterface.CustomControls.DefaultWindow", true)!)!;
             Set(window, "Title", T("Дебаг-видение · F1", "Debug Vision · F1"));
-            Set(window, "SetSize", new Vector2(460, 350));
+            Set(window, "SetSize", new Vector2(460, 430));
             var panel = Box("Vertical"); Set(panel, "SeparationOverride", 8);
             Add(Get(window, "Contents")!, panel);
             AddToggle(panel, "omni", T("Омнивизион · Ctrl+N", "Omnivision · Ctrl+N"));
             AddToggle(panel, "light", T("Полная яркость · Ctrl+L", "Fullbright · Ctrl+L"));
             AddToggle(panel, "shadows", T("Отключить тени · Ctrl+H", "Disable shadows · Ctrl+H"));
             AddToggle(panel, "effects", T("Защита от визуальных эффектов · Ctrl+B", "Visual effect protection · Ctrl+B"));
+            AddToggle(panel, "health", T("HUD: состояние здоровья", "HUD: health status"));
+            AddToggle(panel, "job", T("HUD: иконка профессии", "HUD: job icon"));
             Add(panel, Label(T("Расширенный зум всегда включён", "Extended zoom is always enabled")));
             var row = Box("Horizontal");
             Add(row, Button(T("Приблизить +", "Zoom in +"), () => SetZoom(Zoom / _zoomStep)));
@@ -315,7 +323,7 @@ public static partial class Mod
     private static void Refresh()
     {
         foreach (var (name, button) in Toggles)
-            Set(button, "Pressed", name switch { "omni" => Omnivision, "light" => Fullbright, "shadows" => NoShadows, "effects" => NoEffects, _ => ExpandedZoom });
+            Set(button, "Pressed", name switch { "omni" => Omnivision, "light" => Fullbright, "shadows" => NoShadows, "effects" => NoEffects, "health" => HealthHud, "job" => JobHud, _ => ExpandedZoom });
         if (_zoomLabel != null)
             Set(_zoomLabel, "Text", ExpandedZoom ? $"{Zoom:0.##}" : T("Штатный", "Native"));
     }

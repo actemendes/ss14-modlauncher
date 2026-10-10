@@ -226,4 +226,45 @@ Mod.SetOption("effects", true);
 game.Shutdown();
 Check(!Mod.NoEffects, "Disconnect clears visual protection");
 effects[0].Render(); Check(effects[0].Draws == 3, "Menu restores normal effect rendering after disconnect");
+game.Startup(); Tap("F1");
+var healthHud = new Content.Client.Overlays.ShowHealthIconsSystem();
+var jobHud = new Content.Client.Overlays.ShowJobIconsSystem();
+var jobs = new Content.Client.Access.Systems.JobStatusSystem(jobHud);
+var originalContainers = healthHud.DamageContainers;
+Check(!Mod.HealthHud && !Mod.JobHud && healthHud.Collect("Biological").Count == 0 && jobs.Collect("Doctor").Count == 0,
+    "HUD overrides start off without equipment");
+var hudButtons = DefaultWindow.Last!.Contents.Children.Single().Children.OfType<Button>().Where(b => b.Text.StartsWith("HUD:")).ToArray();
+Check(hudButtons.Length == 2 && !hudButtons[0].Pressed && !hudButtons[1].Pressed, "Independent HUD buttons are initially off");
+hudButtons[0].Click();
+foreach (var state in new[] { "Healthy", "Critical", "Dead", "Rotting" })
+    Check(healthHud.Collect("Biological", state).SequenceEqual([state]), "Native health status is retained: " + state);
+Check(!Mod.JobHud && jobs.Collect("Doctor").Count == 0, "Health HUD does not enable job HUD");
+Check(!healthHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers) && originalContainers.Count == 0,
+    "Collection restores native activation and original container set");
+Check(healthHud.Collect(null).Count == 0 && healthHud.Collect("Unknown").Count == 0, "Missing/unsupported health data is not invented");
+hudButtons[1].Click();
+Check(jobs.Collect("Doctor").SequenceEqual(["Doctor"]) && !jobHud.IsActive, "Native job icon is collected without changing equipment state");
+Check(jobs.Collect(null).Count == 0, "Missing job icon is not invented");
+jobs.CrewHud = true;
+Check(jobs.Collect("Doctor").SequenceEqual(["Doctor", "Crew border"]), "Other native HUD icons remain intact and job icon is not duplicated");
+foreach (var collect in new Action[] { () => healthHud.Collect("Biological", fail: true), () => jobs.Collect("Doctor", fail: true) })
+{
+    try { collect(); throw new Exception("Expected native failure"); } catch (InvalidOperationException) { }
+    Check(!healthHud.IsActive && !jobHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers), "Finalizer restores HUD state after native exception");
+}
+healthHud.SetEquipment(true); originalContainers.Add("Machine"); jobHud.SetEquipment(true);
+Check(healthHud.Collect("Machine").Count == 1 && healthHud.Collect("Biological").Count == 1 && healthHud.IsActive,
+    "Equipped damage containers are preserved alongside debug medical HUD");
+healthHud.SetEquipment(false); jobHud.SetEquipment(false);
+Check(healthHud.Collect("Biological").Count == 1 && !healthHud.IsActive, "Equipment removal while enabled does not cancel debug HUD");
+Tap("F1"); Check(Mod.HealthHud && Mod.JobHud, "Closing panel retains both HUD options");
+Mod.Reset();
+Check(!Mod.HealthHud && !Mod.JobHud && !hudButtons[0].Pressed && !hudButtons[1].Pressed && healthHud.Collect("Biological").Count == 0,
+    "Reset clears HUD options and panel buttons");
+healthHud.SetEquipment(true); jobHud.SetEquipment(true);
+Check(healthHud.Collect("Machine").Count == 1 && jobs.Collect("Doctor").Count == 2, "Reset leaves equipped HUDs working");
+Mod.SetOption("health", true); Mod.SetOption("job", true); game.Shutdown();
+Check(!Mod.HealthHud && !Mod.JobHud && healthHud.IsActive && jobHud.IsActive && ReferenceEquals(originalContainers, healthHud.DamageContainers),
+    "Disconnect clears overrides and preserves native equipment state");
+game.Startup(); Check(!Mod.HealthHud && !Mod.JobHud, "Reconnect starts with HUD overrides off"); game.Shutdown();
 Console.WriteLine($"Debug Vision: {checks} lifecycle, rendering, UI and Harmony checks passed.");

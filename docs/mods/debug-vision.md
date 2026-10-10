@@ -1,4 +1,4 @@
-# Дебаг-видение / Debug Vision 0.1.3
+# Дебаг-видение / Debug Vision 0.1.4
 
 Enable **Дебаг-видение / Debug Vision** in ModLauncher 0.1.8, apply the profile and enter the game. Press **F1** to open or close the native, movable window. Labels follow the launcher's RU/EN language. Extended zoom is always enabled during gameplay; the debug vision switches start off.
 
@@ -8,6 +8,8 @@ Enable **Дебаг-видение / Debug Vision** in ModLauncher 0.1.8, apply 
 | Fullbright · Ctrl+L | Disables the lighting buffer; field of view remains an independent switch. |
 | Disable shadows · Ctrl+H | Disables light shadows independently of lighting and FOV. |
 | Visual effect protection · Ctrl+B | Hides flash, blindness, welding blur, intoxication/rainbow/drowsiness distortion and damage screen shading. Starts off; works independently of FOV and lighting. Gameplay damage, blindness state, slowdown and other debuffs remain. |
+| HUD: health status | Shows native medical HUD icons beside characters, including critical, dead and rotting states where supplied by the game. Works without medical glasses. Starts off; toggle in the F1 panel. |
+| HUD: job icon | Shows the native profession icon beside characters with a known job icon. Works without HUD glasses. Starts off; toggle independently in the F1 panel. |
 | Extended camera zoom (always enabled) | The game's Zoom in / Zoom out / Reset zoom bindings and panel buttons all adjust the same local camera scale. Custom keyboard/mouse bindings remain supported. Preset 1 restores scale one. No number pad is needed. |
 | Reset all · Ctrl+R | Turns debug vision switches off and resets the scale to 1 while keeping extended zoom available. |
 
@@ -20,6 +22,8 @@ F1 and the exact Ctrl+N/L/H/B/R combinations are intercepted only during gamepla
 The mod's overrides change local rendering only and do not request additional server visibility/PVS or permissions. Native zoom commands still execute their usual game behaviour. Areas/entities outside the data sent by the server remain unavailable. Visual protection suppresses only the named effect overlays; HUD, world objects and other overlays keep drawing. Unlisted effects and server-side mechanics are unaffected. Follow the chosen server's rules for client mods.
 
 Visual protection can be enabled during an active flash or blindness effect. Disabling it resumes any still-active native visual effect. Reset and leaving gameplay turn it off. It is visual protection, not immunity to welding damage or a cure for blindness.
+
+The two HUD switches use the game's existing status-icon renderer, health states and profession prototypes. Missing health/job data is not inferred. Native icon visibility settings, stealth/container rules and FOV still apply. Equipped HUDs continue working when a debug switch is off; closing the panel keeps both switches active, while Reset all and disconnect clear them.
 
 ## Integration and verification
 
@@ -34,3 +38,5 @@ dotnet run --project DebugVision.Smoke/DebugVision.Smoke.csproj -c Release -- <g
 Visual protection prefixes `Draw(in OverlayDrawArgs)` on `FlashOverlay`, `BlindOverlay` and `BlurryVisionOverlay`, plus optional `DrunkOverlay`, `DrowsinessOverlay`, `RainbowOverlay` and `DamageOverlay` when present. Overlay updates, registration and BeforeDraw remain native; the byref-like draw args are never boxed. If blindness has already disabled the light manager, the blind draw prefix restores only its `LightSetup`/`GraceFrame` render bookkeeping and lighting, without changing `IsBlind` or `EyeDamage`. Missing optional overlays are logged and do not disable the core camera features.
 
 The regression harness exercises the actual Harmony hooks with contract fixtures, including camera switches, native updates, reset, disconnect, hotkeys and localized button events. The smoke harness verifies installation against actual game DLLs. Live rendering, remote-server visibility and future forks still require an in-game check.
+
+Health/job HUD prefixes wrap only `ShowHealthIconsSystem.OnGetStatusIconsEvent` and `JobStatusSystem.OnGetStatusIconsEvent`. Activation is temporarily enabled for native icon collection; the health container set is copied with the default `Biological` container included. Harmony finalizers restore the original activation and container object even if native collection throws. No components are added to players or equipment, and native equipment refresh/detach behaviour stays intact.

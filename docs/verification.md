@@ -4,6 +4,12 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
+## 0.1.9 — Debug Vision 0.1.4 HUD / 2026-10-11
+
+- Two independent, localized F1 panel toggles enable native health status and job icons without HUD equipment. Both default off, persist when the panel closes, and clear on reset/disconnect. Missing data stays missing; native icon visibility rules remain in effect.
+- **130 lifecycle/rendering/UI/Harmony checks** passed, including native health states, missing health/job data, independent buttons, no duplicate job icons, preservation of other HUDs and equipment container sets, equipment changes, exception restoration, reset and reconnect. Actual SS220 assemblies (Robust **277.2.1.0**) passed **80 API checks** and accepted the required Harmony hooks.
+- This is a mods-only feed retaining launcher **0.1.8** and the five previous mod artifacts. HUD rendering in a live game has not been visually verified; automated fixtures and installation against real game DLLs are the recorded evidence.
+
 ## 0.1.8 — published and verified / 2026-10-11
 
 ### Published package

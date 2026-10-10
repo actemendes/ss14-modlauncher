@@ -17,4 +17,4 @@ foreach (var name in new[] { "Robust.Shared", "Robust.Client", "Content.Shared",
 var plugin = AssemblyLoadContext.Default.LoadFromAssemblyPath(mod);
 var content = AppDomain.CurrentDomain.GetAssemblies().Single(a => a.GetName().Name == "Content.Client");
 plugin.GetType("SS14LocalMods.Mod", true)!.GetMethod("Install")!.Invoke(null, [content]);
-Console.WriteLine("Debug Vision: all twenty-five Harmony hooks installed against actual game assemblies.");
+Console.WriteLine("Debug Vision: all required Harmony hooks installed against actual game assemblies, including health/job HUD collection.");
