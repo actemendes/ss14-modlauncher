@@ -18,6 +18,21 @@ public sealed record ExecutionTiming(double ClicksPerSecond = 8, double SwitchPa
         if (reagentChanged) seconds += SwitchPauseSeconds;
         return TimeSpan.FromSeconds(seconds);
     }
+
+    // Expected duration without server latency: chaos averages to the base interval,
+    // the first transfer is immediate and beaker barriers wait for the user.
+    public TimeSpan Estimate(IEnumerable<TransferAction> actions)
+    {
+        if (!Valid) throw new ArgumentException(Text.T("Неверные настройки скорости.", "Invalid timing settings."));
+        double seconds = 0; string? last = null; var sent = false;
+        foreach (var action in actions)
+        {
+            if (action.RequiredBeakerTemperature != null) { sent = false; last = null; continue; }
+            if (sent) seconds += 1 / ClicksPerSecond + (last != action.ReagentId ? SwitchPauseSeconds : 0);
+            sent = true; last = action.ReagentId;
+        }
+        return TimeSpan.FromSeconds(seconds);
+    }
 }
 
 public sealed class TimingStore(string path)

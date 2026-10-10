@@ -22,6 +22,11 @@ public sealed class RecipeStore(string path)
         var recipes = Load().Where(r => !r.Name.Equals(recipe.Name, StringComparison.OrdinalIgnoreCase)).Append(recipe)
             .OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase).ToArray();
         if (recipes.Length > 128) throw new InvalidDataException(Text.T("Не более 128 наборов.", "Recipe limit: 128."));
+        Write(recipes);
+    }
+    public void Delete(string name) => Write(Load().Where(r => !r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray());
+    private void Write(SavedRecipe[] recipes)
+    {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try

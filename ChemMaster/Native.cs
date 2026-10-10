@@ -64,6 +64,12 @@ internal static class Native
         else field!.SetValue(target, Delegate.Combine((Delegate?)field.GetValue(target), callback));
         return () => { if (ev != null) ev.RemoveEventHandler(target, callback); else field!.SetValue(target, Delegate.Remove((Delegate?)field.GetValue(target), callback)); };
     }
+    public static object Color(float r, float g, float b) =>
+        Activator.CreateInstance(Type("Robust.Shared.Maths", "Robust.Shared.Maths.Color"), r, g, b, 1f)!;
+    public static object Flat(object color)
+    {
+        var box = Activator.CreateInstance(Type("Robust.Client", "Robust.Client.Graphics.StyleBoxFlat"))!; Set(box, "BackgroundColor", color); return box;
+    }
     public static IEnumerable<object> Items(object? value) => value is IEnumerable list ? list.Cast<object>() : [];
     public static int Cents(object value) => (int)Get(value, "Value")!;
     public static string T(string ru, string en) => Text.T(ru, en);

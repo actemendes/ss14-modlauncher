@@ -38,7 +38,7 @@ var catalyzed = new ProductionPlanner(catalyst).Build(Snapshot(), [new("Product"
 Check(catalyzed.Final.Buffer["Catalyst"] == 10000, "Catalyst returned without consumption");
 var competing = Catalog([Mix(), new("Premature", [new("A", 100), new("B", 100)], [new("Wrong", 200)], Priority: 10)]);
 Reject(() => new ProductionPlanner(competing).Build(Snapshot(), [new("Product", 200)], TargetMode.Make), "Competing high-priority reaction blocks unsafe plan");
-Reject(() => new ProductionPlanner(Catalog([Mix() with { HasEffects = true }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make), "Effects rejected");
+Check(new ProductionPlanner(Catalog([Mix() with { HasEffects = true }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make).Final.Buffer["Product"] == 200, "Reaction effects never block a plan");
 Reject(() => new ProductionPlanner(Catalog([Mix() with { RequiresMixer = true }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make), "External apparatus rejected");
 Reject(() => new ProductionPlanner(Catalog([Mix() with { MinimumTemperature = 400 }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make), "External heat rejected");
 var thermalCatalog = Catalog([
@@ -61,11 +61,20 @@ Reject(() => new ProductionPlanner(thermalCatalog).Build(Snapshot(), [new("Produ
 Reject(() => planner.Build(Snapshot(), [new("Product", 200)], TargetMode.Make, beakers: new(float.NaN)), "Invalid hot temperature rejected");
 var knownEffects = Mix() with { HasEffects = true, EffectTypes = ["Content.Shared.EntityEffects.Effects.Atmos.CreateGas", "Content.Shared.EntityEffects.Effects.Transform.PopupMessage"] };
 Check(new ProductionPlanner(Catalog([knownEffects])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make).Final.Buffer["Product"] == 200, "Gas and popup effects preserve calculable solution chemistry");
-Reject(() => new ProductionPlanner(Catalog([knownEffects with { EffectTypes = ["Unknown.ChangeSolution"] }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make), "Unknown liquid effects remain blocked");
+Check(new ProductionPlanner(Catalog([knownEffects with { EffectTypes = ["Unknown.ChangeSolution"] }])).Build(Snapshot(), [new("Product", 200)], TargetMode.Make).Final.Buffer["Product"] == 200, "Unknown effects are planned like any other reaction");
+var plainFirst = Catalog([Mix("WithEffect") with { HasEffects = true, EffectTypes = ["Unknown.Emp"] }, new("Plain", [new("C", 100), new("D", 100)], [new("Product", 200)])]);
+Check(new ProductionPlanner(plainFirst).Build(Snapshot() with { Buffer = new() { ["A"] = 1000, ["B"] = 1000, ["C"] = 1000, ["D"] = 1000 } }, [new("Product", 200)], TargetMode.Make).Final.Buffer["C"] == 900, "An effect-free recipe is preferred when both are possible");
 Check(Catalog([knownEffects]).Fingerprint != Catalog([knownEffects with { EffectTypes = ["Unknown.ChangeSolution"] }]).Fingerprint, "Effect behavior changes catalog fingerprint");
 var diagnosticCatalog = Catalog([Mix(), new("FiberBreakdown", [new("C", 100)], [new("A", 100)], RequiresMixer: true, MixerCategories: ["Centrifuge"])]);
 try { new ProductionPlanner(diagnosticCatalog).Build(Snapshot() with { Buffer = new() { ["A"] = 100, ["B"] = 1000 } }, [new("Product", 600)], TargetMode.Make); throw new Exception("Missing stock unexpectedly available"); }
-catch (ChemistryException error) { Check(error.Message.Contains("A") && error.Message.Contains("Centrifuge") && !error.Message.Contains("нагрев"), "Missing source stock names the actual apparatus without false heating claim"); }
+catch (ChemistryException error) { Check(error.Message.EndsWith(": A 2") && !error.Message.Contains("Centrifuge") && !error.Message.Contains("нагрев"), "Missing source stock names the reagent and shortfall, without apparatus or false heating claims"); }
+var electrolysis = Catalog([Mix(), .. new[] { "WaterBreakdown", "EthanolBreakdown", "FatBreakdown" }.Select(name => new Reaction(name, [new("C", 100)], [new("A", 100)], RequiresMixer: true, MixerCategories: ["Electrolysis"]))]);
+try { new ProductionPlanner(electrolysis).Build(Snapshot() with { Buffer = new() { ["B"] = 1000 } }, [new("Product", 200)], TargetMode.Make); throw new Exception("Apparatus-only sources rejected"); }
+catch (ChemistryException error) { Check(error.Message.EndsWith(": A 1") && !error.Message.Contains("Electrolysis") && !error.Message.Contains("Breakdown"), "Apparatus-only sources never lengthen the missing-reagent message"); }
+try { new ProductionPlanner(nested).Build(Snapshot() with { Buffer = new() { ["A"] = 100 } }, [new("Product", 600)], TargetMode.Make); throw new Exception("Several shortages rejected"); }
+catch (ChemistryException error) { Check(error.Message.EndsWith(": A 1, B 2, C 2"), "Every missing reagent is listed once with its shortfall"); }
+try { new ProductionPlanner(nested).Build(Snapshot() with { Buffer = new() { ["D"] = 300 } }, [new("D", 500)], TargetMode.Make); throw new Exception("Unmakeable target rejected"); }
+catch (ChemistryException error) { Check(error.Message.EndsWith(": D 5"), "A target that can only be loaded reports the requested amount"); }
 diagnosticCatalog = Catalog([Mix(), new("UnsupportedAlternative", [new("C", 100)], [new("Product", 200)], RequiresMixer: true)]);
 try { new ProductionPlanner(diagnosticCatalog).Build(Snapshot() with { Buffer = new() { ["A"] = 1000 } }, [new("Product", 200)], TargetMode.Make); throw new Exception("Missing stock unexpectedly available"); }
 catch (ChemistryException error) { Check(error.Message.Contains("B") && !error.Message.Contains("UnsupportedAlternative"), "Unsupported alternative cannot mask missing ingredients in the standard recipe"); }
@@ -160,6 +169,11 @@ Check(chaos.Delay(true, samples.Dequeue) == TimeSpan.FromSeconds(0.8), "Chaos ne
 var calls = 0;
 Check((fixedTiming with { ChaosPercent = 40 }).Delay(false, () => { calls++; return 0.5; }) == TimeSpan.FromSeconds(0.5) && calls == 1, "Probability miss keeps normal interval");
 Reject(() => (fixedTiming with { ClicksPerSecond = double.NaN }).Delay(false, () => 0), "Invalid timing rejected");
+// A 200 u batch is A 100 + B 100 into the beaker, then the product back: 3 transfers, 2 waits, 2 reagent switches.
+Check(fixedTiming.Estimate(planner.Build(Snapshot(), [new("Product", 200)], TargetMode.Make).Actions) == TimeSpan.FromSeconds(2.2), "Estimate sums intervals and reagent-switch pauses after the first transfer");
+Check(fixedTiming.Estimate([]) == TimeSpan.Zero, "Empty plan takes no time");
+Check(fixedTiming.Estimate(thermal.Actions) < fixedTiming.Estimate(thermal.Actions.Where(a => a.RequiredBeakerTemperature == null)), "Beaker barriers restart the interval instead of adding a wait");
+Reject(() => (fixedTiming with { ClicksPerSecond = 0 }).Estimate([]), "Invalid timing cannot estimate");
 var timedPlan = new ProductionPlanner(Catalog([Mix()], [1])).Build(Snapshot(), [new("Product", 600)], TargetMode.Make);
 session = new(timedPlan, timing: fixedTiming);
 session.Start(timedPlan.Initial);
@@ -217,6 +231,11 @@ try
     store.Save(new("Меднабор", TargetMode.Ensure, [new("Product", 600)]));
     Check(store.Load().Length == 1 && store.Load()[0].Mode == TargetMode.Ensure, "Save replaces matching recipe");
     Reject(() => store.Save(new("", TargetMode.Make, [])), "Invalid saved recipe rejected");
+    store.Save(new("Топливо", TargetMode.Make, [new("Product", 100)]));
+    store.Delete("меднабор");
+    Check(store.Load().Single().Name == "Топливо", "Delete removes only the named recipe, ignoring case");
+    store.Delete("missing");
+    Check(store.Load().Length == 1, "Deleting an unknown recipe keeps the collection");
     File.WriteAllText(path, "{\"Version\":2,\"Recipes\":[]}");
     Reject(() => store.Load(), "Unknown storage version rejected");
     var timingPath = Path.ChangeExtension(path, ".settings.json");

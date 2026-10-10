@@ -47,20 +47,27 @@ try {
     $prototype = Find-Type 'Robust.Shared' 'Robust.Shared.Prototypes.IPrototypeManager'
     Assert-Api (@($prototype.Methods | Where-Object { $_.Name -eq 'EnumeratePrototypes' -and $_.Parameters.Count -eq 1 -and $_.Parameters[0].ParameterType.FullName -eq 'System.Type' }).Count -eq 1) 'Runtime prototype enumeration'
     $control = Find-Type 'Robust.Client' 'Robust.Client.UserInterface.Control'
-    foreach ($name in @('DoFrameUpdateRecursive','AddChild','Dispose','HorizontalExpand','VerticalExpand','SetHeight','MinHeight','SetWidth','Children','ToolTip')) { Member $control $name }
+    foreach ($name in @('DoFrameUpdateRecursive','AddChild','Dispose','HorizontalExpand','VerticalExpand','SetHeight','MinHeight','SetWidth','Children','ToolTip','Visible','MouseFilter','AddStyleClass')) { Member $control $name }
     foreach ($pair in @(
         @('BoxContainer', @('Orientation','SeparationOverride')),
-        @('Label', @('Text','ClipText')),
+        @('Label', @('Text','ClipText','Align','FontColorOverride')),
+        @('Button', @('Text','TextAlign','ClipText')),
+        @('ProgressBar', @('ForegroundStyleBoxOverride')),
+        @('ScrollContainer', @()),
         @('OptionButton', @('Clear','AddItem','SelectId','SelectedId','OnItemSelected')),
-        @('LineEdit', @('Text','PlaceHolder','OnTextChanged')),
+        @('LineEdit', @('Text','PlaceHolder','OnTextChanged','OnTextEntered','OnFocusExit','Editable')),
         @('TabContainer', @('SetTabTitle')),
-        @('BaseButton', @('OnPressed','OnToggled','Pressed','Group','ToggleMode')),
+        @('BaseButton', @('OnPressed','OnToggled','Pressed','Group','ToggleMode','Disabled')),
         @('CheckBox', @('Text')),
         @('Range', @('MinValue','MaxValue','Rounded','RoundingDecimals','Value','SetValueWithoutEvent','OnValueChanged')),
         @('Slider', @('OnReleased'))
     )) { $type = Find-Type 'Robust.Client' ('Robust.Client.UserInterface.Controls.' + $pair[0]); foreach ($name in $pair[1]) { Member $type $name } }
     $group = Find-Type 'Robust.Client' 'Robust.Client.UserInterface.Controls.ButtonGroup'
     Assert-Api (@($group.Methods | Where-Object { $_.Name -eq '.ctor' -and $_.Parameters.Count -eq 1 }).Count -eq 1) 'Exclusive beaker phase group'
+    Member (Find-Type 'Robust.Client' 'Robust.Client.Graphics.StyleBoxFlat') 'BackgroundColor'
+    $assemblies['Robust.Shared.Maths'] = [Mono.Cecil.AssemblyDefinition]::ReadAssembly((Join-Path $GameDirectory 'Robust.Shared.Maths.dll'))
+    $color = Find-Type 'Robust.Shared.Maths' 'Robust.Shared.Maths.Color'
+    Assert-Api (@($color.Methods | Where-Object { $_.Name -eq '.ctor' -and $_.Parameters.Count -eq 4 -and $_.Parameters[0].ParameterType.FullName -eq 'System.Single' }).Count -eq 1) 'Status colour constructor'
     $slotMessage = Find-Type 'Content.Shared' 'Content.Shared.Containers.ItemSlots.ItemSlotButtonPressedEvent'
     Assert-Api (@($slotMessage.Methods | Where-Object { $_.Name -eq '.ctor' -and $_.Parameters.Count -eq 3 }).Count -eq 1) 'Input beaker insert/eject message'
     Write-Output "ChemMaster API: $checks checks passed. $($assemblies['Robust.Shared'].Name.FullName)"

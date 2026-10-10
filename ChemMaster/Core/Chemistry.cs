@@ -12,7 +12,8 @@ public sealed record Reaction(string Id, Ingredient[] Inputs, Ingredient[] Outpu
     bool Quantized = false, bool ConserveEnergy = true, bool HasEffects = false, bool RequiresMixer = false,
     string[]? MixerCategories = null, string[]? EffectTypes = null)
 {
-    // These server effects do not alter the beaker's composition or thermal energy.
+    // These server effects do not alter the beaker's composition or thermal energy. Others never block a plan:
+    // they only rank a recipe below effect-free alternatives, and execution still verifies every resulting composition.
     public bool HasUnsupportedEffects => HasEffects && (EffectTypes == null || EffectTypes.Any(type => type is not
         "Content.Shared.EntityEffects.Effects.Atmos.CreateGas" and not
         "Content.Shared.EntityEffects.Effects.Transform.PopupMessage"));
@@ -59,7 +60,11 @@ public sealed class ChemistryCatalog
     public string Name(string id) => Reagents.GetValueOrDefault(id)?.Name ?? id;
 }
 
-public sealed class ChemistryException(string message) : Exception(message);
+public class ChemistryException(string message) : Exception(message);
+public sealed class MissingReagentException(string id, string message) : ChemistryException(message)
+{
+    public string Id { get; } = id;
+}
 public sealed record MachineSnapshot(Dictionary<string, int> Buffer, Dictionary<string, int> Beaker,
     int Capacity, int Mode, string Identity, float? Temperature = null)
 {
@@ -80,7 +85,7 @@ public sealed record ProductionPlan(string CatalogFingerprint, MachineSnapshot I
 // ChemMaster Assistant (d379b6c). Runtime inputs replace its pinned SS220 JSON and calibrated UI.
 public sealed class ProductionPlanner(ChemistryCatalog catalog)
 {
-    private const int MaxActions = 10000;
+    private const int MaxActions = 10000, Loan = 100000000;
     public ProductionPlan Build(MachineSnapshot initial, IReadOnlyList<Target> targets, TargetMode mode, bool confirmCold = false,
         CancellationToken cancellation = default, BeakerTemperatures? beakers = null)
     {
@@ -91,6 +96,31 @@ public sealed class ProductionPlanner(ChemistryCatalog catalog)
             throw new ChemistryException(Text.T("Неверные цели", "Invalid targets."));
         var goals = targets.GroupBy(t => t.Id, StringComparer.Ordinal).Select(g => new Target(g.Key,
             checked(g.Sum(t => t.Amount) + (mode == TargetMode.Make ? initial.Buffer.GetValueOrDefault(g.Key) : 0)))).ToArray();
+        try { return Solve(initial, goals, confirmCold, cancellation, beakers); }
+        catch (MissingReagentException first)
+        {
+            // Report every shortage at once: lend each missing reagent to a copy of the machine and plan again.
+            var lent = new List<string>(); var state = initial; var missing = first; ProductionPlan? solved = null;
+            while (lent.Count < 64 && !lent.Contains(missing.Id))
+            {
+                lent.Add(missing.Id);
+                state = state with { Buffer = new(state.Buffer, StringComparer.Ordinal) { [missing.Id] = state.Buffer.GetValueOrDefault(missing.Id) + Loan } };
+                try { solved = Solve(state, goals, confirmCold, cancellation, beakers); break; }
+                catch (MissingReagentException next) { missing = next; }
+                catch (ChemistryException) { break; }
+            }
+            throw new ChemistryException(Text.T("Не хватает: ", "Missing: ") + string.Join(", ", lent.Select(id =>
+            {
+                var have = initial.Buffer.GetValueOrDefault(id);
+                var need = solved == null ? 0 : goals.FirstOrDefault(g => g.Id == id) is { } goal ? goal.Amount - have
+                    : have + Loan - solved.Final.Buffer.GetValueOrDefault(id) - have;
+                return catalog.Name(id) + (need > 0 ? " " + (need / 100m).ToString("0.##", CultureInfo.InvariantCulture) : "");
+            })));
+        }
+    }
+
+    private ProductionPlan Solve(MachineSnapshot initial, Target[] goals, bool confirmCold, CancellationToken cancellation, BeakerTemperatures? beakers)
+    {
         var machine = new Simulation(catalog, initial, confirmCold, beakers);
         var actions = new List<TransferAction>();
         var attempts = new SearchBudget(cancellation);
@@ -116,18 +146,14 @@ public sealed class ProductionPlanner(ChemistryCatalog catalog)
             var recipes = catalog.Reactions.Where(r => r.Outputs.Any(o => o.Id == id) &&
                 r.Outputs.Where(o => o.Id == id).Sum(o => o.Amount) > r.Inputs.Where(i => i.Id == id && !i.Catalyst).Sum(i => i.Amount))
                 .OrderBy(r => r.HasUnsupportedEffects || r.RequiresMixer).ThenBy(r => r.Inputs.Length).ToArray();
-            string failure = Text.T("Не хватает исходного реагента: ", "Missing base reagent: ") + catalog.Name(id);
-            string? supportedFailure = null;
+            ChemistryException? failure = null;
             foreach (var recipe in recipes)
             {
+                if (recipe.RequiresMixer) continue;
                 var trial = machine.Clone();
                 var candidate = new List<TransferAction>();
                 try
                 {
-                    if (recipe.RequiresMixer)
-                        throw new ChemistryException(failure + Text.T(". Реакция ", ". Reaction ") + recipe.Id + Text.T(" требует аппарата: ", " requires apparatus: ") + string.Join(", ", recipe.MixerCategories ?? ["mixer"]));
-                    if (recipe.HasUnsupportedEffects)
-                        throw new ChemistryException(Text.T("Неподдерживаемые побочные эффекты реакции: ", "Unsupported reaction effects: ") + recipe.Id);
                     if (trial.Beakers == null && (trial.Temperature < recipe.MinimumTemperature || trial.Temperature > recipe.MaximumTemperature))
                         throw new ChemistryException(Text.T("Нужна мензурка в диапазоне ", "Beaker temperature required: ") + recipe.MinimumTemperature.ToString("0.##", CultureInfo.InvariantCulture) + "–" + recipe.MaximumTemperature.ToString("0.##", CultureInfo.InvariantCulture) + " K: " + recipe.Id);
                     Produce(trial, recipe, id, amount, stack, candidate, budget);
@@ -135,13 +161,10 @@ public sealed class ProductionPlanner(ChemistryCatalog catalog)
                     if (actions.Count > MaxActions) throw new ChemistryException(Text.T("Слишком большой план", "Action limit."));
                     return;
                 }
-                catch (ChemistryException e)
-                {
-                    if (!recipe.RequiresMixer && !recipe.HasUnsupportedEffects) supportedFailure ??= e.Message;
-                    else failure = e.Message;
-                }
+                catch (ChemistryException e) { failure ??= e; }
             }
-            throw new ChemistryException(supportedFailure ?? failure);
+            // Name the reagent only: it is either mixed here or loaded, so apparatus-only sources are not reported.
+            throw failure ?? new MissingReagentException(id, Text.T("Не хватает: ", "Missing: ") + catalog.Name(id));
         }
         finally { stack.Remove(id); }
     }
@@ -304,7 +327,6 @@ internal sealed class Simulation
                 if (Beaker.Values.Sum() > Capacity) throw new ChemistryException(Text.T("Переполнение", "Overflow."));
                 return;
             }
-            if (reaction.HasUnsupportedEffects) throw new ChemistryException(Text.T("Неподдерживаемый эффект: ", "Unsupported effect: ") + reaction.Id);
             var energy = reaction.ConserveEnergy ? HeatCapacity() * Temperature : 0;
             foreach (var i in reaction.Inputs.Where(i => !i.Catalyst)) Remove(Beaker, i.Id, checked((int)(i.Amount * repeats / 100)));
             foreach (var o in reaction.Outputs) Add(Beaker, o.Id, checked((int)(o.Amount * repeats / 100)));
