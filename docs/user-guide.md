@@ -10,6 +10,8 @@ The library lists all six bundled mods in compact rows with localized names, cat
 
 **Debug Vision / Дебаг-видение:** press **F1** for the panel, **Ctrl+N** for omnivision, **Ctrl+L** for fullbright, **Ctrl+H** for shadows, **Ctrl+B** for visual effect protection and **Ctrl+R** to reset. Protection hides supported flash/blindness/welding blur and other screen effects; gameplay damage/debuffs remain. Extended zoom is always enabled: native Zoom in / Zoom out / Reset zoom bindings and panel buttons adjust the same scale. No number pad is needed. Debug Vision takes priority over Test Mod on F1 during gameplay; shortcuts are left to focused text fields. [Usage and limits / Использование и ограничения](mods/debug-vision.md).
 
+To upgrade from launcher 0.1.7 or older, download and extract the [0.1.8 ZIP](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.8/SS14ModLauncher-0.1.8-win-x64.zip) manually. Older embedded catalogs cannot parse the new six-mod manifest. DLL updates alone do not add Debug Vision to an older launcher.
+
 ## First launch / Первый запуск
 
 Extract the entire release archive, then run `SS14ModLauncher.exe`. The application includes its .NET runtime. For a new installation, the first-run setup window looks for SS14 and shows the active profile and its selected mods. The initial default profile has **Crew Monitor / Монитор экипажа** enabled and **Test Mod / Тестовый мод** disabled. Existing profiles remain available and are not replaced by the recommendation.

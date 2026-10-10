@@ -4,7 +4,16 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
-## 0.1.8 — local Debug Vision build / 2026-10-10
+## 0.1.8 — published and verified / 2026-10-11
+
+### Published package
+
+- Stable release: [v0.1.8](https://github.com/actemendes/ss14-modlauncher/releases/tag/v0.1.8), built from clean source commit `4c54f44ce71da57fe2cab51c9181ff564ca3846b`; public provenance records `sourceDirty: false` and `testsRun: true`. Launcher 0.1.8 includes Debug Vision 0.1.3; the five existing mod DLLs retain their published bytes and bootstrap remains 0.1.2, rebuilt with current source provenance.
+- Full packaging suites passed, including **109 Debug Vision checks**, **26 crew checks**, **56 Conversations checks**, Death Rattle integration/policy, **108 chemistry checks** and installation/catalog/update/setup/version tests. The final self-contained EXE passed **33/33 installation checks**, including isolated Steam handoff, standalone/Steam defaults and a read-only real-loader fixture. Released Debug Vision passed **70 actual SS220 API checks** and installed all **25 Harmony hooks**.
+- All **10 public assets** downloaded anonymously and matched local bytes, GitHub digests and the nine-entry checksum file. ZIP contents, notices, clean provenance and the downloaded portable CLI install/restore on an isolated real-loader fixture were verified. The production updater discovered v0.1.8, downloaded all six mod DLLs with matching hashes and suppressed repeated updates for current installed versions.
+- Updater verification above uses launcher 0.1.8. Launcher 0.1.7 and older validate manifests against their smaller embedded catalog and cannot accept the six-mod feed; they require a manual ZIP upgrade. Release notes provide the manual upgrade route. This limitation cannot be changed inside already distributed executables.
+- The published Debug Vision 0.1.3 artifact is locked in the ledger with SHA-256 `73E4D9D871B930165933B87839552DD0CF06DC6CBF6514688CD20618E305FA7A`. The annotated tag resolves to the source commit above. GitHub Actions passed for [main](https://github.com/actemendes/ss14-modlauncher/actions/runs/38087138852) and [v0.1.8](https://github.com/actemendes/ss14-modlauncher/actions/runs/38087260761).
+- Current RU/EN launcher library captures were inspected and saved: all six mod rows are visible, including Debug Vision 0.1.3. User-reported acceptance covers the locally installed 0.1.3 before publication; no detailed flash/welding or English in-game test sequence was recorded. Remote-server visibility, other forks and future engines still require separate compatibility checks. Publication did not restart or modify the running game installation.
 
 ### Release candidate / 2026-10-11
 
