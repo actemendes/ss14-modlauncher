@@ -6,7 +6,7 @@
 - Visual effect protection suppresses flash, blindness and welding blur, intoxication/rainbow/drowsiness distortions and damage screen shading. Enabling it during blindness restores lighting disabled by the native overlay. Native effect state and gameplay damage/debuffs remain intact; switching it off resumes active effects.
 - Zoom advances once per actual command, using the game's native step and a smooth camera transition. Prediction replays no longer multiply the local zoom repeatedly after one press.
 - Camera changes retain active options while restoring the previous camera. Native zoom/scale updates are preserved for reset. Client rendering uses only data already sent by the server.
-- Launcher 0.1.8 registers the new mod ID; all previously published mod DLLs and bootstrap retain their versions and bytes. Added Harmony lifecycle/UI regression tests, a real-game API check and hook-installation smoke harness.
+- Launcher 0.1.8 registers the new mod ID; the five previously published mod DLLs retain their versions and bytes. Bootstrap remains 0.1.2 and is rebuilt with current source provenance. Added Harmony lifecycle/UI regression tests, a real-game API check and hook-installation smoke harness.
 - Reinstalling from a newer portable launcher upgrades older bundled mod assemblies. Equal/newer independently installed versions and verified mods with unknown versions retain their installed bytes.
 
 ## 0.1.7 — 2026-10-10

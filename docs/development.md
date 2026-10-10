@@ -12,7 +12,7 @@ cd ss14-modlauncher
 
 The default `Auto` mode reads the explicit `mode` (`Full` or `ModsOnly`) from `release/release.json`; it does not infer the mode from version equality. Full mode builds the launcher from source. Already released mod versions are reused byte-for-byte from the artifact ledger; newly versioned mods are built from source.
 
-Current source versions (unreleased full feed 0.1.8):
+Current source versions (full feed 0.1.8):
 
 | Component | Version | Source of truth |
 | --- | --- | --- |

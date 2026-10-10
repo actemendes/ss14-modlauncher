@@ -4,11 +4,11 @@
 
 [Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.7/SS14ModLauncher-0.1.7-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.8/SS14ModLauncher-0.1.8-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.7** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.8** targets **Windows x64**.
 
 [![Auto Chemistry — automated mixing in SS14](docs/assets/auto-chemistry-preview.png)](https://youtu.be/hZwgM-wkamc)
 
@@ -23,7 +23,7 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 | Feature | In this release |
 | --- | --- |
 | First-run setup | Find SS14 automatically and set up the recommended Crew Monitor profile with one action |
-| Mod library | Search and choose Crew Monitor, Conversations, Distress Call, Auto Chemistry and Test Mod |
+| Mod library | Search and choose Crew Monitor, Conversations, Distress Call, Auto Chemistry, Debug Vision and Test Mod |
 | Profiles | Save different selections and switch before starting the client |
 | RU / EN | Localized launcher and bundled mod labels |
 | Installer and patcher | Back up the original loader and verify file hashes before changing it |
@@ -38,7 +38,7 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.7-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+1. Extract the complete `SS14ModLauncher-0.1.8-win-x64.zip` package to a writable folder. No separate .NET installation is required.
 2. Run **SS14ModLauncher.exe**. The first-run window looks for SS14 and offers the recommended default profile with **Crew Monitor** enabled.
 3. Press **Set up & play**. ModLauncher installs the selected mods, adds Steam integration for a recognized Steam installation, and opens the original SS14 launcher for your normal server connection.
 
