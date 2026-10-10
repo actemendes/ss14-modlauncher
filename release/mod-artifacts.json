@@ -64,6 +64,14 @@
       "repository": "actemendes/ss14-modlauncher",
       "sourceRelease": "0.1.9",
       "sha256": "FD732A87DE72E09045F2C02DB36D141B8E8B674C3B3203DC16067D9498A628CB"
+    },
+    {
+      "id": "death-rattle",
+      "version": "0.1.3",
+      "file": "DeathRattle.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.10",
+      "sha256": "A9A28D71D476CE31DCD9F47AB86FE2734B8D161E0361D0AEF044E02C9429AA6D"
     }
   ]
 }
