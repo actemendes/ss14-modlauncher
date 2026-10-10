@@ -2,9 +2,15 @@
 
 [English README](../README.md) · [Русский README](../README.ru.md)
 
+## Mod library / Библиотека модов
+
+The library lists all five bundled mods in compact rows with localized names, categories, versions and enable switches. Search by Russian or English name, ID, description or the current language's category. Filtering does not change the active profile. Click **Details** for full descriptions and usage instructions; Auto Chemistry includes an embedded, offline screenshot of the Russian AUTO tab. Enable changes are saved to the active profile and apply on the next client launch.
+
+В списке пять модов: **Монитор экипажа**, **Переговоры**, **Зов о помощи**, **Автохимия**, **Тестовый мод**. Короткие строки показывают версию, категорию и переключатель. Поиск по названиям RU/EN, ID, описанию и категории не меняет профиль. **Подробнее** открывает описание и инструкцию; скриншот «Автохимии» доступен без сети. Выбор сохраняется в текущем профиле и применяется при следующем запуске клиента. Внутренние ID и имена DLL остались прежними.
+
 ## First launch / Первый запуск
 
-Extract the entire release archive, then run `SS14ModLauncher.exe`. The application includes its .NET runtime. For a new installation, the first-run setup window looks for SS14 and shows the active profile and its selected mods. The initial default profile has **Crew Console** enabled and **Hello World** disabled. Existing profiles remain available and are not replaced by the recommendation.
+Extract the entire release archive, then run `SS14ModLauncher.exe`. The application includes its .NET runtime. For a new installation, the first-run setup window looks for SS14 and shows the active profile and its selected mods. The initial default profile has **Crew Monitor / Монитор экипажа** enabled and **Test Mod / Тестовый мод** disabled. Existing profiles remain available and are not replaced by the recommendation.
 
 Choose Russian or English, check the detected game folder, then press **Set up & play**. The action installs the selected mods and opens the original SS14 launcher for the normal server connection. A recognized Steam installation receives the mod patch and Steam launch integration together by default; an existing explicit opt-out is respected. Later, Steam Play opens ModLauncher. Standalone installations keep their original entry point.
 
@@ -14,7 +20,7 @@ If no game is found, use the folder chooser. Select the directory containing bot
 
 Close both the game and original launcher before subsequent installation, updates or restoration. If the chosen folder is protected by Windows, use a writable installation folder or grant the required file access; elevation is not a substitute for selecting the right directory. Profile and mod changes apply to the next client session; a running client retains its loaded DLLs.
 
-Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Для новой установки окно первого запуска найдёт SS14 и покажет текущий профиль с выбранными модами. Начальный стандартный профиль включает **Crew Console**, а **Hello World** оставляет выключенным. Существующие профили сохраняются и не заменяются рекомендуемым набором.
+Распакуйте весь архив и запустите `SS14ModLauncher.exe`. Для новой установки окно первого запуска найдёт SS14 и покажет текущий профиль с выбранными модами. Начальный стандартный профиль включает **Crew Monitor / Монитор экипажа**, а **Test Mod / Тестовый мод** оставляет выключенным. Существующие профили сохраняются и не заменяются рекомендуемым набором.
 
 Выберите русский или английский язык, проверьте найденную папку и нажмите **Настроить и играть**. Приложение установит выбранные моды и откроет штатный лаунчер для обычного подключения к серверу. Для распознанной установки Steam патч и интеграция запуска устанавливаются вместе по умолчанию; прежнее явное отключение интеграции сохраняется. В дальнейшем «Играть» открывает ModLauncher. Установка вне Steam сохраняет прежнюю точку запуска.
 

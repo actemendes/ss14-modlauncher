@@ -1,4 +1,8 @@
-# ChemMaster / Химмастер — 0.1.4
+# Автохимия / Auto Chemistry — 0.1.4
+
+Display name in ModLauncher: **Автохимия** (RU), **Auto Chemistry** (EN). The stable ID `chem-master`, assembly `ChemMaster.Mod.dll`, settings paths and the native in-game ChemMaster name are unchanged.
+
+![Автохимия — вкладка АВТО / Auto Chemistry — AUTO tab](../assets/auto-chemistry.png)
 
 Мод добавляет вкладки **АВТО / AUTO** и **Настройки АВТО / AUTO settings** в обычный игровой химмастер. Требуется ModLauncher 0.1.6. Язык мода следует RU/EN языку лаунчера; названия веществ берутся из локализации игрового клиента.
 

@@ -1,16 +1,18 @@
-![SS14 ModLauncher — by actemendes](docs/assets/readme-banner.png)
-
 # SS14 ModLauncher
 
 **Your client. Your mod loadout.** By **actemendes**.
 
 [Русский](README.ru.md) · [User guide](docs/user-guide.md) · [Development](docs/development.md) · [Release checklist](docs/releasing.md)
 
-[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.6/SS14ModLauncher-0.1.6-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
+[**Download for Windows x64**](https://github.com/actemendes/ss14-modlauncher/releases/download/v0.1.7/SS14ModLauncher-0.1.7-win-x64.zip) · [Report a bug](https://github.com/actemendes/ss14-modlauncher/issues/new/choose)
 
 A Windows mod launcher for Space Station 14: choose a mod profile, launch the original SS14 launcher, and restore a clean installation from the same app. The dark interface takes its visual cues from **ss14-crew-monitor**.
 
-**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.6** targets **Windows x64**.
+**Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.7** targets **Windows x64**.
+
+![Auto Chemistry — automated mixing in SS14](docs/assets/auto-chemistry-preview.png)
+
+**Auto Chemistry 0.1.4** — server recipes, automatic production plans and saved presets inside the native ChemMaster. [How to use it](docs/mods/chemmaster.md).
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
@@ -20,8 +22,8 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 
 | Feature | In this release |
 | --- | --- |
-| First-run setup | Find SS14 automatically and set up the recommended Crew Console profile with one action |
-| Mod library | Choose Crew Console, Conversations, Death Rattle, ChemMaster and Hello World |
+| First-run setup | Find SS14 automatically and set up the recommended Crew Monitor profile with one action |
+| Mod library | Search and choose Crew Monitor, Conversations, Distress Call, Auto Chemistry and Test Mod |
 | Profiles | Save different selections and switch before starting the client |
 | RU / EN | Localized launcher and bundled mod labels |
 | Installer and patcher | Back up the original loader and verify file hashes before changing it |
@@ -36,8 +38,8 @@ The default update source is [`actemendes/ss14-modlauncher`](https://github.com/
 
 ## Get started
 
-1. Extract the complete `SS14ModLauncher-0.1.6-win-x64.zip` package to a writable folder. No separate .NET installation is required.
-2. Run **SS14ModLauncher.exe**. The first-run window looks for SS14 and offers the recommended default profile with **Crew Console** enabled.
+1. Extract the complete `SS14ModLauncher-0.1.7-win-x64.zip` package to a writable folder. No separate .NET installation is required.
+2. Run **SS14ModLauncher.exe**. The first-run window looks for SS14 and offers the recommended default profile with **Crew Monitor** enabled.
 3. Press **Set up & play**. ModLauncher installs the selected mods, adds Steam integration for a recognized Steam installation, and opens the original SS14 launcher for your normal server connection.
 
 If the game was not found, choose its folder; ModLauncher also accepts the game folder above `bin_x64`. If the game or original launcher is running, close it and retry. Cancelling setup installs nothing and dismisses the automatic prompt for that installation. Return anytime through **Installation → Quick setup**. Existing installations skip the automatic popup. After setup, Steam Play opens ModLauncher, where profiles and individual mods remain editable.
@@ -48,12 +50,14 @@ To remove the integration, close the client and original launcher and use **Rest
 
 ## Included mods
 
-Feed **0.1.7** updates **ChemMaster** to **0.1.4**: native AUTO and AUTO settings tabs
+In **0.1.7**, the compact library puts search, versions, categories and toggles in short rows. **Details** opens descriptions and usage instructions; **Auto Chemistry** includes an AUTO tab screenshot. Display names changed; profiles and saved settings are preserved.
+
+Feed **0.1.7** updates **Auto Chemistry** to **0.1.4**: native AUTO and AUTO settings tabs
 with server-specific reaction rules, a plan that rebuilds itself after every change, saved production targets and automated
 mixing with confirmed transfers, adjustable speed, reagent-switch pauses and random intervals. Open a ChemMaster with an empty input beaker and
 base reagents in its buffer. [Usage and limitations](docs/mods/chemmaster.md).
 
-**0.1.6** includes **Death Rattle 0.1.2**: a localized
+**0.1.6** includes **Distress Call 0.1.2**: a localized
 radio distress call at awful health, once per episode with a 30-second cooldown.
 Recent explicit damage origins can name the attacker in a single in-game sentence.
 English launcher UI selects English replies: "Help, I'm dying!" and "Help, … is killing me!".
@@ -64,15 +68,15 @@ timestamps, speaker name and message-text search, multiple selected voices and d
 radio channel. Open the panel with the Conversations button above chat history.
 [Usage and limitations](docs/mods/conversations.md).
 
-Launcher **0.1.6** includes Crew Console **0.1.2** and Hello World **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
+Launcher **0.1.7** includes Crew Monitor **0.1.2** and Test Mod **0.1.2**, preserving their published DLL bytes. Launcher and mod versions evolve independently.
 
-### Crew Console
+### Crew Monitor
 
 An enhanced native crew monitoring console: searchable crew list, health states, damage history, a draggable timeline, and the selected crewmember's route on the station map. Open an ordinary in-game crew monitoring console to use it.
 
 History exists only while that console window is open. The mod uses telemetry already provided to the normal console and does not invent missing positions or health. Rooms, zones, message history, recording files, and full replay from the web Crew Monitor are not included. See [features and limits](docs/mods/crew-console.md).
 
-### Hello World
+### Test Mod
 
 A small example mod with a movable, resizable window. Press **F1**, **0**, or **NumPad 0** to toggle it. These keys replace their normal actions while the mod is enabled; text-field focus and Ctrl/Alt/Shift combinations are left alone.
 

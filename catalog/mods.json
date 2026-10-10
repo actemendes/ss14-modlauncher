@@ -4,11 +4,13 @@
     "version": "0.1.2",
     "minLauncherVersion": "0.1.2",
     "file": "CrewConsole.Mod.dll",
-    "nameRu": "Crew Console",
-    "nameEn": "Crew Console",
+    "nameRu": "Монитор экипажа",
+    "nameEn": "Crew Monitor",
     "descriptionRu": "Мониторинг экипажа: поиск, здоровье, история показателей и маршрут на карте. Использует доступные штатной консоли данные.",
     "descriptionEn": "Crew monitoring with search, health, telemetry history and map trails. Uses data available to the standard console.",
     "category": "interface",
+    "instructionsRu": "Откройте обычную консоль мониторинга экипажа в игре. Доступны поиск, состояния здоровья, история урона и маршрут выбранного члена экипажа. История собирается только пока окно открыто; мод использует данные, доступные штатной консоли.",
+    "instructionsEn": "Open a standard crew monitoring console in game. Search the crew, inspect health and damage history, and follow the selected crewmember's map trail. History is collected only while the window is open; the mod uses data available to the standard console.",
     "source": "CrewConsole"
   },
   {
@@ -18,9 +20,11 @@
     "file": "Conversations.Mod.dll",
     "nameRu": "Переговоры",
     "nameEn": "Conversations",
-    "descriptionRu": "Штатный чат: время сообщений, поиск по имени и словам в тексте, выбор собеседников и фильтр отдела по каналу рации.",
-    "descriptionEn": "Native chat: timestamps, name and message text search, selected speakers and department filtering by radio channel.",
-    "category": "interface",
+    "descriptionRu": "Время сообщений, поиск по тексту и имени, выбор собеседников и фильтр каналов рации в игровом чате.",
+    "descriptionEn": "Chat timestamps, text and speaker search, selected conversations and radio channel filters.",
+    "category": "communication",
+    "instructionsRu": "Нажмите «Переговоры» над историей чата. Можно искать слова и имена, выбрать нескольких собеседников и отфильтровать отдел по каналу рации. Время отмечает получение сообщения клиентом; обычные фильтры и ввод чата продолжают работать.",
+    "instructionsEn": "Click Conversations above chat history. Search text and names, select multiple speakers and filter departments by radio channel. Timestamps show when the client received a message; native chat filters and input remain available.",
     "source": "Conversations"
   },
   {
@@ -28,11 +32,13 @@
     "version": "0.1.2",
     "minLauncherVersion": "0.1.6",
     "file": "DeathRattle.Mod.dll",
-    "nameRu": "Предсмертный хрип",
-    "nameEn": "Death Rattle",
+    "nameRu": "Зов о помощи",
+    "nameEn": "Distress Call",
     "descriptionRu": "При ужасном здоровье автоматически зовёт на помощь по рации. Называет нападающего, если клиент получил подтверждённый источник урона. Без спама.",
     "descriptionEn": "Automatically calls for help over radio at awful health. Names the attacker when a confirmed damage source is available to the client. Prevents repeated spam.",
     "category": "communication",
+    "instructionsRu": "Работает автоматически при критическом состоянии здоровья, если доступна рация. Один вызов за эпизод, с перерывом не менее 30 секунд. Имя нападающего добавляется только при подтверждённом источнике урона; иначе отправляется обычный зов о помощи.",
+    "instructionsEn": "Runs automatically at awful health when radio is available. Sends one call per episode with a minimum 30-second cooldown. Names the attacker only when a confirmed damage source is available; otherwise sends a basic distress call.",
     "source": "DeathRattle"
   },
   {
@@ -40,11 +46,14 @@
     "version": "0.1.4",
     "minLauncherVersion": "0.1.6",
     "file": "ChemMaster.Mod.dll",
-    "nameRu": "Химмастер",
-    "nameEn": "ChemMaster",
-    "descriptionRu": "АВТО в химмастере: рецепты текущего сервера, автоматический план, сохранённые наборы, настройка скорости, пауз и хаотичности переносов.",
-    "descriptionEn": "AUTO in ChemMaster: current server recipes, automatic plan, saved targets and adjustable transfer speed, pauses and random delays.",
+    "nameRu": "Автохимия",
+    "nameEn": "Auto Chemistry",
+    "descriptionRu": "Автоматическое смешивание в химмастере: рецепты сервера, план приготовления, сохранённые наборы и настройка скорости.",
+    "descriptionEn": "Automated ChemMaster mixing with server recipes, production plans, saved targets and adjustable speed.",
     "category": "automation",
+    "instructionsRu": "Откройте химмастер с пустой входной мензуркой и базовыми реагентами в буфере. Во вкладке АВТО выберите вещества и объёмы: «Ещё» готовит добавочный объём, «До» доводит запас до цели. План пересчитывается автоматически. Сохраните набор и нажмите «Начать». Скорость и паузы задаются в «Настройки АВТО». Каждое перемещение проверяется по ответу сервера. Нагрев и замена мензурок остаются ручными; фасовка таблеток и бутылочек не автоматизируется.",
+    "instructionsEn": "Open a ChemMaster with an empty input beaker and base reagents in its buffer. In AUTO, choose reagents and amounts: More produces additional stock; Up to reaches the target stock. The plan updates automatically. Save a preset and click Start. Adjust speed and pauses in AUTO settings. Every transfer is checked against the server response. Heating and beaker replacement are manual; pill and bottle packaging is not automated.",
+    "previewImage": "auto-chemistry.png",
     "source": "ChemMaster"
   },
   {
@@ -52,11 +61,13 @@
     "version": "0.1.2",
     "minLauncherVersion": "0.1.2",
     "file": "HelloWorld.Mod.dll",
-    "nameRu": "Hello World",
-    "nameEn": "Hello World",
+    "nameRu": "Тестовый мод",
+    "nameEn": "Test Mod",
     "descriptionRu": "Тест загрузки модов: отдельное окно по F1 или 0. Пока мод включён, заменяет обычное действие этих клавиш.",
     "descriptionEn": "A mod loading test: open a window with F1 or 0. Replaces the standard action of these keys while enabled.",
     "category": "demo",
+    "instructionsRu": "Нажмите F1, 0 или NumPad 0, чтобы открыть или закрыть тестовое окно Hello World. Пока мод включён, эти клавиши заменяют свои обычные действия. Ввод текста и сочетания с Ctrl, Alt и Shift не перехватываются.",
+    "instructionsEn": "Press F1, 0 or NumPad 0 to toggle the Hello World test window. These keys replace their standard actions while enabled. Text input and Ctrl, Alt and Shift combinations are not intercepted.",
     "source": "HelloWorld"
   }
 ]

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms>
     <OutputType>WinExe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
-    <AssemblyName>SS14ModLauncher</AssemblyName><Version>0.1.6</Version>
+    <AssemblyName>SS14ModLauncher</AssemblyName><Version>0.1.7</Version>
     <Product>SS14 ModLauncher by actemendes</Product><Company>actemendes</Company>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
@@ -11,5 +11,6 @@
     <ProjectReference Include="../Launcher.Core/Launcher.Core.csproj"/>
     <EmbeddedResource Include="../payload/*.dll" Link="Payload/%(Filename)%(Extension)"/>
     <EmbeddedResource Include="../docs/assets/readme-banner.png" Link="Assets/readme-banner.png" Condition="Exists('../docs/assets/readme-banner.png')"/>
+    <EmbeddedResource Include="../docs/assets/auto-chemistry.png" LogicalName="SS14ModLauncher.Assets.auto-chemistry.png"/>
   </ItemGroup>
 </Project>

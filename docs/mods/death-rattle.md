@@ -1,4 +1,6 @@
-# Предсмертный хрип / Death Rattle
+# Зов о помощи / Distress Call
+
+Display names changed in ModLauncher 0.1.7; the ID `death-rattle`, DLL and mod version are unchanged. Previously listed as Предсмертный хрип / Death Rattle.
 
 Версия мода **0.1.2**, ID `death-rattle`, DLL `DeathRattle.Mod.dll`.
 Для нового пункта каталога нужен ModLauncher **0.1.6**. Включите мод в библиотеке,

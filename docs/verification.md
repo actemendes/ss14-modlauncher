@@ -4,9 +4,10 @@ Date: **2026-10-09**. Platform: **Windows x64**. Build toolchain: **.NET SDK 10.
 
 Live gameplay and the original complete Steam-to-game sessions cover the 0.1.0 implementation. Later launcher, package and local Steam bridge checks are recorded separately by version. Version 0.1.1 changes release discovery when the anonymous GitHub API quota is exhausted; mod and installation behaviour are unchanged in that version. Version 0.1.2 changes the default Steam installation policy.
 
-## 0.1.7 — ChemMaster 0.1.4 prepared, not published / 2026-10-10
+## 0.1.7 — full launcher release prepared / 2026-10-10
 
-- Mod-only feed **0.1.7**: ChemMaster **0.1.4** is built from source; launcher **0.1.6**, bootstrap and the other four mods are unchanged and reuse their published bytes. Nothing is tagged, pushed or uploaded; no ledger entry exists for 0.1.4 until the published DLL is verified.
+- Full feed **0.1.7**: launcher **0.1.7** has a compact searchable library, localized display names and offline mod details; Auto Chemistry (ChemMaster) **0.1.4** is built from source. Bootstrap **0.1.2** and the other four mods retain their published versions and bytes. Publication and artifact-ledger adoption are recorded separately after public verification.
+- RU/EN actual WinForms UI checks passed: all five 64-pixel rows, localized categories and details, search across both display-name languages, empty/cleared search, persisted selection in the active profile and minimum-window layout. All five descriptions include localized usage instructions; the unchanged **685 × 689** supplied screenshot loads from the executable's embedded resources in both languages. Documentation screenshots come from the actual UI on a disposable installation fixture.
 - The mod-only build completed with its regression suites: **108 chemistry checks** standalone, **30/30 installation checks**, and the launcher/update suites. With the full SS220 rules export the chemistry harness passes **124 checks**.
 - Actual SS220 assemblies (Robust **277.2.1**) pass **131 ChemMaster API contracts**, including the controls added for the reworked tab, and all seven Harmony hooks install.
 - Live check on the local loopback SS220 Dev server through the QA client host, not through an installed ModLauncher package: the user exercised the reworked AUTO tab, automatic replanning after loading a missing reagent, the combined missing-stock message and the stopped completion timer, and accepted the result. The session was not recorded step by step.

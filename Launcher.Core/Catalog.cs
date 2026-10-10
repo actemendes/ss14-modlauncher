@@ -13,14 +13,26 @@ public sealed record ModDefinition
     public string DescriptionRu { get; init; } = "";
     public string DescriptionEn { get; init; } = "";
     public string Category { get; init; } = "";
+    public string InstructionsRu { get; init; } = "";
+    public string InstructionsEn { get; init; } = "";
+    public string? PreviewImage { get; init; }
     public string? Source { get; init; }
     public string Name(string language) => language == "ru" ? NameRu : NameEn;
     public string Description(string language) => language == "ru" ? DescriptionRu : DescriptionEn;
+    public string Instructions(string language) => language == "ru" ? InstructionsRu : InstructionsEn;
+    public string CategoryName(string language) => (Category, language == "ru") switch
+    {
+        ("interface", true) => "Интерфейс", ("interface", false) => "Interface",
+        ("communication", true) => "Общение", ("communication", false) => "Communication",
+        ("automation", true) => "Автоматизация", ("automation", false) => "Automation",
+        ("demo", true) => "Тестирование", ("demo", false) => "Testing",
+        (_, true) => "Другое", _ => "Other"
+    };
 }
 
 public static class Catalog
 {
-    public const string LauncherVersion = "0.1.6";
+    public const string LauncherVersion = "0.1.7";
     public static IReadOnlyList<ModDefinition> Bundled { get; } = ReadBundled();
     public static ModDefinition? ById(string id) => Bundled.FirstOrDefault(m => m.Id == id);
 

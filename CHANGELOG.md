@@ -2,7 +2,11 @@
 
 ## 0.1.7 — 2026-10-10
 
-Mod-only feed: launcher 0.1.6 and its ZIP are unchanged; the other four mods keep their published bytes.
+Full release: launcher 0.1.7 bundles Auto Chemistry 0.1.4; the other four mods keep their published bytes. Bootstrap remains 0.1.2.
+
+- Compact, searchable mod library: 64-pixel rows replace the 137-pixel cards; all five mods have correct localized categories, version labels and independent toggles.
+- Localized display names: Монитор экипажа / Crew Monitor, Переговоры / Conversations, Зов о помощи / Distress Call, Автохимия / Auto Chemistry, Тестовый мод / Test Mod. Stable IDs, filenames, profiles and saved mod data are unchanged.
+- Details opens localized descriptions and usage instructions. Auto Chemistry includes the supplied in-game screenshot, embedded for offline viewing. RU/EN documentation and launcher screenshots are refreshed.
 
 - ChemMaster 0.1.4 reworks the AUTO tab. Typing a reagent lists matches below the field; Enter adds the first one. Target amounts are edited in place next to the current buffer stock, with More / Up to buttons for the mode.
 - The plan is built automatically after every edit and whenever the machine contents change; the Preview button is gone. A failed plan offers Retry and recalculates by itself once the buffer changes.

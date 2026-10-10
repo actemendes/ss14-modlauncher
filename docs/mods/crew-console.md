@@ -1,4 +1,6 @@
-# Crew Console
+# Монитор экипажа / Crew Monitor
+
+Display names changed in ModLauncher 0.1.7; the ID `crew-console`, DLL and mod version are unchanged. Previously listed as Crew Console.
 
 [English README](../../README.md) · [Русский README](../../README.ru.md)
 

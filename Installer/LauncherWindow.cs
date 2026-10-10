@@ -235,7 +235,13 @@ internal sealed class LauncherWindow : Form
         {
             content.Controls.Add(UpdateNoticeButton());
         }
-        content.SizeChanged += (_, _) => { foreach (Control item in content.Controls) if (item is Card or PictureBox) item.Width = Math.Max(600, content.ClientSize.Width - 24); };
+        content.SizeChanged += (_, _) =>
+        {
+            content.SuspendLayout();
+            foreach (Control item in content.Controls) if (item is Card or PictureBox || item.Name == "mod-search-row") item.Width = Math.Max(600, content.ClientSize.Width - 24);
+            content.ResumeLayout(true);
+            if (content.IsHandleCreated) content.BeginInvoke((Action)(() => { if (!content.IsDisposed) content.PerformLayout(); }));
+        };
         _page.Controls.Add(content); return content;
     }
     private Card Section(FlowLayoutPanel content, int height)
@@ -251,15 +257,14 @@ internal sealed class LauncherWindow : Form
         if (resource != null)
         {
             using var stream = typeof(LauncherWindow).Assembly.GetManifestResourceStream(resource)!;
-            var hero = Section(page, 136); hero.Padding = Padding.Empty;
-            var banner = new PictureBox { Dock = DockStyle.Right, Width = 408, SizeMode = PictureBoxSizeMode.Zoom, BackColor = Theme.Surface, Image = new Bitmap(stream), AccessibleName = "SS14 ModLauncher by actemendes — space station artwork" };
+            var hero = Section(page, 84); hero.Padding = Padding.Empty; hero.Margin = new Padding(0, 0, 0, 10);
+            var banner = new PictureBox { Dock = DockStyle.Right, Width = 260, SizeMode = PictureBoxSizeMode.Zoom, BackColor = Theme.Surface, Image = new Bitmap(stream), AccessibleName = "SS14 ModLauncher by actemendes — space station artwork" };
             banner.Disposed += (_, _) => banner.Image?.Dispose(); page.Controls.Add(banner);
             page.Controls.Remove(banner); hero.Controls.Add(banner);
-            var intro = new Panel { Dock = DockStyle.Fill, Padding = new Padding(22, 18, 12, 8) }; hero.Controls.Add(intro); intro.BringToFront();
+            var intro = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 10, 12, 4) }; hero.Controls.Add(intro); intro.BringToFront();
             var summary = Stack(intro);
             summary.Controls.Add(Theme.Label(T("ВАШ НАБОР НА ЭТУ СМЕНУ", "YOUR LOADOUT FOR THIS SHIFT"), 8, Theme.Blue, true));
-            _selectionCount = Theme.Label($"{_settings.SelectedModIds.Count:00} / {Catalog.Bundled.Count:00}", 26, Theme.Mint, true); summary.Controls.Add(_selectionCount);
-            summary.Controls.Add(Theme.Label(T("модов в профиле  ·  всё под вашим контролем", "mods in profile  ·  you're in control"), 9, Theme.Muted));
+            _selectionCount = Theme.Label($"{_settings.SelectedModIds.Count:00} / {Catalog.Bundled.Count:00}", 18, Theme.Mint, true); _selectionCount.Margin = Padding.Empty; summary.Controls.Add(_selectionCount);
         }
         var toolbar = Section(page, 70); toolbar.Padding = new Padding(18, 13, 18, 8);
         var row = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false };
@@ -273,25 +278,51 @@ internal sealed class LauncherWindow : Form
                 Run(() => { _settings.DeleteProfile(_settings.ActiveProfile); Save(); Render(); }, T("Профиль удалён.", "Profile deleted."));
         }); deleteProfile.Enabled = _settings.Profiles.Count > 1; row.Controls.Add(deleteProfile);
         var indicator = Theme.Label(StateText, 9, _installationState == "installed" ? Theme.Mint : Theme.Amber, true); indicator.Margin = new Padding(14, 11, 0, 0); row.Controls.Add(indicator); toolbar.Controls.Add(row);
+        var search = Theme.TextBox(""); search.Name = "mod-search";
+        search.PlaceholderText = T("Поиск модов…", "Search mods…"); search.AccessibleName = T("Поиск модов", "Search mods");
+        var searchRow = new TableLayoutPanel { Name = "mod-search-row", Width = toolbar.Width, Height = 32, ColumnCount = 2, RowCount = 1, Margin = new Padding(0, 0, 0, 10) };
+        searchRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70)); searchRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        var searchLabel = Theme.Label(T("Поиск", "Search"), 9, Theme.Muted); searchLabel.Anchor = AnchorStyles.Left; searchLabel.Margin = Padding.Empty;
+        search.Dock = DockStyle.Fill; search.Margin = Padding.Empty; searchRow.Controls.Add(searchLabel, 0, 0); searchRow.Controls.Add(search, 1, 0); page.Controls.Add(searchRow);
+        var modRows = new Dictionary<ModDefinition, Card>();
         foreach (var mod in Catalog.Bundled)
         {
-            var card = Section(page, 137);
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 3 };
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30)); layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 23));
-            layout.Controls.Add(Theme.Label(mod.Name(_settings.Language), 15, bold: true), 0, 0);
-            var description = Theme.Label(mod.Description(_settings.Language), 10, Theme.Muted); description.AutoSize = false; description.Dock = DockStyle.Fill; description.Margin = Padding.Empty; layout.Controls.Add(description, 0, 1);
+            var card = Section(page, 64); card.Name = "mod-row-" + mod.Id; card.Padding = new Padding(12, 7, 12, 5); card.Margin = new Padding(0, 0, 0, 6); modRows[mod] = card;
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 2, Margin = Padding.Empty };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104)); layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 27)); layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            var title = Theme.Label(mod.Name(_settings.Language), 12, bold: true); title.Margin = Padding.Empty;
+            title.AutoSize = false; title.Dock = DockStyle.Fill; title.AutoEllipsis = true; layout.Controls.Add(title, 0, 0);
             var version = ModVersion(mod);
-            layout.Controls.Add(Theme.Label("v" + version + "  ·  " + (version == mod.Version ? T("в комплекте", "bundled") : T("обновлён", "updated")) + "  ·  " + (mod.Id == "crew-console" ? T("Интерфейс", "Interface") : T("Пример мода", "Sample mod")), 8, Theme.Blue), 0, 2);
-            var toggle = new CheckBox { Text = T("Включён", "Enabled"), Checked = _settings.SelectedModIds.Contains(mod.Id), Appearance = Appearance.Button, FlatStyle = FlatStyle.Flat, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Top, Height = 38, Cursor = Cursors.Hand, BackColor = Theme.Raised, ForeColor = Theme.Mint, AccessibleName = mod.Name(_settings.Language) };
+            var metadata = Theme.Label("v" + version + "  ·  " + mod.CategoryName(_settings.Language) + "  ·  " + (version == mod.Version ? T("в комплекте", "bundled") : T("обновлён", "updated")), 8, Theme.Blue);
+            metadata.Margin = Padding.Empty; metadata.AutoSize = false; metadata.Dock = DockStyle.Fill; metadata.AutoEllipsis = true; layout.Controls.Add(metadata, 0, 1);
+            _tips.SetToolTip(title, mod.Description(_settings.Language)); _tips.SetToolTip(metadata, mod.Description(_settings.Language));
+            var details = Theme.Button(T("Подробнее", "Details"), (_, _) => { using var dialog = new ModDetailsWindow(mod, version, _settings.Language); dialog.Icon = Icon; dialog.ShowDialog(this); });
+            details.Name = "mod-details-" + mod.Id; details.AccessibleName = T("Описание: ", "Details: ") + mod.Name(_settings.Language);
+            details.AutoSize = false; details.MinimumSize = Size.Empty; details.Padding = Padding.Empty; details.Dock = DockStyle.Fill; details.Margin = new Padding(0, 5, 8, 5);
+            details.Font = new Font("Segoe UI", 9); layout.Controls.Add(details, 1, 0); layout.SetRowSpan(details, 2);
+            var toggle = new CheckBox { Text = T("Включён", "Enabled"), Checked = _settings.SelectedModIds.Contains(mod.Id), Appearance = Appearance.Button, FlatStyle = FlatStyle.Flat, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill, Margin = new Padding(0, 5, 0, 5), Cursor = Cursors.Hand, BackColor = Theme.Raised, ForeColor = Theme.Mint, AccessibleName = mod.Name(_settings.Language) };
             toggle.FlatAppearance.BorderColor = Theme.Border; toggle.FlatAppearance.CheckedBackColor = Color.FromArgb(26, 62, 52);
             toggle.Text = toggle.Checked ? T("Включён", "Enabled") : T("Выключен", "Disabled");
             toggle.CheckedChanged += (_, _) => Run(() => { var selected = _settings.SelectedModIds.ToList(); selected.Remove(mod.Id); if (toggle.Checked) selected.Add(mod.Id); _settings.Profiles[_settings.ActiveProfile] = selected; Save(); if (_selectionCount != null) _selectionCount.Text = $"{_settings.SelectedModIds.Count:00} / {Catalog.Bundled.Count:00}"; toggle.Text = toggle.Checked ? T("Включён", "Enabled") : T("Выключен", "Disabled"); }, T("Выбор сохранён. Применится при следующем запуске.", "Selection saved. Applies on next launch."));
             _tips.SetToolTip(toggle, T("Включите нужные моды, затем нажмите «Запустить SS14». Изменения применятся к следующему запуску клиента.", "Enable the mods you want, then click Launch SS14. Changes apply to the next client launch."));
-            layout.Controls.Add(toggle, 1, 0); layout.SetRowSpan(toggle, 2); _toggles[mod.Id] = toggle; card.Controls.Add(layout);
+            layout.Controls.Add(toggle, 2, 0); layout.SetRowSpan(toggle, 2); _toggles[mod.Id] = toggle; card.Controls.Add(layout);
         }
+        var noMatches = Theme.Label(T("Моды не найдены.", "No mods found."), 10, Theme.Muted); noMatches.Visible = false; page.Controls.Add(noMatches);
+        search.TextChanged += (_, _) =>
+        {
+            var query = search.Text.Trim(); var found = 0;
+            page.SuspendLayout();
+            foreach (var (mod, card) in modRows)
+            {
+                card.Visible = (mod.NameRu + " " + mod.NameEn + " " + mod.Id + " " + mod.Description(_settings.Language) + " " + mod.CategoryName(_settings.Language)).Contains(query, StringComparison.OrdinalIgnoreCase);
+                if (card.Visible) found++;
+            }
+            noMatches.Visible = found == 0; page.ResumeLayout(true);
+        };
         var actions = Section(page, 108); actions.Padding = new Padding(22, 14, 22, 10); var stack = Stack(actions);
         var buttons = new FlowLayoutPanel { Width = 860, Height = 48, WrapContents = false };
+        actions.SizeChanged += (_, _) => buttons.Width = actions.ClientSize.Width - actions.Padding.Horizontal;
         var launch = Theme.Button(_installationState == "clean" ? T("Установить и запустить  →", "Install & launch  →") : T("Запустить SS14  →", "Launch SS14  →"), (_, _) => { if (_installationState != "installed") ShowSetup(); else Launch(false); }, true);
         _tips.SetToolTip(launch, T("Настроит выбранные моды и откроет обычный SS14 Launcher. Дальше выберите сервер, как обычно.", "Applies your selected mods and opens the original SS14 Launcher. Then choose a server as usual.")); buttons.Controls.Add(launch);
         var cleanLaunch = Theme.Button(T("Без модов на один запуск", "Launch once without mods"), (_, _) => Launch(true));

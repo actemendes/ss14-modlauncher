@@ -19,6 +19,10 @@
 
 The directory name `Installer` is retained for source continuity; its published app is `SS14ModLauncher.exe`.
 
+## Mod library
+
+`catalog/mods.json` is the shared embedded source for localized display names, descriptions, usage instructions, categories and optional preview resource names. Launcher 0.1.7 uses compact searchable rows; filtering only changes visibility, while toggles continue to save the active profile by stable ID. `ModDetailsWindow` loads previews from embedded resources without network access. Display names are independent of assembly names, mod IDs and per-mod versions.
+
 ## First-run setup
 
 The desktop app presents a localized setup window for a new installation, discovers SS14 and displays the active profile; a fresh default profile selects Crew Console. Its primary action uses the same transactional installation and saved Steam integration policy as normal installation, then starts the original launcher. The folder resolver accepts a valid launcher directory or a game parent containing `bin_x64`. Running game processes are reported for manual close/retry, never terminated.
