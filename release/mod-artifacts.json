@@ -40,6 +40,14 @@
       "repository": "actemendes/ss14-modlauncher",
       "sourceRelease": "0.1.6",
       "sha256": "A86A92814B0F07B7EC020A934763209672D34CA26235207A99FF631CB1641FF9"
+    },
+    {
+      "id": "chem-master",
+      "version": "0.1.4",
+      "file": "ChemMaster.Mod.dll",
+      "repository": "actemendes/ss14-modlauncher",
+      "sourceRelease": "0.1.7",
+      "sha256": "37A163FEF67723648354DEE2B54D4670C8AD839EE3FA331EDA415C8812871192"
     }
   ]
 }
