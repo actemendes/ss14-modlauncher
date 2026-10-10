@@ -2,13 +2,15 @@
 
 Display name in ModLauncher: **Автохимия** (RU), **Auto Chemistry** (EN). The stable ID `chem-master`, assembly `ChemMaster.Mod.dll`, settings paths and the native in-game ChemMaster name are unchanged.
 
+[**Демонстрация Автохимии / Watch the Auto Chemistry demo**](https://youtu.be/hZwgM-wkamc)
+
 ![Автохимия — вкладка АВТО / Auto Chemistry — AUTO tab](../assets/auto-chemistry.png)
 
 Мод добавляет вкладки **АВТО / AUTO** и **Настройки АВТО / AUTO settings** в обычный игровой химмастер. Требуется ModLauncher 0.1.6. Язык мода следует RU/EN языку лаунчера; названия веществ берутся из локализации игрового клиента.
 
 ## Использование
 
-1. Включите «Химмастер» в профиле ModLauncher и запустите клиент заново.
+1. Включите «Автохимию» в профиле ModLauncher и запустите клиент заново.
 2. Загрузите исходные вещества в буфер химмастера, вставьте пустую входную мензурку.
 3. Откройте АВТО, введите название или prototype ID в поле «Вещество», задайте объём и нажмите Enter либо выберите строку из списка под полем.
 4. «Ещё / More» прибавляет объём к текущему запасу; «До / Up to» доводит запас до объёма. Объём цели правится прямо в строке; серое число — запас в буфере.

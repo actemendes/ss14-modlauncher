@@ -10,9 +10,9 @@ A Windows mod launcher for Space Station 14: choose a mod profile, launch the or
 
 **Independent community project.** This is not an official Space Wizards Federation launcher and is not affiliated with the SS14 developers. Version **0.1.7** targets **Windows x64**.
 
-![Auto Chemistry — automated mixing in SS14](docs/assets/auto-chemistry-preview.png)
+[![Auto Chemistry — automated mixing in SS14](docs/assets/auto-chemistry-preview.png)](https://youtu.be/hZwgM-wkamc)
 
-**Auto Chemistry 0.1.4** — server recipes, automatic production plans and saved presets inside the native ChemMaster. [How to use it](docs/mods/chemmaster.md).
+**Auto Chemistry 0.1.4** — server recipes, automatic production plans and saved presets inside the native ChemMaster. [How to use it](docs/mods/chemmaster.md) · [**Watch the demo on YouTube**](https://youtu.be/hZwgM-wkamc).
 
 ![SS14 ModLauncher in English](docs/assets/launcher-en.png)
 
